@@ -8,14 +8,15 @@
           :version "0.0.1-SNAPSHOT"
           :dependencies '[[org.clojure/clojure "1.7.0"]
                           [org.clojure/tools.cli "0.3.3"]
-                          [org.openrdf.sesame/sesame-repository-api "4.0.1"]]
+                          [org.openrdf.sesame/sesame-repository-http "4.0.1"]
+                          [org.slf4j/jcl-over-slf4j "1.7.10"]]
           :repositories #(conj % maven-central))
 
 
 (task-options!
  pom {:project (get-env :project) :version (get-env :version)}
- aot { :namespace '#{triple.loadder} }
- jar { :main 'triple.loadder })
+ aot { :namespace '#{triple.loader} }
+ jar { :main 'triple.loader })
 
 (deftask build
   "Build without dependencies" []
