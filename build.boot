@@ -7,6 +7,7 @@
           :project 'adalab/triple-loader
           :version "0.0.1-SNAPSHOT"
           :dependencies '[[org.clojure/clojure "1.7.0"]
+                          [org.clojure/tools.cli "0.3.3"]
                           [org.openrdf.sesame/sesame-repository-api "4.0.1"]]
           :repositories #(conj % maven-central))
 
