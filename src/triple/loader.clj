@@ -7,13 +7,11 @@
             [triple.reifiers :as ref])
   (:import [org.openrdf.repository.http HTTPRepository HTTPRepositoryConnection]
            [org.openrdf.repository RepositoryConnection]
-           [org.openrdf.rio RDFFormat ParserConfig]
+           [org.openrdf.rio Rio RDFFormat ParserConfig]
            [org.openrdf.rio.helpers BasicParserSettings]
            [org.openrdf.query QueryLanguage]
            [org.apache.commons.logging LogFactory]))
 
-
-(def records-size 1000)
 
 (defn -main [& args]
   (let [[opts args banner] (cli args
@@ -31,16 +29,27 @@
   ))
 
 
-(defn init-connection "Initialise HTTPRepository class to sesame romote repository."
-    [server-url repository-id]
-  (HTTPRepository. server-url repository-id))
+(defn init-connection "Initialise HTTPRepository class to sesame remote repository."
+  [server-url repository-id]
+  (let [repo (HTTPRepository. server-url repository-id)]
+    (.initialize repo)
+    (doto  ;; create connection 
+        (.getConnection repo)
+      (.setParserConfig (make-parser-config))
+      (.setAutoCommit false)
+      )))
 
-
+(defn make-parser [filename repo-connection]
+  (doto
+      (Rio/createParser (RDFFormat/)))
+  )
 
 (defn make-parser-config []
     (doto
         (ParserConfig.)
-        (.set BasicParserSettings/PRESERVE_BNODE_IDS true))
-  )
+        (.set BasicParserSettings/PRESERVE_BNODE_IDS true)))
 
 
+
+(defn do-loading [opts]
+  (with-open [c (init-connection (:s opts) (:r opts))]))
