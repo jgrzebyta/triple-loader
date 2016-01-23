@@ -8,8 +8,9 @@
           :version "0.0.1-SNAPSHOT"
           :dependencies '[[org.clojure/clojure "1.7.0"]
                           [org.clojure/tools.cli "0.3.3"]
-                          [org.openrdf.sesame/sesame-repository-http "4.0.1"]
-                          [org.slf4j/jcl-over-slf4j "1.7.10"]]
+                          [org.openrdf.sesame/sesame-repository-http "4.0.1" :exclusions [commons-io]]
+                          [org.slf4j/jcl-over-slf4j "1.7.10"]
+                          [org.slf4j/slf4j-nop "1.7.10"]]
           :repositories #(conj % maven-central))
 
 
