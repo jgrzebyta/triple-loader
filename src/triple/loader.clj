@@ -3,11 +3,12 @@
 (ns triple.loader
   (:gen-class)
   (:require [clojure.tools.cli :refer [cli]]
+            [clojure.tools.logging :as log]
             [clojure.java.io :as jio]
             [triple.reifiers :as ref])
   (:import [org.openrdf.repository.http HTTPRepository HTTPRepositoryConnection]
            [org.openrdf.repository RepositoryConnection]
-           [org.openrdf.rio Rio RDFFormat ParserConfig]
+           [org.openrdf.rio Rio RDFFormat ParserConfig RDFParseException]
            [org.openrdf.rio.helpers BasicParserSettings]
            [org.openrdf.query QueryLanguage]
            [org.apache.commons.logging LogFactory]))
@@ -33,18 +34,26 @@
 
 
 (defn do-loading [opts]
-  (with-open [c (init-connection (:s opts) (:r opts))
-              reader-file (jio/reader (:f opts))]
-    (let [format (case (:t opts)
-                 "n3" RDFFormat/N3
-                 "nq" RDFFormat/NQUADS
-                 "rdfxml" RDFFormat/RDFXML
-                 "rdfa" RDFFormat/RDFA
-                 RDFFormat/TURTLE)
-          parser (doto
-                     (Rio/createParser format)
-                   (.setRDFHandler (ref/chunk-commiter c)))]
-      (.parse parser reader-file nil))))
+  (let [file-obj (jio/file (:f opts))]
+    (with-open [c (init-connection (:s opts) (:r opts))
+                reader-file (jio/reader file-obj)]
+      (let [format (case (:t opts)
+                     "n3" RDFFormat/N3
+                     "nq" RDFFormat/NQUADS
+                     "rdfxml" RDFFormat/RDFXML
+                     "rdfa" RDFFormat/RDFA
+                     "turtle" RDFFormat/TURTLE
+                     RDFFormat/TURTLE)
+            parser (doto
+                       (Rio/createParser format)
+                     (.setRDFHandler (ref/chunk-commiter c)))]
+        (println (format "base URI: %s" (.toString (.toURI file-obj))))
+        (try
+          (.parse parser reader-file (.toString (.toURI file-obj)))
+          (catch RDFParseException e
+            #(log/error "Error: % for URI: %" (.getMessage e)
+                                                (.toString (.toURI file-obj))))
+          )))))
 
 
 (defn -main [& args]

@@ -1,6 +1,7 @@
 (ns triple.loader-test
   (:use [triple.loader]
         [clojure.test]
+        [clojure.tools.logging :as log]
         [clojure.java.io :as jio]))
 
 (deftest connect-triple
@@ -9,7 +10,7 @@
           repository-id "test"]
       (with-open [c (init-connection server-url repository-id)]
         (is (instance? org.openrdf.repository.RepositoryConnection c))
-        (println "Repository connection class: " (class c))
+        (log/debug "Repository connection class: %s" (class c))
         (is (.isOpen c))))))
 
 (deftest open-file

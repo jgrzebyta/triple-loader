@@ -1,6 +1,7 @@
 (ns triple.mock
   (:use [clojure.java.io :as jio]
-        [clojure.test :as test])
+        [clojure.test :as test]
+        [clojure.tools.logging :as log])
   (:import [org.openrdf.rio Rio RDFFormat RDFParserFactory]
            [org.openrdf.rio.turtle TurtleParserFactory]
            [org.openrdf.rio.helpers StatementCollector]))
@@ -19,7 +20,7 @@
           rdf-parser (Rio/createParser format)
           collector (StatementCollector.)]
       (.setRDFHandler rdf-parser collector)
-      (println (format "Parser: %s" (type rdf-parser)))
+      (log/debug "Parser: %s" (type rdf-parser))
       ;; run parsing process
       (.parse rdf-parser rdr "urn:data")
       collector)))
