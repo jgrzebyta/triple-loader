@@ -14,9 +14,6 @@
            [org.apache.commons.logging LogFactory]))
 
 
-
-
-
 (defn make-parser-config []
     (doto
         (ParserConfig.)
@@ -27,10 +24,15 @@
   [server-url repository-id]
   (let [repo (HTTPRepository. server-url repository-id)]
     (.initialize repo)
-    (doto  ;; create connection 
+    (log/debug "Connection: " (.getRepositoryURL repo))
+    (try
+      (doto  ;; create connection
         (.getConnection repo)
       (.setParserConfig (make-parser-config))
-      (.setAutoCommit false))))
+      (.setAutoCommit false))
+      (catch Throwable t #(do
+                            (log/error "Error: " (.getMessage t))
+                            (System/exit 1))))))
 
 
 (defn do-loading [opts]
@@ -47,13 +49,21 @@
             parser (doto
                        (Rio/createParser format)
                      (.setRDFHandler (ref/chunk-commiter c)))]
-        (println (format "base URI: %s" (.toString (.toURI file-obj))))
+        ;;(println (format "base URI: %s" (.toString (.toURI file-obj))))
+        (log/debug "start file parsing")
         (try
           (.parse parser reader-file (.toString (.toURI file-obj)))
           (catch RDFParseException e
             #(log/error "Error: % for URI: %" (.getMessage e)
-                                                (.toString (.toURI file-obj))))
-          )))))
+                        (.toString (.toURI file-obj))))
+          (catch Throwable t #(do
+                                (log/error "The other error caused by " (.getMessage t))
+                                (.printStackTrace t)
+                                (System/exit -1))))
+          ;; finish transaction
+          (log/debug "isActive: " (.isActive c))
+          (.commit c)
+          ))))
 
 
 (defn -main [& args]
