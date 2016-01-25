@@ -7,7 +7,7 @@
            [org.openrdf.repository.util RDFInserter]))
 
 
-(def chunk-size 10)
+(def chunk-size 1000)
 
 (defn chunk-commiter "implement RDFHandler"
   [connection]
