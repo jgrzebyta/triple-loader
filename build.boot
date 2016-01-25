@@ -12,6 +12,7 @@
                           [org.clojure/tools.logging "0.3.1"]
                           [org.openrdf.sesame/sesame-repository-http "4.0.1" :exclusions [commons-io]]
                           [org.openrdf.sesame/sesame-runtime "4.0.1"]
+                          [org.openrdf.sesame/sesame-repository-sail "4.0.1" :scope "test"]
                           [org.slf4j/jcl-over-slf4j "1.7.10"]
                           [org.apache.logging.log4j/log4j-slf4j-impl "2.5"]
                           [org.apache.logging.log4j/log4j-core "2.5"]]

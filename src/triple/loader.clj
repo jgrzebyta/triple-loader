@@ -55,14 +55,15 @@
           (.parse parser reader-file (.toString (.toURI file-obj)))
           (catch RDFParseException e
             #(log/error "Error: % for URI: %" (.getMessage e)
-                        (.toString (.toURI file-obj))))
+                                              (.toString (.toURI file-obj))))
           (catch Throwable t #(do
                                 (log/error "The other error caused by " (.getMessage t))
                                 (.printStackTrace t)
                                 (System/exit -1))))
           ;; finish transaction
-          (log/debug "isActive: " (.isActive c))
-          (.commit c)
+        (log/debug "isActive: " (.isActive c))
+        (when (.isActive c)
+          (.commit c))
           ))))
 
 
