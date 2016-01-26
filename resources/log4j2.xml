@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="ERROR">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_ERR">
+            <PatternLayout pattern="%d{ABSOLUTE} [%t] %-5p %c{1}: %m%throwable%n"/>
+        </Console>
+    </Appenders>
+    
+    <Loggers>
+       <Logger name="triple" level="trace"/>
+        <Root level="warn">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>

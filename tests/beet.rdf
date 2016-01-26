@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvRank">
+	<label xmlns="http://www.w3.org/2000/01/rdf-schema#">Rank</label>
+	<columnPosition xmlns="http://vocab.sindice.net/csv/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">0</columnPosition>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvCountries">
+	<label xmlns="http://www.w3.org/2000/01/rdf-schema#">Countries</label>
+	<columnPosition xmlns="http://vocab.sindice.net/csv/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</columnPosition>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvTons">
+	<label xmlns="http://www.w3.org/2000/01/rdf-schema#">Tons</label>
+	<columnPosition xmlns="http://vocab.sindice.net/csv/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">2</columnPosition>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvrow/0">
+	<rdf:type rdf:resource="http://vocab.sindice.net/csv/Row"/>
+	<beet-1.csvRank xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</beet-1.csvRank>
+	<beet-1.csvCountries xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Russia</beet-1.csvCountries>
+	<beet-1.csvTons xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">45057000</beet-1.csvTons>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csv">
+	<row xmlns="http://vocab.sindice.net/csv/" rdf:resource="file:/tmp2/beet-1.csvrow/0"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvrow/0">
+	<rowPosition xmlns="http://vocab.sindice.net/csv/">0</rowPosition>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvrow/1">
+	<rdf:type rdf:resource="http://vocab.sindice.net/csv/Row"/>
+	<beet-1.csvRank xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">2</beet-1.csvRank>
+	<beet-1.csvCountries xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#string">France</beet-1.csvCountries>
+	<beet-1.csvTons xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">33688393</beet-1.csvTons>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csv">
+	<row xmlns="http://vocab.sindice.net/csv/" rdf:resource="file:/tmp2/beet-1.csvrow/1"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvrow/1">
+	<rowPosition xmlns="http://vocab.sindice.net/csv/">1</rowPosition>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvrow/2">
+	<rdf:type rdf:resource="http://vocab.sindice.net/csv/Row"/>
+	<beet-1.csvRank xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3</beet-1.csvRank>
+	<beet-1.csvCountries xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#string">UnitedStates</beet-1.csvCountries>
+	<beet-1.csvTons xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">31954713</beet-1.csvTons>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csv">
+	<row xmlns="http://vocab.sindice.net/csv/" rdf:resource="file:/tmp2/beet-1.csvrow/2"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvrow/2">
+	<rowPosition xmlns="http://vocab.sindice.net/csv/">2</rowPosition>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvrow/3">
+	<rdf:type rdf:resource="http://vocab.sindice.net/csv/Row"/>
+	<beet-1.csvRank xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">4</beet-1.csvRank>
+	<beet-1.csvCountries xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Germany</beet-1.csvCountries>
+	<beet-1.csvTons xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">27891000</beet-1.csvTons>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csv">
+	<row xmlns="http://vocab.sindice.net/csv/" rdf:resource="file:/tmp2/beet-1.csvrow/3"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvrow/3">
+	<rowPosition xmlns="http://vocab.sindice.net/csv/">3</rowPosition>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvrow/4">
+	<rdf:type rdf:resource="http://vocab.sindice.net/csv/Row"/>
+	<beet-1.csvRank xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">5</beet-1.csvRank>
+	<beet-1.csvCountries xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ukraine</beet-1.csvCountries>
+	<beet-1.csvTons xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">18438900</beet-1.csvTons>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csv">
+	<row xmlns="http://vocab.sindice.net/csv/" rdf:resource="file:/tmp2/beet-1.csvrow/4"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvrow/4">
+	<rowPosition xmlns="http://vocab.sindice.net/csv/">4</rowPosition>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvrow/5">
+	<rdf:type rdf:resource="http://vocab.sindice.net/csv/Row"/>
+	<beet-1.csvRank xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">6</beet-1.csvRank>
+	<beet-1.csvCountries xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Turkey</beet-1.csvCountries>
+	<beet-1.csvTons xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">15000000</beet-1.csvTons>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csv">
+	<row xmlns="http://vocab.sindice.net/csv/" rdf:resource="file:/tmp2/beet-1.csvrow/5"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvrow/5">
+	<rowPosition xmlns="http://vocab.sindice.net/csv/">5</rowPosition>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvrow/6">
+	<rdf:type rdf:resource="http://vocab.sindice.net/csv/Row"/>
+	<beet-1.csvRank xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">7</beet-1.csvRank>
+	<beet-1.csvCountries xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Poland</beet-1.csvCountries>
+	<beet-1.csvTons xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">12349546</beet-1.csvTons>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csv">
+	<row xmlns="http://vocab.sindice.net/csv/" rdf:resource="file:/tmp2/beet-1.csvrow/6"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvrow/6">
+	<rowPosition xmlns="http://vocab.sindice.net/csv/">6</rowPosition>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvrow/7">
+	<rdf:type rdf:resource="http://vocab.sindice.net/csv/Row"/>
+	<beet-1.csvRank xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">8</beet-1.csvRank>
+	<beet-1.csvCountries xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Chinamainland</beet-1.csvCountries>
+	<beet-1.csvTons xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">11469050</beet-1.csvTons>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csv">
+	<row xmlns="http://vocab.sindice.net/csv/" rdf:resource="file:/tmp2/beet-1.csvrow/7"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvrow/7">
+	<rowPosition xmlns="http://vocab.sindice.net/csv/">7</rowPosition>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvrow/8">
+	<rdf:type rdf:resource="http://vocab.sindice.net/csv/Row"/>
+	<beet-1.csvRank xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">9</beet-1.csvRank>
+	<beet-1.csvCountries xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Egypt</beet-1.csvCountries>
+	<beet-1.csvTons xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">9126058</beet-1.csvTons>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csv">
+	<row xmlns="http://vocab.sindice.net/csv/" rdf:resource="file:/tmp2/beet-1.csvrow/8"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvrow/8">
+	<rowPosition xmlns="http://vocab.sindice.net/csv/">8</rowPosition>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvrow/9">
+	<rdf:type rdf:resource="http://vocab.sindice.net/csv/Row"/>
+	<beet-1.csvRank xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">10</beet-1.csvRank>
+	<beet-1.csvCountries xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#string">UnitedKingdom</beet-1.csvCountries>
+	<beet-1.csvTons xmlns="file:/tmp2/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">7291000</beet-1.csvTons>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csv">
+	<row xmlns="http://vocab.sindice.net/csv/" rdf:resource="file:/tmp2/beet-1.csvrow/9"/>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csvrow/9">
+	<rowPosition xmlns="http://vocab.sindice.net/csv/">9</rowPosition>
+</rdf:Description>
+
+<rdf:Description rdf:about="file:/tmp2/beet-1.csv">
+	<numberOfRows xmlns="http://vocab.sindice.net/csv/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">10</numberOfRows>
+	<numberOfColumns xmlns="http://vocab.sindice.net/csv/" rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3</numberOfColumns>
+</rdf:Description>
+
+</rdf:RDF>
