@@ -7,7 +7,7 @@
             [clojure.java.io :as jio]
             [triple.reifiers :as ref])
   (:import [org.openrdf.repository.http HTTPRepository HTTPRepositoryConnection]
-           [org.openrdf.repository RepositoryConnection]
+           [org.openrdf.repository RepositoryConnection RepositoryException]
            [org.openrdf.rio Rio RDFFormat ParserConfig RDFParseException]
            [org.openrdf.rio.helpers BasicParserSettings]
            [org.openrdf.query QueryLanguage]
@@ -30,9 +30,12 @@
         (.getConnection repo)
       (.setParserConfig (make-parser-config))
       (.setAutoCommit false))
-      (catch Throwable t #(do
-                            (log/error "Error: " (.getMessage t))
-                            (System/exit 1))))))
+      (catch RepositoryException e (do
+                                     (log/error (format "Error message: %s" (.getMessage e)))
+                                     (throw e)))
+      (catch Throwable t (do
+                           (log/error "Error: " (.getMessage t))
+                           (System/exit 1))))))
 
 
 (defn do-loading [opts]
