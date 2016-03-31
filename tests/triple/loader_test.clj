@@ -7,11 +7,11 @@
   (:import [info.aduna.iteration CloseableIteration]
            [org.openrdf.model Resource Statement]
            [org.openrdf.rio Rio RDFFormat ParserConfig RDFParseException]
-           [org.openrdf.repository RepositoryResult]
+           [org.openrdf.repository RepositoryResult RepositoryConnection]
            [org.openrdf.repository.sail SailRepository]
            [org.openrdf.sail.memory MemoryStore]))
 
-(defn count-statements "Counts statements in result." [^CloseableIteration result]
+(defn count-statements "Counts statements in SPARQL result." [^CloseableIteration result]
   (try
     (loop [count 0]
       (if (.hasNext result)
@@ -49,11 +49,26 @@
       (SailRepository. (if store store (MemoryStore.)))
     (.initialize)))
 
+(defmacro with-open-rdf-context "Opens in-memory rdf triple, load data from RDF file."
+    [connection-var rdf-format file & [context-string body]]
+    `(let [repo# (make-mem-repository)
+           parser# (Rio/createParser ~rdf-format)
+           file-obj# (jio/file ~file)]
+       (with-open [~connection-var (.getConnection repo#)
+                   fr# (jio/reader file-obj#)]
+         (.setRDFHandler parser# (chunk-commiter ~connection-var ~context-string))
+         (.parse parser# fr# (.toString (.toURI file-obj#)))
+         (.commit ~connection-var)
+       ~@body)
+     )
+  )
+
+
 (defn test-repository "Doeas more detailed tests on storage" [repository expected]
   (is (instance? SailRepository repository))
   (log/debug "repository class: " (class repository))
   (with-open [c (.getConnection repository)]
-    (let [result (.getStatements c nil nil nil (into-array Resource '[]))
+    (let [result (.getStatements c nil nil nil false (into-array Resource '[]))
           statement-total (count-statements result)]
       (is (= expected statement-total))
       (log/debug (format "Found %d statements" statement-total))

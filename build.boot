@@ -32,7 +32,9 @@
   (println (format "%s" (get-env :source-paths)))
   (use '[triple.loader-test])
   (if (nil? (:test-name *opts*))
-    (test/run-all-tests #"triple.*")
+    (do
+      (println "Run all tests")
+      (test/run-all-tests #"triple.*"))
     (do
       (println (format "Run test: %s" (:test-name *opts*)))
       (test/test-var (resolve (symbol (:test-name *opts*))))

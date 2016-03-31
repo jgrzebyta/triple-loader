@@ -76,7 +76,7 @@
                                ["--server URL" "-s" "Sesame SPARQL endpoint URL" :default "http://localhost:8080/openrdf-sesame"]
                                ["--repositiry NAME" "-r" "Repository id" :default "test"]
                                ["--file FILE" "-f" "Data file path"]
-                               ["--file-type TYPE" "-t" "Data file type. One of: n3, nq, rdfxml, rdfa" :default "turtle"])]
+                               ["--file-type TYPE" "-t" "Data file type. One of: turtle, n3, nq, rdfxml, rdfa" :default "turtle"])]
   ;; print help message
   (when (:h opts)
     (println banner)
