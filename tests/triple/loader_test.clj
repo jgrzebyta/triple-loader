@@ -1,5 +1,6 @@
 (ns triple.loader-test
   (:use [triple.loader]
+        [triple.repository]
         [triple.reifiers :only [chunk-commiter]]
         [clojure.test]
         [clojure.tools.logging :as log]
@@ -8,6 +9,7 @@
            [org.openrdf.model Resource Statement]
            [org.openrdf.rio Rio RDFFormat ParserConfig RDFParseException]
            [org.openrdf.repository RepositoryResult RepositoryConnection]
+           [org.openrdf.repository.http HTTPRepository]
            [org.openrdf.repository.sail SailRepository]
            [org.openrdf.sail.memory MemoryStore]))
 
@@ -26,8 +28,10 @@
 (deftest connect-triple
   (testing "Test initialising connection."
     (let [server-url "http://localhost:8080/openrdf-sesame"
-          repository-id "test"]
-      (with-open [c (init-connection server-url repository-id)]
+          repository-id "test"
+          init-connection-f #'triple.loader/init-connection] ;; access to prive function
+      (with-open-repository (c (HTTPRepository. server-url repository-id))
+        (init-connection-f c)
         (is (instance? org.openrdf.repository.RepositoryConnection c))
         (log/debug "Repository connection class: %s" (class c))
         (is (.isOpen c))))))
@@ -44,27 +48,7 @@
       )))
 
 
-(defn make-mem-repository [& [store]]
-  (doto
-      (SailRepository. (if store store (MemoryStore.)))
-    (.initialize)))
-
-(defmacro with-open-rdf-context "Opens in-memory rdf triple, load data from RDF file."
-    [connection-var rdf-format file & [context-string body]]
-    `(let [repo# (make-mem-repository)
-           parser# (Rio/createParser ~rdf-format)
-           file-obj# (jio/file ~file)]
-       (with-open [~connection-var (.getConnection repo#)
-                   fr# (jio/reader file-obj#)]
-         (.setRDFHandler parser# (chunk-commiter ~connection-var ~context-string))
-         (.parse parser# fr# (.toString (.toURI file-obj#)))
-         (.commit ~connection-var)
-       ~@body)
-     )
-  )
-
-
-(defn test-repository "Doeas more detailed tests on storage" [repository expected]
+(defn test-repository "Does more detailed tests on storage" [repository expected]
   (is (instance? SailRepository repository))
   (log/debug "repository class: " (class repository))
   (with-open [c (.getConnection repository)]
@@ -83,7 +67,6 @@
                   fr (jio/reader file-obj)]
         ;; parse file
         (log/debug "start file parsing")
-;;      (log/debug "")
         (.setRDFHandler pars (chunk-commiter conn))
         (.parse pars fr (.toString (.toURI file-obj)))
         (.commit conn)

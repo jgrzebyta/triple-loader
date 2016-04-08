@@ -1,6 +1,4 @@
-
 (ns triple.repository
-  (:gen-class)
   (:import [org.openrdf.sail Sail]
            [org.openrdf.repository.sail SailRepository]
            [org.openrdf.sail.memory MemoryStore]))

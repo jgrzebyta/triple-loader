@@ -22,7 +22,7 @@
 
 (task-options!
  pom {:project (get-env :project) :version (get-env :version)}
- aot { :namespace '#{triple.loader} }
+ aot { :namespace '#{triple.repository triple.loader} }
  jar { :main 'triple.loader })
 
 (deftask run-testing "Run unit tests"
