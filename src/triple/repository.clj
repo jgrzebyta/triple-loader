@@ -28,4 +28,5 @@ If REPOSITORY has value ':memory' then memory repository is created."
     `(let [repository# ~repository-seq#]
        (.initialize repository#)
        (with-open [~connection-var (.getConnection repository#)]
-         ~@body))))
+         ~@body)
+       (.shutDown repository#))))
