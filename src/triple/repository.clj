@@ -15,7 +15,11 @@
   (make-repository))
 
 
-(defmacro with-open-repository "Opens connetion to RDF repository.
+(defmacro with-open-repository
+"	initseq = [seq-var :memory] | [seq-var (HTTPRepository. server-url repository-id)] 
+
+Opens connetion CONNECTION-VARIALE to RDF repository.
+
 Where initseq is (CONNECTION-VARIABLE REPOSITORY). For example (cnx :memory)
 If REPOSITORY has value ':memory' then memory repository is created."
   [initseq & body]

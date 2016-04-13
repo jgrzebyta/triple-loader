@@ -1,60 +1,50 @@
 (ns triple.context-test
-  (:use [triple.loader-test :as ltest]
+  (:gen-class)
+  (:use [triple.loader-test :only [count-statements]]
+        [clojure.tools.logging :as log]
+        [clojure.java.io :as jio]
         [clojure.test]
-        [triple.utils :only [iter-seq]])
-  (:import [org.openrdf.query QueryLanguage]
+        [triple.repository]
+        [triple.reifiers]
+        [triple.utils])
+  (:import [org.openrdf.repository RepositoryConnection]
+           [org.openrdf.query QueryLanguage]
            [org.openrdf.rio Rio RDFFormat ParserConfig]))
 
 
-(def context-string "urn:graph/beet")
+(def ^:dynamic *context-string* "urn:graph/beet")
 
-(deftest load-mock-repo
-  (let [repo (make-mem-repository)
-        pars (Rio/createParser RDFFormat/RDFXML)
-        file-obj (jio/file "tests/beet.rdf")]
-    (testing "Loading data to repository"
-      (with-open [conn (.getConnection repo)
-                  fr (jio/reader file-obj)]
-        ;; parse file
-        (log/debug "start file parsing")
-        (.setRDFHandler pars (chunk-commiter conn))
-        (.parse pars fr (.toString (.toURI file-obj)))
-        (.commit conn)
-        (is (not (.isEmpty conn)))
-        (log/debug "Is Connection empty?: " (.isEmpty conn)))
-      )
-    (testing "Does more tests ... "
-      (test-repository repo 68))))
+(defn context-instance-factory [context-string]
+  (partial (fn [context-string connection]
+             (let [vf (value-factory connection)]
+               (.createIRI vf context-string))) context-string))
 
-
+(def ^:dynamic *ci-factory* (context-instance-factory *context-string*))
 
 
 (deftest context-loading
   (testing "Load data into named graph"
-    (let [q1 "select * where {?s ?p ?o}"
-          q2 (str "select * from <" context-string "> where {?s ?p ?o}")
-          repo (ltest/make-mem-repository)
-          pars (Rio/createParser RDFFormat/RDFXML)
+    (let [pars (Rio/createParser RDFFormat/RDFXML)
           file-obj (jio/file "tests/beet.rdf")]
-      (with-open [conn (.getConnection repo)
-                  fr (jio/reader file-obj)]
-        (.setRDFHandler pars (chunk-commiter conn))
-        (.parse pars fr (.toString (.toURI file-obj)))
-        (.commit conn)
-        
-        ))))
-
-      
-      (ltest/with-open-rdf-context cnx RDFFormat/RDFXML "tests/beet.rdf" context-string
-        (let [tq1 (.prepareTupleQuery cnx QueryLanguage/SPARQL q1)
-              tq2 (.prepareTupleQuery cnx QueryLanguage/SPARQL q2)]
-          (try
-            (let [r-seq1 (doall (iter-seq (.evaluate tq1)))
-                  r-seq2 (doall (iter-seq (.evaluate tq2)))]
-              (log/debug "seq1: " r-seq1)
-              (log/debug "seq2: " r-seq2)
-              (is (?empty r-seq1))
-              (is (not (?empty r-seq2)))
-              )
-            ))
+      (with-open-repository [^RepositoryConnection con :memory]
+        (.setRDFHandler pars (chunk-commiter con *context-string*))
+        (with-open [fr (jio/reader file-obj)]
+          (.parse pars fr (.toString (.toURI file-obj)))
+          (.commit con))
+        (log/debug "All data should be loaded... validation")
+        (let [context-instance (*ci-factory* con)
+              ^Resource rnil nil
+              all-triples-total (.getStatements con nil nil nil)
+              ;all-triples-no-cont (.getStatements con nil nil nil false rnil)
+              #_all-triples #_(.getStatements con nil nil nil (boolean false) context-instance)]
+          (log/debug (format "no. triples is %d." (count all-triples-total)))							 ; display number of triples
+          #_(log/debug (format "no. triples witout context is %d" (count all-triples-no-cont)))
+          #_(log/debug (format "no. triples in context '%s' is %d" *context-string* (count all-triples)))
+          #_(is (< 0 (count (iter-seq all-triples-total)))
+              (format "no. triples is %d but should be greater than 0" (count all-triples-total)))
+          #_(is (= 0 (count (iter-seq all-triples-no-cont)))
+              (format "no. triples witout context is %d but should be 0" (count all-triples-no-cont)))
+          #_(is (< 0 (count (iter-seq all-triples)))
+              (format "no. triples in context '%s' is %d but should be greater than 0" *context-string* (count all-triples)))
+          )
         ))))

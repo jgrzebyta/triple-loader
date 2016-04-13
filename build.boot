@@ -31,7 +31,8 @@
   (set-env! :source-paths #(conj % "tests"))
   (println (format "%s" (get-env :source-paths)))
   (use '[triple.loader-test]
-       '[triple.mock])
+       '[triple.mock]
+       '[triple.context-test])
   (if (nil? (:test-name *opts*))
     (do
       (println "Run all tests")

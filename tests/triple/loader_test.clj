@@ -25,16 +25,16 @@
     (finally (.close result))))
 
 
-(deftest connect-triple
-  (testing "Test initialising connection."
-    (let [server-url "http://localhost:8080/openrdf-sesame"
-          repository-id "test"
-          init-connection-f #'triple.loader/init-connection] ;; access to prive function
-      (with-open-repository (c (HTTPRepository. server-url repository-id))
-        (init-connection-f c)
-        (is (instance? org.openrdf.repository.RepositoryConnection c))
-        (log/debug "Repository connection class: %s" (class c))
-        (is (.isOpen c))))))
+#_(deftest connect-triple 							; temporary switching off integration test
+    (testing "Test initialising connection."
+      (let [server-url "http://localhost:8080/openrdf-sesame"
+            repository-id "test"
+            init-connection-f #'triple.loader/init-connection]                  ; access to prive function
+        (with-open-repository (c (HTTPRepository. server-url repository-id))
+          (init-connection-f c)
+          (is (instance? org.openrdf.repository.RepositoryConnection c))
+          (log/debug "Repository connection class: %s" (class c))
+          (is (.isOpen c))))))
 
 (deftest open-file
   (with-open [fr (jio/reader "tests/beet.rdf")]
