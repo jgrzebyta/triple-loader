@@ -36,19 +36,24 @@
 
 
 (defn- do-loading [opts]
-  (let [format (case (:t opts)
+  (let [type (case (:t opts)
                  "n3" RDFFormat/N3
                  "nq" RDFFormat/NQUADS
                  "rdfxml" RDFFormat/RDFXML
                  "rdfa" RDFFormat/RDFA
                  "turtle" RDFFormat/TURTLE
                  RDFFormat/TURTLE)
-        parser (Rio/createParser format)
+        parser (Rio/createParser type)
         file-obj (jio/file (:f opts))
-        repository (HTTPRepository. (:s opts) (:r opts))]
+        repository (HTTPRepository. (:s opts) (:r opts))
+        context-string ((fn [x] (if (or (= x "nil")                        ; convert "nil" and "null" texts into boolean nil
+                                        (= x "null"))
+                                  nil x)) (:c opts))]
+    (log/debug (format "Context string: '%s' is nil '%s'"
+                       context-string (nil? context-string)))
     (with-open-repository (cnx repository)
       (init-connection cnx)
-      (.setRDFHandler parser (ref/chunk-commiter cnx))
+      (.setRDFHandler parser (ref/chunk-commiter cnx context-string))
       (with-open [reader-file (jio/reader file-obj)]
         ; Run parser
         (try
@@ -72,7 +77,8 @@
                                ["--server URL" "-s" "Sesame SPARQL endpoint URL" :default "http://localhost:8080/openrdf-sesame"]
                                ["--repositiry NAME" "-r" "Repository id" :default "test"]
                                ["--file FILE" "-f" "Data file path"]
-                               ["--file-type TYPE" "-t" "Data file type. One of: turtle, n3, nq, rdfxml, rdfa" :default "turtle"])]
+                               ["--file-type TYPE" "-t" "Data file type. One of: turtle, n3, nq, rdfxml, rdfa" :default "turtle"]
+                               ["--context IRI" "-c" "Context (graph name) of the dataset" :default nil])]
   ;; print help message
   (when (:h opts)
     (println banner)

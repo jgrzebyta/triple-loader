@@ -1,5 +1,3 @@
-
-(def sesame-version "4.0.1")
 (def maven-central ["central1" "http://repo1.maven.org/maven2/"])
 
 
@@ -10,9 +8,9 @@
           :dependencies '[[org.clojure/clojure "1.7.0"]
                           [org.clojure/tools.cli "0.3.3"]
                           [org.clojure/tools.logging "0.3.1"]
-                          [org.openrdf.sesame/sesame-repository-http "4.0.1" :exclusions [commons-io org.slf4j/slf4j-api]]
-                          [org.openrdf.sesame/sesame-runtime "4.0.1" :exclusions [org.slf4j/slf4j-api]]
-                          [org.openrdf.sesame/sesame-repository-sail "4.0.1" :scope "test" :exclusions [org.slf4j/slf4j-api]]
+                          [org.openrdf.sesame/sesame-repository-http "4.1.1" :exclusions [commons-io org.slf4j/slf4j-api]]
+                          [org.openrdf.sesame/sesame-runtime "4.1.1" :exclusions [org.slf4j/slf4j-api]]
+                          [org.openrdf.sesame/sesame-repository-sail "4.1.1" :scope "test" :exclusions [org.slf4j/slf4j-api]]
                           [org.slf4j/jcl-over-slf4j "1.7.12"]
                           [org.apache.logging.log4j/log4j-slf4j-impl "2.5"]
                           [org.apache.logging.log4j/log4j-core "2.5"]]
