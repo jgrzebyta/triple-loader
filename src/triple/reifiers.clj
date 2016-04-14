@@ -1,6 +1,6 @@
 (ns triple.reifiers
   (:gen-class)
-  (:use [triple.utils]
+  (:use [triple.repository]
         [clojure.tools.logging :as log])
   (:import [org.openrdf.model ValueFactory]
            [org.openrdf.model.impl ContextStatement]

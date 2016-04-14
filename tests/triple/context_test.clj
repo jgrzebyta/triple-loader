@@ -5,21 +5,14 @@
         [clojure.java.io :as jio]
         [clojure.test]
         [triple.repository]
-        [triple.reifiers]
-        [triple.utils])
-  (:import [org.openrdf.repository RepositoryConnection]
+        [triple.reifiers])
+  (:import [org.openrdf.model Resource IRI URI Value]
+           [org.openrdf.repository RepositoryConnection]
            [org.openrdf.query QueryLanguage]
            [org.openrdf.rio Rio RDFFormat ParserConfig]))
 
 
 (def ^:dynamic *context-string* "urn:graph/beet")
-
-(defn context-instance-factory [context-string]
-  (partial (fn [context-string connection]
-             (let [vf (value-factory connection)]
-               (.createIRI vf context-string))) context-string))
-
-(def ^:dynamic *ci-factory* (context-instance-factory *context-string*))
 
 
 (deftest context-loading
@@ -32,19 +25,17 @@
           (.parse pars fr (.toString (.toURI file-obj)))
           (.commit con))
         (log/debug "All data should be loaded... validation")
-        (let [context-instance (*ci-factory* con)
-              ^Resource rnil nil
-              all-triples-total (.getStatements con nil nil nil)
-              ;all-triples-no-cont (.getStatements con nil nil nil false rnil)
-              #_all-triples #_(.getStatements con nil nil nil (boolean false) context-instance)]
-          (log/debug (format "no. triples is %d." (count all-triples-total)))							 ; display number of triples
-          #_(log/debug (format "no. triples witout context is %d" (count all-triples-no-cont)))
-          #_(log/debug (format "no. triples in context '%s' is %d" *context-string* (count all-triples)))
-          #_(is (< 0 (count (iter-seq all-triples-total)))
+        (let [all-triples-total (iter-seq (get-statements con nil nil nil false (context-array)))
+              all-triples-no-cont (iter-seq (get-statements con nil nil nil false (context-array nil)))
+              all-triples (iter-seq (get-statements con nil nil nil false (context-array con *context-string*)))]
+          (log/debug (format "no. triples is %d." (count all-triples-total))) 						; display number of triples
+          (log/debug (format "no. triples witout context is %d" (count all-triples-no-cont)))
+          (log/debug (format "no. triples in context '%s' is %d" *context-string* (count all-triples)))
+          (is (< 0 (count all-triples-total))
               (format "no. triples is %d but should be greater than 0" (count all-triples-total)))
-          #_(is (= 0 (count (iter-seq all-triples-no-cont)))
+          (is (= 0 (count all-triples-no-cont))
               (format "no. triples witout context is %d but should be 0" (count all-triples-no-cont)))
-          #_(is (< 0 (count (iter-seq all-triples)))
+          (is (< 0 (count all-triples))
               (format "no. triples in context '%s' is %d but should be greater than 0" *context-string* (count all-triples)))
           )
         ))))
