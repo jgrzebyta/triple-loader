@@ -1,0 +1,20 @@
+#+title: README file for sesame loader
+#+author: Jacek Grzebyta
+#+date: 2016-04-28
+#+startup: content
+
+* 1. What is that?
+
+=Sesame-loader= provides command line tools for managing RDF4J/Sesame repository.
+
+|---------+--------|
+| version | v0.0.1 |
+|---------+--------|
+
+* 2. List of tools
+
+** sesame-loader
+This is implementation of method described in [article] (http://www.rivuli-development.com/further-reading/sesame-cookbook/loading-large-file-in-sesame-native/) published in Rivuli's *The Sesame Coocbook*.
+
+* 3. Contacts
+To contact with me please use *Issues* interface.
