@@ -1,14 +1,14 @@
 #+title: README file for sesame loader
 #+author: Jacek Grzebyta
 #+date: 2016-04-28
-#+startup: content
+#+startup: showall
 
 * 1. What is that?
 
-=Sesame-loader= provides command line tools for managing RDF4J/Sesame repository.
+=Sesame-loader= provides command line tools for managing Eclipse RDF4J/Sesame repository.
 
 |---------+--------|
-| version | v0.0.1 |
+| version | v0.0.3 |
 |---------+--------|
 
 * 2. List of tools
