@@ -7,11 +7,11 @@
             [clojure.java.io :as jio]
             [triple.reifiers :as ref]
             [triple.repository])
-  (:import [org.openrdf.repository.http HTTPRepository HTTPRepositoryConnection]
-           [org.openrdf.repository RepositoryConnection RepositoryException]
-           [org.openrdf.rio Rio RDFFormat ParserConfig RDFParseException]
-           [org.openrdf.rio.helpers BasicParserSettings]
-           [org.openrdf.query QueryLanguage]
+  (:import [org.eclipse.rdf4j.repository.http HTTPRepository HTTPRepositoryConnection]
+           [org.eclipse.rdf4j.repository RepositoryConnection RepositoryException]
+           [org.eclipse.rdf4j.rio Rio RDFFormat ParserConfig RDFParseException]
+           [org.eclipse.rdf4j.rio.helpers BasicParserSettings]
+           [org.eclipse.rdf4j.query QueryLanguage]
            [org.apache.commons.logging LogFactory]))
 
 

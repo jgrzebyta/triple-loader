@@ -1,10 +1,10 @@
 (ns triple.repository
-  (:import [org.openrdf.model.impl SimpleValueFactory]
-           [org.openrdf.model Resource IRI Value]
-           [org.openrdf.repository RepositoryConnection Repository]
-           [org.openrdf.sail Sail]
-           [org.openrdf.repository.sail SailRepository]
-           [org.openrdf.sail.memory MemoryStore]))
+  (:import [org.eclipse.rdf4j.model.impl SimpleValueFactory]
+           [org.eclipse.rdf4j.model Resource IRI Value]
+           [org.eclipse.rdf4j.repository RepositoryConnection Repository]
+           [org.eclipse.rdf4j.sail Sail]
+           [org.eclipse.rdf4j.repository.sail SailRepository]
+           [org.eclipse.rdf4j.sail.memory MemoryStore]))
 
 
 ;;; Utils methods

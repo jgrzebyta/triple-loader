@@ -2,12 +2,12 @@
   (:gen-class)
   (:use [triple.repository]
         [clojure.tools.logging :as log])
-  (:import [org.openrdf.model ValueFactory]
-           [org.openrdf.model.impl ContextStatement]
-           [org.openrdf.rio RDFHandler RDFHandlerException]
-           [org.openrdf.rio.helpers AbstractRDFHandler]
-           [org.openrdf.repository RepositoryConnection RepositoryException Repository]
-           [org.openrdf.repository.util RDFInserter]))
+  (:import [org.eclipse.rdf4j.model ValueFactory]
+           [org.eclipse.rdf4j.model.impl ContextStatement]
+           [org.eclipse.rdf4j.rio RDFHandler RDFHandlerException]
+           [org.eclipse.rdf4j.rio.helpers AbstractRDFHandler]
+           [org.eclipse.rdf4j.repository RepositoryConnection RepositoryException Repository]
+           [org.eclipse.rdf4j.repository.util RDFInserter]))
 
 
 (def chunk-size 1000)
