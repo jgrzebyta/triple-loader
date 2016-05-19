@@ -2,9 +2,9 @@
   (:use [clojure.java.io :as jio]
         [clojure.test :as test]
         [clojure.tools.logging :as log])
-  (:import [org.openrdf.rio Rio RDFFormat RDFParserFactory]
-           [org.openrdf.rio.turtle TurtleParserFactory]
-           [org.openrdf.rio.helpers StatementCollector]))
+  (:import [org.eclipse.rdf4j.rio Rio RDFFormat RDFParserFactory]
+           [org.eclipse.rdf4j.rio.turtle TurtleParserFactory]
+           [org.eclipse.rdf4j.rio.helpers StatementCollector]))
 
 
 (defn read-rdf-file "Reads RDF file"

@@ -6,10 +6,10 @@
         [clojure.test]
         [triple.repository]
         [triple.reifiers])
-  (:import [org.openrdf.model Resource IRI URI Value]
-           [org.openrdf.repository RepositoryConnection]
-           [org.openrdf.query QueryLanguage]
-           [org.openrdf.rio Rio RDFFormat ParserConfig]))
+  (:import [org.eclipse.rdf4j.model Resource IRI URI Value]
+           [org.eclipse.rdf4j.repository RepositoryConnection]
+           [org.eclipse.rdf4j.query QueryLanguage]
+           [org.eclipse.rdf4j.rio Rio RDFFormat ParserConfig]))
 
 
 (def ^:dynamic *context-string* "urn:graph/beet")

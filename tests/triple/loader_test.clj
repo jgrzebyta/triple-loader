@@ -5,13 +5,13 @@
         [clojure.test]
         [clojure.tools.logging :as log]
         [clojure.java.io :as jio])
-  (:import [info.aduna.iteration CloseableIteration]
-           [org.openrdf.model Resource Statement]
-           [org.openrdf.rio Rio RDFFormat ParserConfig RDFParseException]
-           [org.openrdf.repository RepositoryResult RepositoryConnection]
-           [org.openrdf.repository.http HTTPRepository]
-           [org.openrdf.repository.sail SailRepository]
-           [org.openrdf.sail.memory MemoryStore]))
+  (:import [org.eclipse.rdf4j.common.iteration CloseableIteration]
+           [org.eclipse.rdf4j.model Resource Statement]
+           [org.eclipse.rdf4j.rio Rio RDFFormat ParserConfig RDFParseException]
+           [org.eclipse.rdf4j.repository RepositoryResult RepositoryConnection]
+           [org.eclipse.rdf4j.repository.http HTTPRepository]
+           [org.eclipse.rdf4j.repository.sail SailRepository]
+           [org.eclipse.rdf4j.sail.memory MemoryStore]))
 
 (defn count-statements "Counts statements in SPARQL result." [^CloseableIteration result]
   (try
@@ -32,7 +32,7 @@
             init-connection-f #'triple.loader/init-connection]                  ; access to prive function
         (with-open-repository (c (HTTPRepository. server-url repository-id))
           (init-connection-f c)
-          (is (instance? org.openrdf.repository.RepositoryConnection c))
+          (is (instance? org.eclipse.rdf4j.repository.RepositoryConnection c))
           (log/debug "Repository connection class: %s" (class c))
           (is (.isOpen c))))))
 
