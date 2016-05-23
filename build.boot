@@ -1,5 +1,3 @@
-(def maven-central ["central1" "http://repo1.maven.org/maven2/"])
-
 
 (set-env! :source-paths #{"src"}
           :resource-paths #{"resources"}
@@ -8,13 +6,13 @@
           :dependencies '[[org.clojure/clojure "1.7.0"]
                           [org.clojure/tools.cli "0.3.3"]
                           [org.clojure/tools.logging "0.3.1"]
+                          [clj-pid/clj-pid "0.1.2"]
                           [org.eclipse.rdf4j/rdf4j-repository-http "2.0M1" :exclusions [commons-io org.slf4j/slf4j-api]]
                           [org.eclipse.rdf4j/rdf4j-runtime "2.0M1" :exclusions [org.slf4j/slf4j-api]]
                           [org.eclipse.rdf4j/rdf4j-repository-sail "2.0M1" :scope "test" :exclusions [org.slf4j/slf4j-api]]
                           [org.slf4j/jcl-over-slf4j "1.7.12"]
                           [org.apache.logging.log4j/log4j-slf4j-impl "2.5"]
-                          [org.apache.logging.log4j/log4j-core "2.5"]]
-          :repositories #(conj % maven-central))
+                          [org.apache.logging.log4j/log4j-core "2.5"]])
 
 (require '[clojure.test :as test])
 
