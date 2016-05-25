@@ -39,3 +39,5 @@
               (format "no. triples in context '%s' is %d but should be greater than 0" *context-string* (count all-triples)))
           )
         ))))
+
+

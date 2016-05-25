@@ -20,7 +20,7 @@
           rdf-parser (Rio/createParser format)
           collector (StatementCollector.)]
       (.setRDFHandler rdf-parser collector)
-      (log/debug "Parser: %s" (type rdf-parser))
+      (log/debug "Parser: " (type rdf-parser))
       ;; run parsing process
       (.parse rdf-parser rdr "urn:data")
       collector)))

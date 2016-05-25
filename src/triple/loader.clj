@@ -1,5 +1,3 @@
-;; file name must follow namespace's name
-
 (ns triple.loader
   (:gen-class)
   (:use [clojure.tools.cli :refer [cli]]
@@ -20,29 +18,35 @@
         (ParserConfig.)
         (.set BasicParserSettings/PRESERVE_BNODE_IDS true)))
 
+(defn decode-format [^String format]
+  (case format
+    "n3" RDFFormat/N3
+    "nq" RDFFormat/NQUADS
+    "rdfxml" RDFFormat/RDFXML
+    "rdfa" RDFFormat/RDFA
+    "turtle" RDFFormat/TURTLE
+    RDFFormat/TURTLE))
 
-(defn- init-connection "Initialise HTTPRepository class to sesame remote repository."
-  [^RepositoryConnection connection]
-  (log/debug "Connection: " (.getRepositoryURL (.getRepository connection)))
-  (try
-    (.setParserConfig connection (make-parser-config))
-    (.setAutoCommit connection false)
-  (catch RepositoryException e (do
-                                 (log/error (format "Error message: %s" (.getMessage e)))
-                                 (throw e)))
-  (catch Throwable t (do
-                       (log/error "Error: " (.getMessage t))
-                       (System/exit 1)))))
+  (defn init-connection "Initialise Repository."
+    ([^RepositoryConnection connection] (init-connection connection false))
+    ([^RepositoryConnection connection ^Boolean auto-commit]
+     (let [repository (.getRepository connection)]
+       (log/debug "Repository: " (if (instance? HTTPRepository repository)
+                                   (.getRepositoryURL repository)
+                                   (.getAbsolutePath (.getDataDir repository)))))
+     (try
+       (.setParserConfig connection (make-parser-config))
+       (.setAutoCommit connection auto-commit)
+       (catch RepositoryException e (do
+                                      (log/error (format "Error message: %s" (.getMessage e)))
+                                      (throw e)))
+       (catch Throwable t (do
+                            (log/error "Error: " (.getMessage t))
+                            (System/exit 1))))))
 
 
 (defn- do-loading [opts]
-  (let [type (case (:t opts)
-                 "n3" RDFFormat/N3
-                 "nq" RDFFormat/NQUADS
-                 "rdfxml" RDFFormat/RDFXML
-                 "rdfa" RDFFormat/RDFA
-                 "turtle" RDFFormat/TURTLE
-                 RDFFormat/TURTLE)
+  (let [type (decode-format (:t opts))
         parser (Rio/createParser type)
         file-obj (jio/file (:f opts))
         repository (HTTPRepository. (:s opts) (:r opts))

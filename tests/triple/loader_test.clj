@@ -48,10 +48,9 @@
       )))
 
 
-(defn test-repository "Does more detailed tests on storage" [repository expected]
-  (is (instance? SailRepository repository))
+(defn test-repository "Does more detailed tests on storage" [^SailRepository repository expected]
   (log/debug "repository class: " (class repository))
-  (with-open [c (.getConnection repository)]
+  (with-open-repository [c repository]
     (let [result (.getStatements c nil nil nil false (into-array Resource '[]))
           statement-total (count-statements result)]
       (is (= expected statement-total))
@@ -63,6 +62,7 @@
         pars (Rio/createParser RDFFormat/RDFXML)
         file-obj (jio/file "tests/beet.rdf")]
     (testing "Loading data to repository"
+      (.initialize repo)
       (with-open [conn (.getConnection repo)
                   fr (jio/reader file-obj)]
         ;; parse file
