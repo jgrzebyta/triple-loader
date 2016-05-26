@@ -4,10 +4,12 @@
   (:use [clojure.tools.cli :refer [cli]]
         [clojure.tools.logging :as log]
         [clojure.java.io :as io]
+        [clojure.string :as st :exclude [reverse replace]]
         [triple.repository]
         [triple.reifiers]
         [triple.loader :exclude [-main]])
-  (:import [org.eclipse.rdf4j.query MalformedQueryException]
+  (:import [java.io FileReader]
+           [org.eclipse.rdf4j.query MalformedQueryException]
            [org.eclipse.rdf4j.rio Rio RDFFormat RDFWriter ParserConfig RDFParseException]
            [org.eclipse.rdf4j.rio.helpers BasicParserSettings StatementCollector]
            [org.eclipse.rdf4j.query.parser.sparql SPARQLParser SPARQLParserFactory]
@@ -18,6 +20,7 @@
            [org.eclipse.rdf4j.repository RepositoryResult RepositoryConnection]
            [org.eclipse.rdf4j.repository.sail.helpers RDFSailInserter]))
 
+(declare run-sparql)
 
 
 (defn -main [& args]
@@ -31,7 +34,9 @@
     (when (:h opts)
       (println banner)
       (System/exit 0))
-    ))
+    (run-sparql opts)))
+
+
 
 
 (defn sparql-type
@@ -78,3 +83,20 @@
                               (System/exit -1)))
         (finally (.commit cnx))))))
 
+
+(defn load-sparql [sparql-res] "Load SPARQL query from file."
+  ;;detect if argument is a file
+  (cond
+    (.exists (as-file sparql-res)) (with-open [r (io/reader (FileReader. (as-file sparql-res)))] ;; retrieve SPARQL from file
+                                     (st/join "\n" (doall (line-seq r)))) 
+    (not= :unknown (sparql-type sparql-res)) sparql-res ;; it is SPARQL string
+    :else (ex-info "unknown SPARQL resources" {:val sparql-res})))
+
+
+(defn run-sparql [opts] "Execute SPARQL request"
+  ;; load data
+  (let [repository (make-repository-with-lucene)]
+    (load-data repository (:f opts) (decode-format (:t opts)))
+    (with-open-repository [cx repository]
+      (process-sparql-query cx (load-sparql (:q opts))))
+    ))
