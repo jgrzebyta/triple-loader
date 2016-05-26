@@ -1,5 +1,4 @@
 (ns sparql
-  "Does SPARQL request on repository"
   (:gen-class)
   (:use [clojure.tools.cli :refer [cli]]
         [clojure.tools.logging :as log]
@@ -66,7 +65,7 @@
   [repository file file-type] 
   (let [file-obj (io/file file)
         file-reader (io/reader file-obj)
-        parser (Rio/createParser file-type)]
+        parser (Rio/createParser (decode-format file-type))]
     (with-open-repository (cnx repository)
       (init-connection cnx true)
       (log/debug "is repository autocomit: " (.isAutoCommit cnx))

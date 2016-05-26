@@ -18,7 +18,7 @@
 
 (task-options!
  pom {:project (get-env :project) :version (get-env :version)}
- aot { :namespace '#{triple.repository triple.loader} })
+ aot { :namespace '#{triple.repository triple.loader sparql} })
 
 (deftask run-test "Run unit tests"
   [t test-name NAME str "Test to execute. Run all tests if not given."]
@@ -44,7 +44,8 @@
   (comp
    (pom)
    (aot)
-   (jar)))
+   (jar)
+   (target)))
 
 (deftask build-standalone
   "Build standalone version" []
@@ -53,4 +54,5 @@
    (aot)
    (uber)
    (jar :file (format "%s-%s-standalone.jar" (name (get-env :project))
-                                             (get-env :version)))))
+                      (get-env :version)))
+   (target)))
