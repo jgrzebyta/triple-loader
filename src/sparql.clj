@@ -20,7 +20,7 @@
            [org.eclipse.rdf4j.repository RepositoryResult RepositoryConnection]
            [org.eclipse.rdf4j.repository.sail.helpers RDFSailInserter]))
 
-(declare run-sparql)
+(declare load-data process-sparql-query load-sparql)
 
 
 (defn -main [& args]
@@ -29,19 +29,18 @@
                                 ["--help" "-h" "Print this screen" :default false :flag true]
                                 ["--file FILE" "-f" "Data file path"]
                                 ["--file-type TYPE" "-t" "Data file type. One of: turtle, n3, nq, rdfxml, rdfa" :default "turtle"]
-                                ["--query" "-q" "SPARQL query. Either as path to file or as string."]
-                                ["--base-uri" "-b" "Base URI. By default it is created from data path."])]
+                                ["--query" "-q" "SPARQL query. Either as path to file or as string."])]
     (when (:h opts)
       (println banner)
       (System/exit 0))
-    (run-sparql opts)))
+      (let [repository (make-repository-with-lucene)
+            sparql (load-sparql (:q opts))]
+        (load-data repository (:f opts) (:t opts))
+        (with-open-repository [cx repository]
+          (process-sparql-query cx sparql)))))
 
-
-
-
-(defn sparql-type
+(defn sparql-type "Returns a type of given SPARQL query. There are three type of queries: :tuple, :graph and :boolean"
   [^String sparql]
-  "Returns a type of given SPARQL query. There are three type of queries: :tuple, :graph and :boolean"
   (let [parserFactory (SPARQLParserFactory.)
         parser (.getParser parserFactory)
         parsedQuery (.parseQuery parser sparql nil)]
@@ -52,7 +51,8 @@
       :else :unknown)))
 
 
-(defn process-sparql-query [^RepositoryConnection connection sparql-string]
+(defn process-sparql-query "Execute SPARQL query through connection."
+  [^RepositoryConnection connection sparql-string]
   (let [query (.prepareQuery connection sparql-string)
         writer (cond
                  (instance? TupleQuery query) (SPARQLResultsCSVWriter. System/out)
@@ -62,7 +62,8 @@
       (.evaluate query writer))))
 
 
-(defn load-data [repository file file-type] "Load formated file into repository. The data format is one described by decode-format."
+(defn load-data "Load formated file into repository. The data format is one described by decode-format."
+  [repository file file-type] 
   (let [file-obj (io/file file)
         file-reader (io/reader file-obj)
         parser (Rio/createParser file-type)]
@@ -91,12 +92,3 @@
                                      (st/join "\n" (doall (line-seq r)))) 
     (not= :unknown (sparql-type sparql-res)) sparql-res ;; it is SPARQL string
     :else (ex-info "unknown SPARQL resources" {:val sparql-res})))
-
-
-(defn run-sparql [opts] "Execute SPARQL request"
-  ;; load data
-  (let [repository (make-repository-with-lucene)]
-    (load-data repository (:f opts) (decode-format (:t opts)))
-    (with-open-repository [cx repository]
-      (process-sparql-query cx (load-sparql (:q opts))))
-    ))

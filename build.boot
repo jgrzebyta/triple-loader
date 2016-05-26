@@ -18,7 +18,7 @@
 
 (task-options!
  pom {:project (get-env :project) :version (get-env :version)}
- aot { :all true })
+ aot { :namespace '#{triple.repository triple.loader} })
 
 (deftask run-test "Run unit tests"
   [t test-name NAME str "Test to execute. Run all tests if not given."]
@@ -36,8 +36,7 @@
     (do
       (println (format "Run test: %s" (:test-name *opts*)))
       (test/test-var (resolve (symbol (:test-name *opts*))))
-      )
-    ))
+      )))
 
 
 (deftask build

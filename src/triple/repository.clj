@@ -58,6 +58,7 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
   (let [tmpDir (io/file (temp-dir))
         defStore (if store store (MemoryStore. tmpDir))
         luceneSail (LuceneSail.)]
+    (.deleteOnExit tmpDir)
     (if (nil? (.getDataDir defStore))
       (.setParameter luceneSail LuceneSail/LUCENE_RAMDIR_KEY "true")
       (.setParameter luceneSail LuceneSail/LUCENE_DIR_KEY (str/join (File/separator) (list tmpDir "lucenedir"))))
