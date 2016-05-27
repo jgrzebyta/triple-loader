@@ -4,6 +4,8 @@
         [clj-pid.core :as pid]
         [clojure.string :as str :exclude [reverse replace]])
   (:import [java.io File]
+           [java.nio.file Files Path]
+           [java.nio.file.attribute FileAttribute]
            [org.eclipse.rdf4j.model.impl SimpleValueFactory]
            [org.eclipse.rdf4j.model Resource IRI Value]
            [org.eclipse.rdf4j.repository RepositoryConnection Repository]
@@ -35,14 +37,13 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
     (apply str (repeatedly length #(rand-nth space)))))
 
 
-(defn temp-dir [^String & namespace]
+(defn- temp-dir ^Path [^String & namespace]
   "Create temporary directory."
-  (let [root (System/getProperty "java.io.tmpdir")
-        pid (pid/current)
+  (let [pid (pid/current)
         ns (if (str/blank? (first namespace)) "loader" (first namespace))
         rand (rand-string 9)
-        separator (File/separator)]
-    (str/join separator (list root (str/join nil (list "rdf4j-" ns "-" rand "." pid))))))
+        prefix (str/join nil (list "rdf4j-" ns "-" rand "." pid))]
+    (Files/createTempDirectory prefix (make-array FileAttribute 0))))
 
 
 ;;; End Uils methods
@@ -55,7 +56,7 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
 
 (defn make-repository-with-lucene "Similar to make-repository but adds support for Lucene index."
   [& [^Sail store]]
-  (let [tmpDir (io/file (temp-dir))
+  (let [tmpDir (.toFile (temp-dir))
         defStore (if store store (MemoryStore. tmpDir))
         luceneSail (LuceneSail.)]
     (.deleteOnExit tmpDir)

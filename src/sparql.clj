@@ -76,22 +76,23 @@
       (.setRDFHandler parser (RDFSailInserter. (.getSailConnection cnx) (value-factory repository))) ;; add RDF Handler suitable for sail Repository
       ;; run parsing
       (try
-        (.begin cnx)
+        (.begin cnx) ;; begin transaction
         (.parse parser file-reader (.toString (.toURI file-obj)))
         (catch RDFParseException e
           #(log/error "Error: % for URI: %" (.getMessage e)
                       (.toString (.toURI file-obj))))
         (catch Throwable t #(do
+                              ()
                               (log/error "The other error caused by " (.getMessage t))
                               (.printStackTrace t)
                               (System/exit -1)))
         (finally (.commit cnx))))))
 
 
-(defn load-sparql [sparql-res] "Load SPARQL query from file."
+(defn load-sparql [^String sparql-res] "Load SPARQL query from file."
   ;;detect if argument is a file
   (cond
-    (.exists (as-file sparql-res)) (with-open [r (io/reader (FileReader. (as-file sparql-res)))] ;; retrieve SPARQL from file
+    (.exists (io/file sparql-res)) (with-open [r (io/reader (FileReader. (io/file sparql-res)))] ;; retrieve SPARQL from file
                                      (st/join "\n" (doall (line-seq r)))) 
     (not= :unknown (sparql-type sparql-res)) sparql-res ;; it is SPARQL string
     :else (ex-info "unknown SPARQL resources" {:val sparql-res})))
