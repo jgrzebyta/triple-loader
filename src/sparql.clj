@@ -61,11 +61,15 @@
       (.evaluate query writer))))
 
 
-(defn load-data "Load formated file into repository. The data format is one described by decode-format."
-  [repository file file-type] 
+(defmulti load-data "Load formated file into repository. The data format is one described by decode-format."
+  (fn [repository file file-type] (type file-type)))
+
+(defmethod load-data String [repository file file-type] (load-data repository file (decode-format file-type)))
+
+(defmethod load-data RDFFormat [repository file file-type] 
   (let [file-obj (io/file file)
         file-reader (io/reader file-obj)
-        parser (Rio/createParser (decode-format file-type))]
+        parser (Rio/createParser file-type)]
     (with-open-repository (cnx repository)
       (init-connection cnx true)
       (log/debug "is repository autocomit: " (.isAutoCommit cnx))
