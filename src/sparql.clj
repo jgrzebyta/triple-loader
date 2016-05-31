@@ -36,7 +36,8 @@
             sparql (load-sparql (:q opts))]
         (load-data repository (:f opts) (:t opts))
         (with-open-repository [cx repository]
-          (process-sparql-query cx sparql)))))
+          (process-sparql-query cx sparql))
+        (delete-temp-repository))))
 
 (defn sparql-type "Returns a type of given SPARQL query. There are three type of queries: :tuple, :graph and :boolean"
   [^String sparql]

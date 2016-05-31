@@ -14,7 +14,8 @@
   (let [repo (make-repository-with-lucene)]
     (load-data repo "tests/beet.rdf" RDFFormat/RDFXML)
   (testing "Count number of triples in repository"
-    (test-repository repo 68))))
+    (test-repository repo 68))
+  (delete-temp-repository)))
 
 
 (deftest test-sparql-query
@@ -31,7 +32,8 @@
         (with-open-repository [cx repo]
           (println "\n")
           (process-sparql-query cx sparql-str))
-        ))))
+        ))
+    (delete-temp-repository)))
 
 (deftest test-load-sparql "Test load-sparql function"
   (testing "sparql as string"

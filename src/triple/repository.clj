@@ -6,6 +6,7 @@
   (:import [java.io File]
            [java.nio.file Files Path]
            [java.nio.file.attribute FileAttribute]
+           [org.apache.commons.io FileUtils]
            [org.eclipse.rdf4j.model.impl SimpleValueFactory]
            [org.eclipse.rdf4j.model Resource IRI Value]
            [org.eclipse.rdf4j.repository RepositoryConnection Repository]
@@ -54,12 +55,14 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
   [& [^Sail store]]
   (SailRepository. (if store store (MemoryStore.))))
 
-(defn make-repository-with-lucene "Similar to make-repository but adds support for Lucene index."
+(defn make-repository-with-lucene
+  "Similar to make-repository but adds support for Lucene index. 
+  NB: See delete-temp-repository."
   [& [^Sail store]]
   (let [tmpDir (.toFile (temp-dir))
         defStore (if store store (MemoryStore. tmpDir))
         luceneSail (LuceneSail.)]
-    (.deleteOnExit tmpDir)
+    (def temp-repository (atom { :path tmpDir :active true}))   ;; keep tmpDir in global variable 
     (if (nil? (.getDataDir defStore))
       (.setParameter luceneSail LuceneSail/LUCENE_RAMDIR_KEY "true")
       (.setParameter luceneSail LuceneSail/LUCENE_DIR_KEY (str/join (File/separator) (list tmpDir "lucenedir"))))
@@ -119,3 +122,14 @@ Code was adapted from kr-sesame: sesame-context-array."
                   (boolean use-reified)
                   context))
 
+
+;; TODO: in the future both functions: make-repository-with-lucene and delete-temp-repository
+;; should be wrapped within a macro.
+(defn delete-temp-repository
+"Delete temporary directory with content.
+
+That method should be called manually somewhere at the end of code.
+" []
+  (try
+    (FileUtils/deleteDirectory (@temp-repository :path)) ;; commons-io supports deleting direcory with contents
+    (finally (swap! temp-repository assoc :active false))))

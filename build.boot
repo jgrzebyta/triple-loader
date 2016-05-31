@@ -1,4 +1,3 @@
-
 (set-env! :source-paths #{"src"}
           :resource-paths #{"resources"}
           :project 'adalab/triple-loader
@@ -7,6 +6,7 @@
                           [org.clojure/tools.cli "0.3.5"]
                           [org.clojure/tools.logging "0.3.1"]
                           [clj-pid/clj-pid "0.1.2"]
+                          [commons-io/commons-io "2.5"]
                           [org.eclipse.rdf4j/rdf4j-repository-http "2.0M1" :exclusions [commons-io org.slf4j/slf4j-api]]
                           [org.eclipse.rdf4j/rdf4j-runtime "2.0M1" :exclusions [org.slf4j/slf4j-api]]
                           [org.eclipse.rdf4j/rdf4j-repository-sail "2.0M1" :scope "test" :exclusions [org.slf4j/slf4j-api]]

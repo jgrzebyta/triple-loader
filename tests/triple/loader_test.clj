@@ -5,7 +5,8 @@
         [clojure.test]
         [clojure.tools.logging :as log]
         [clojure.java.io :as jio])
-  (:import [org.eclipse.rdf4j.common.iteration CloseableIteration]
+  (:import [java.io File]
+           [org.eclipse.rdf4j.common.iteration CloseableIteration]
            [org.eclipse.rdf4j.model Resource Statement]
            [org.eclipse.rdf4j.rio Rio RDFFormat ParserConfig RDFParseException]
            [org.eclipse.rdf4j.repository RepositoryResult RepositoryConnection]
@@ -74,5 +75,15 @@
         (log/debug "Is Connection empty?: " (.isEmpty conn)))
       )
     (testing "Does more tests ... "
-      (test-repository repo 68)))
-  )
+      (test-repository repo 68))))
+
+(deftest test-delete-temp-repository
+  (testing "Delete tmp repository")
+  (let [repository (make-repository-with-lucene)
+        tmp-dir (@temp-repository :path)]
+    (is (instance? File tmp-dir))
+    (is (.exists tmp-dir))  ;; repository still exists
+    (delete-temp-repository)
+    (log/debug "state after: " @temp-repository)  ;; repository is deleted
+    ))
+
