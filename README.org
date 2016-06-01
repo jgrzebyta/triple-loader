@@ -1,20 +1,56 @@
 #+title: README file for sesame loader
 #+author: Jacek Grzebyta
-#+date: 2016-04-28
+#+date: <2016-06-01 Wed>
 #+startup: showall
 
 * 1. What is that?
 
 =Sesame-loader= provides command line tools for managing Eclipse RDF4J/Sesame repository.
 
-|---------+--------|
-| version | v0.1.1 |
-|---------+--------|
 
-* 2. List of tools
+#+name: get-version
+#+begin_src shell :exports results :results output raw drawer
+version=$(gawk '{match($0,/^ *:version \"(.*)\"/,mt);if (mt[0]!=""){print mt[1]} }' build.boot)
+echo ${version}
+#+end_src
 
-** sesame-loader
+#+RESULTS: get-version
+:RESULTS:
+0.1.1-SNAPSHOT
+:END:
+
+
+* 2. List of commands
+** triple.loader
+Loads data into triple store.
 This is implementation of method described in [article] (http://www.rivuli-development.com/further-reading/sesame-cookbook/loading-large-file-in-sesame-native/) published in Rivuli's *The Sesame Coocbook*.
 
+
+#+begin_src shell :exports source
+java -cp triple-loader-0.1.1-SNAPSHOT-standalone.jar triple.loader [options]
+#+end_src
+
+*** Options
+**** --server URL, -s :: Sesame SPARQL endpoint URL. Default: http://localhost:8080/rdf4j-server                  
+**** --repositiry NAME, -r :: Repository id. Default: test
+**** --file FILE, -f :: Data file path                                       
+**** --file-type TYPE, -t :: Data file type. One of: turtle, n3, nq, rdfxml, rdfa. Default: turtle
+     :PROPERTIES:
+     :CUSTOM_ID: file-type
+     :END:
+**** --context IRI, -c :: Context (graph name) of the dataset
+**** --help, -h :: Help
+** sparql
+Executes SPARQL /query/ on data provided by /file/.  
+
+#+begin_src sh :exports source
+java -cp triple-loader-0.1.1-SNAPSHOT-standalone.jar sparql [options]
+#+end_src
+
+*** Options
+**** --file FILE, -f :: Data file path 
+**** --file-type TYPE, -t :: Declares type of data. Possible formats are listed [[file-type][here]]
+**** --query STRINGm -q :: Path to file with query or the query itself
+**** --help, -h :: Help
 * 3. Contacts
 To contact with me please use *Issues* interface.
