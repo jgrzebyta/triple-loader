@@ -1,10 +1,34 @@
-language: clojure
-jdk: openjdk8
-script: make
+sudo: false
+language: java
+jdk:
+  - oraclejdk8
+cache:
+  directories:
+  - $HOME/.m2
+  - $HOME/.boot/cache/bin
+  - $HOME/.boot/cache/lib
+  - $HOME/bin
+
+env:
+  global:
+   - USE_NETWORK=true
+   - boot_dir=~/bin
+   - boot_path=${boot_dir}/boot
+   - PATH=${boot_dir}:$PATH
+   - BOOT_JVM_OPTIONS="-Xmx2g"
+   - BOOT_CLOJURE_VERSION=1.8.0
+   
+install:
+  - mkdir -p ${boot_dir}
+  - "curl -fLSso ${boot_path} https://github.com/boot-clj/boot-bin/releases/download/latest/boot.sh"
+  - chmod 755 ${boot_path}
+  
+script: boot pom aot uber jar -f triple-loader-standalone.jar target
 deploy:
   provider: releases
-  file: triple-loader-0.1.2-SNAPSHOT-standalone.jar
+  file: triple-loader-standalone.jar
   api_key: ${GH_OAUTH}
   skip_cleanup: true
   on:
     tags: true
+
