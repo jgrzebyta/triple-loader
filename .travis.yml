@@ -1,0 +1,9 @@
+language: clojure
+jdk: openjdk8
+script: make
+deploy:
+  provider: releases
+  file: triple-loader-*-jar
+  skip_cleanup: true
+  on:
+    tags: true
