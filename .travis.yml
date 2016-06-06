@@ -3,7 +3,8 @@ jdk: openjdk8
 script: make
 deploy:
   provider: releases
-  file: triple-loader-*-jar
+  file: triple-loader-0.1.2-SNAPSHOT-standalone.jar
+  api_key: ${GH_OAUTH}
   skip_cleanup: true
   on:
     tags: true
