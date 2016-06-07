@@ -7,7 +7,7 @@
 
 =Sesame-loader= provides command line tools for managing Eclipse RDF4J/Sesame repository.
 
-** Current version
+** Current package version
 
 #+name: get-version
 #+begin_src shell :exports results :results output raw drawer
@@ -17,8 +17,27 @@ echo ${version}
 
 #+RESULTS: get-version
 :RESULTS:
-0.1.1-SNAPSHOT
+0.1.3-SNAPSHOT
 :END:
+
+** All tags
+#+name: list-tags
+#+begin_src shell :exports results :results output replace table
+echo "tag | commit | date "
+git tag --format="%(refname:strip=2), %(objectname:short), %(committerdate)" --sort="-committerdate"
+#+end_src
+
+Table contains list of all tags with commit and date of commit. The top record is the latest.
+
+#+RESULTS: list-tags
+| tag     | commit  | date                           |
+| 0.1.3.1 | 20dc78f | Tue Jun 7 16:49:38 2016 +0100  |
+| 0.1.3   | 3bdb25f | Tue Jun 7 01:14:42 2016 +0100  |
+| 0.1.2   | c9ac85d | Mon Jun 6 17:33:38 2016 +0100  |
+| v0.1.1  | 617f05c | Thu May 19 15:07:43 2016 +0100 |
+| v0.0.1  | 2fe4ef3 | Thu Apr 28 09:41:36 2016 +0100 |
+| v0.0.3  | bc1f8fe |                                |
+
 
 
 * 2. List of commands
