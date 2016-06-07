@@ -1,7 +1,7 @@
 (set-env! :source-paths #{"src"}
           :resource-paths #{"resources"}
           :project 'adalab/triple-loader
-          :version "0.1.2-SNAPSHOT"
+          :version "0.1.3-SNAPSHOT"
           :dependencies '[[org.clojure/clojure "1.8.0"]
                           [org.clojure/tools.cli "0.3.5"]
                           [org.clojure/tools.logging "0.3.1"]
