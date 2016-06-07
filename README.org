@@ -20,17 +20,17 @@ echo ${version}
 0.1.3-SNAPSHOT
 :END:
 
-** All tags
+** All binnary releases
 #+name: list-tags
 #+begin_src shell :exports results :results output replace table
-echo "tag | commit | date "
+echo "Tag | Commit | Date "
 git tag --format="%(refname:strip=2), %(objectname:short), %(committerdate)" --sort="-committerdate"
 #+end_src
 
-Table contains list of all tags with commit and date of commit. The top record is the latest.
+Table contains list of all binnary releases with commit and date of commit. The top record is the latest.
 
 #+RESULTS: list-tags
-| tag     | commit  | date                           |
+| Tag     | Commit  | Date                           |
 | 0.1.3.1 | 20dc78f | Tue Jun 7 16:49:38 2016 +0100  |
 | 0.1.3   | 3bdb25f | Tue Jun 7 01:14:42 2016 +0100  |
 | 0.1.2   | c9ac85d | Mon Jun 6 17:33:38 2016 +0100  |
