@@ -1,34 +1,50 @@
-sudo: false
+sudo: required
 language: java
 jdk:
-  - oraclejdk8
+- oraclejdk8
 cache:
   directories:
-  - $HOME/.m2
-  - $HOME/.boot/cache/bin
-  - $HOME/.boot/cache/lib
-  - $HOME/bin
+  - "$HOME/.m2"
+  - "$HOME/.boot/cache/bin"
+  - "$HOME/.boot/cache/lib"
+  - "$HOME/bin"
+  - "$HOME/.rvm"
 
 env:
   global:
-   - USE_NETWORK=true
-   - boot_dir=~/bin
-   - boot_path=${boot_dir}/boot
-   - PATH=${boot_dir}:$PATH
-   - BOOT_JVM_OPTIONS="-Xmx2g"
-   - BOOT_CLOJURE_VERSION=1.8.0
-   
+  - USE_NETWORK=true
+  - boot_dir=~/bin
+  - boot_path=${boot_dir}/boot
+  - PATH=${boot_dir}:$PATH
+  - BOOT_JVM_OPTIONS="-Xmx2g"
+  - BOOT_CLOJURE_VERSION=1.8.0
+ 
 install:
   - mkdir -p ${boot_dir}
-  - "curl -fLSso ${boot_path} https://github.com/boot-clj/boot-bin/releases/download/latest/boot.sh"
+  - curl -fLSso ${boot_path} https://github.com/boot-clj/boot-bin/releases/download/latest/boot.sh
   - chmod 755 ${boot_path}
-  
-script: boot pom aot uber jar -f triple-loader-standalone.jar target
+
+script:
+  - boot run-test
+
+before_deploy:
+  - boot build-standalone
+  - ls -la target/
+  - rvm install 2.2.0
+  - rvm use 2.2.0
+  - gem update --system
+
 deploy:
   provider: releases
-  file: triple-loader-standalone.jar
-  api_key: ${GH_OAUTH}
   skip_cleanup: true
+  file_glob: true
+  api_key:
+    secure: bAAh4yYbwhKPNpEetnwkMq8Kk0KQspWdAENpZKV66wDhW4pljDBJXltGAK0vFw3pg77O9CsUiccYTyUTNlYktDAIeaXcfpeWzCpDZZgtZ5DGipAbmHJaNDKnt48zX4jAX5hFkeGVyb/mObDNAwU17ZUPV0QoM9x4TigvO+cb/oklVSpJM+q1LRL/E8oD042gKf97KSHt5+HGEgZs+bU3tp7wQIb6O/mowZtPZ+Cd5qD2xhTmsdw0rXJ5Lo8l5qWBwOjIFYy9V225ziZ0M91WSleMuXl+mH58pZtCd5QWBRTI4Xfi4Ad4lwfednJRQGN0CaQB8kaU6m/u/xDH5zr+fKRAuN5un4fAG4HjRriBNVmrey+247XiFQnVy/zWznkZizcVZIZUpj4yR5v9ceJNffYH909AeL/BGPvlp2I3tC4K00sjUrDVIknAcsxK7o+N0QvKX64WAvuv9LqGsRsVFxTTkccwDd8QtHeKQon9r1X+FKUQaZon6IJtg7zJJCYQqUt3SfFYJxAkyrFNs6pcWTeOyZgPZigIKuAlZ3aWnDOciiiTOS9iZeiTL5NxlaqDMnh9zSBIvEZ03AzWZbwPWC0eSXETr9MZOVI6Tm17cXg0mwRUZe9HJY3/zjYvgin8I0qAIjoMjDY/OdA30pc4APzW2MH0r3taUZ8vnuLzwR8=
+  file: "./target/triple-loader-*.jar"
+  overwrite: true
   on:
+    repo: jgrzebyta/sesame-loader
     tags: true
 
+after_deploy:
+- ls -la "$TRAVIS_BUILD_DIR/target/"
