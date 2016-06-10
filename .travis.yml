@@ -45,6 +45,3 @@ deploy:
   on:
     repo: jgrzebyta/sesame-loader
     tags: true
-
-after_deploy:
-- ls -la "$TRAVIS_BUILD_DIR/target/"
