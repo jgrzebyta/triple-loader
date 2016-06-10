@@ -1,7 +1,11 @@
+#+startup: indent showall
 #+title: README file for sesame loader
 #+author: Jacek Grzebyta
 #+date: <2016-06-01 Wed>
 #+startup: showall
+
+[[https://travis-ci.org/jgrzebyta/sesame-loader.svg?branch=master]]
+
 
 * 1. What is that?
 
