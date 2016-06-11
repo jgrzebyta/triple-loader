@@ -92,6 +92,7 @@
 
 (defn load-sparql [^String sparql-res] "Load SPARQL query from file."
   ;;detect if argument is a file
+  (log/debug "SPRQL query: \"" sparql-res  "\"")
   (cond
     (.exists (io/file sparql-res)) (with-open [r (io/reader (FileReader. (io/file sparql-res)))] ;; retrieve SPARQL from file
                                      (st/join "\n" (doall (line-seq r)))) 
