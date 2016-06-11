@@ -15,5 +15,6 @@ RUN apt-get update \
     && apt-get -y install curl openjdk-8-jre
 
 # install sesame-loader
-RUN curl --create-dirs -Lfo "$LOADER-DIR"/sesame-loader.jar "$LOADER_URL"
+RUN curl --create-dirs -Lfo "${LOADER_DIR}"/sesame-loader.jar "${LOADER_URL}"
 
+CMD ["/bin/bash"]
