@@ -19,22 +19,43 @@
            [org.eclipse.rdf4j.repository RepositoryResult RepositoryConnection]
            [org.eclipse.rdf4j.repository.sail.helpers RDFSailInserter]))
 
-(declare load-data process-sparql-query load-sparql)
+(declare load-data load-multidata process-sparql-query load-sparql)
+
+
+(defn- multioption->seq "Function handles multioptions for command line arguments"
+  [previous key val]
+  (assoc previous key
+         (if-let [oldval (get previous key)]
+           (merge oldval val)
+           (hash-set val))))
+
+(defn- map-seqs "Join data files with related type"
+  [data-files types]
+  ;; check if both sets are not empty
+  (while ((empty? data-files) or (?empty types)) (throw ex-info "Empty arguments") { :causes #{:empty-collection-not-expected}})
+  ;; check if lenght of both sets it the same
+  (while (not= (count data-files)
+               (count types)) (throw
+                               (ex-info "Data files and types are not matched" { :causes #{:data-files-and-types-not-matched}
+                                                                                :length {:data (count data-files) :types (count types)}})))
+  ;; create a colletion of map with keys: :data-file and :type.
+  (map (fn [x y] {:data-file x :type y} data-files types)))
 
 
 (defn -main [& args]
   "Does SPARQL request"
   (let [[opts args banner] (cli args
-                                ["--help" "-h" "Print this screen" :default false :flag true]
-                                ["--file FILE" "-f" "Data file path"]
-                                ["--file-type TYPE" "-t" "Data file type. One of: turtle, n3, nq, rdfxml, rdfa" :default "turtle"]
-                                ["--query" "-q" "SPARQL query. Either as path to file or as string."])]
-    (when (:h opts)
+                                ["-h" "--help" "Print this screen" :default false :flag true]
+                                ["-f" "--file" "Data file path. Multiple values accepted." :assoc-fn #'multioption->seq ]
+                                ["-t" "--file-type" "Data file type. One of: turtle, n3, nq, rdfxml, rdfa" :default "turtle"
+                                 :assoc-fn #'multioption->seq ]
+                                ["-q" "--query" "SPARQL query. Either as path to file or as string."])]
+    (when (:help opts)
       (println banner)
       (System/exit 0))
       (let [repository (make-repository-with-lucene)
-            sparql (load-sparql (:q opts))]
-        (load-data repository (:f opts) (:t opts))
+            sparql (load-sparql (:query opts))]
+        (load-data repository (:file opts) (:file-type opts))
         (with-open-repository [cx repository]
           (process-sparql-query cx sparql))
         (delete-temp-repository))))
@@ -60,6 +81,10 @@
     (if (instance? BooleanQuery query)
       (print (.evaluate query))
       (.evaluate query writer))))
+
+(defn load-multidata [repository data-col]
+  (loop [data-col data-col])
+  )
 
 
 (defmulti load-data "Load formated file into repository. The data format is one described by decode-format."
