@@ -2,12 +2,14 @@
   (:gen-class)
   (:use [clojure.tools.cli :refer [cli]]
         [clojure.tools.logging :as log]
+        [clojure.pprint :as pp]
         [clojure.java.io :as io]
         [clojure.string :as st :exclude [reverse replace]]
         [triple.repository]
         [triple.reifiers]
         [triple.loader :exclude [-main]])
-  (:import [java.io FileReader]
+  (:import [java.io FileReader StringWriter]
+           [java.util.concurrent Executors]
            [org.eclipse.rdf4j.query MalformedQueryException]
            [org.eclipse.rdf4j.rio Rio RDFFormat RDFWriter ParserConfig RDFParseException]
            [org.eclipse.rdf4j.rio.helpers BasicParserSettings StatementCollector]
@@ -32,7 +34,7 @@
 (defn- map-seqs "Join data files with related type"
   [data-files types]
   ;; check if both sets are not empty
-  (while ((empty? data-files) or (?empty types)) (throw ex-info "Empty arguments") { :causes #{:empty-collection-not-expected}})
+  (while (or (empty? data-files) (empty? types)) (ex-info "Empty arguments") { :causes #{:empty-collection-not-expected}})
   ;; check if lenght of both sets it the same
   (while (not= (count data-files)
                (count types)) (throw
@@ -47,18 +49,20 @@
   (let [[opts args banner] (cli args
                                 ["-h" "--help" "Print this screen" :default false :flag true]
                                 ["-f" "--file" "Data file path. Multiple values accepted." :assoc-fn #'multioption->seq ]
-                                ["-t" "--file-type" "Data file type. One of: turtle, n3, nq, rdfxml, rdfa" :default "turtle"
+                                ["-t" "--file-type" "Data file type. One of: turtle, n3, nq, rdfxml, rdfa"
+                                 :default "turtle"
                                  :assoc-fn #'multioption->seq ]
                                 ["-q" "--query" "SPARQL query. Either as path to file or as string."])]
     (when (:help opts)
       (println banner)
       (System/exit 0))
-      (let [repository (make-repository-with-lucene)
-            sparql (load-sparql (:query opts))]
-        (load-data repository (:file opts) (:file-type opts))
-        (with-open-repository [cx repository]
-          (process-sparql-query cx sparql))
-        (delete-temp-repository))))
+    (let [repository (make-repository-with-lucene)
+          sparql (load-sparql (:query opts))
+          dataset (map-seqs (:file opts) (:file-type opts))]
+      (load-multidata repository dataset 5)
+      (with-open-repository [cx repository]
+        (process-sparql-query cx sparql))
+      (delete-temp-repository))))
 
 (defn sparql-type "Returns a type of given SPARQL query. There are three type of queries: :tuple, :graph and :boolean"
   [^String sparql]
@@ -82,9 +86,32 @@
       (print (.evaluate query))
       (.evaluate query writer))))
 
-(defn load-multidata [repository data-col]
-  (loop [data-col data-col])
-  )
+
+(defn load-multidata "Load multiple data into repository using NTHREADS." [repository data-col nthreads]
+  (assert (some? repository) "Repository is null")
+  (let [pool (Executors/newFixedThreadPool nthreads)
+        tasks (map (fn [data-it]
+                     (fn []  ;; there is inner function which will be used as a thread body !!!!!!
+                       ;; let for debugging purposes
+                       (let [th-id (.getId (Thread/currentThread))
+                             th-name (.getName (Thread/currentThread))]
+                         (log/trace "Dataset: " (let [w (StringWriter.)]
+                                                  (pp/pprint data-it w)
+                                                  (.toString w)))
+                         (log/debug (format "Run thread \"%s\" [id: %d]" th-name th-id)))
+                       (load-data repository (get data-it :data-file) (get data-it :type))))
+                   data-col)]
+    ;; start data loading
+    (try
+      (assert (some? tasks) "Tasks no exists")
+      (assert (some? pool) "Poll no exists")
+      (doseq [time (.invokeAll pool tasks)]
+        ;; wait until all work competed
+        (.get time))
+      (catch Exception e (do
+                           (log/error "There is error: " (type e))
+                           (.printStackTrace e) ))
+    (finally (.shutdown pool)))))
 
 
 (defmulti load-data "Load formated file into repository. The data format is one described by decode-format."
@@ -96,19 +123,25 @@
   (let [file-obj (io/file file)
         file-reader (io/reader file-obj)
         parser (Rio/createParser file-type)]
+    (log/trace (format "File data: %s [exists: %s, readable: %s]"
+                       (.getPath file-obj)
+                       (.exists file-obj)
+                       (.canRead file-obj)))
     (with-open-repository (cnx repository)
       (init-connection cnx true)
       (log/debug "is repository autocomit: " (.isAutoCommit cnx))
       (.setRDFHandler parser (RDFSailInserter. (.getSailConnection cnx) (value-factory repository))) ;; add RDF Handler suitable for sail Repository
+      (log/debug "Parser installed ...")
       ;; run parsing
       (try
         (.begin cnx) ;; begin transaction
         (.parse parser file-reader (.toString (.toURI file-obj)))
         (catch RDFParseException e
           #(log/error "Error: % for URI: %" (.getMessage e)
-                      (.toString (.toURI file-obj))))
+                      (.toString (.toURI file-obj)))
+          (.rollback cnx))
         (catch Throwable t #(do
-                              ()
+                              (.rollback cnx)
                               (log/error "The other error caused by " (.getMessage t))
                               (.printStackTrace t)
                               (System/exit -1)))

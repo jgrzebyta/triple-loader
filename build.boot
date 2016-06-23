@@ -28,6 +28,7 @@
   (use '[triple.loader-test]
        '[triple.mock]
        '[triple.context-test]
+       '[triple.multiload]
        '[sparql-test])
   (if (nil? (:test-name *opts*))
     (do

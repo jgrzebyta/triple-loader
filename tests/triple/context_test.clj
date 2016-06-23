@@ -1,7 +1,6 @@
 (ns triple.context-test
   (:gen-class)
-  (:use [triple.loader-test :only [count-statements]]
-        [clojure.tools.logging :as log]
+  (:use [clojure.tools.logging :as log]
         [clojure.java.io :as jio]
         [clojure.test]
         [triple.repository]

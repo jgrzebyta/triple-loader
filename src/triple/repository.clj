@@ -7,6 +7,7 @@
            [java.nio.file Files Path]
            [java.nio.file.attribute FileAttribute]
            [org.apache.commons.io FileUtils]
+           [org.eclipse.rdf4j.common.iteration CloseableIteration]
            [org.eclipse.rdf4j.model.impl SimpleValueFactory]
            [org.eclipse.rdf4j.model Resource IRI Value]
            [org.eclipse.rdf4j.repository RepositoryConnection Repository]
@@ -111,16 +112,30 @@ Code was adapted from kr-sesame: sesame-context-array."
                           (aset out i (.createIRI vf val)))
                         (range)
                         (cons a rest))
-                   out))
-  )
+                   out)))
 
-(defn get-statements [kb s p o use-reified context]
-  (.getStatements ^RepositoryConnection kb
-                  ^Resource s
-                  ^IRI p
-                  ^Value o
-                  (boolean use-reified)
-                  context))
+
+(defn count-items "Counts statements in SPARQL result." [^CloseableIteration result]
+  (try
+    (loop [count 0]
+      (if (.hasNext result)
+        (do
+          (.next result)  ;; ignore result
+          (recur (inc count)))
+        count))
+    (catch Exception e (log/error "Some error: " (.getMessage e)))
+    (finally (.close result))))
+
+(defmulti get-statements "Return all statements either from repository or repository connection meeting given pattern. " (fn [r s p o use-reified context] (type r)))
+
+(defmethod get-statements Repository [r s p o use-reified context] (with-open-repository [i r]
+                                                                     (doall (lazy-seq (get-statements i s p o use-reified context)))))
+(defmethod get-statements RepositoryConnection [kb s p o use-reified context] (.getStatements kb
+                                                                                              ^Resource s
+                                                                                              ^IRI p
+                                                                                              ^Value o
+                                                                                              (boolean use-reified)
+                                                                                              context))
 
 
 ;; TODO: in the future both functions: make-repository-with-lucene and delete-temp-repository
@@ -131,5 +146,5 @@ Code was adapted from kr-sesame: sesame-context-array."
 That method should be called manually somewhere at the end of code.
 " []
   (try
-    (FileUtils/deleteDirectory (@temp-repository :path)) ;; commons-io supports deleting direcory with contents
+    (FileUtils/deleteDirectory (@temp-repository :path)) ;; commons-io supports deleting directory with contents
     (finally (swap! temp-repository assoc :active false))))

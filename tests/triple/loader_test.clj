@@ -6,24 +6,12 @@
         [clojure.tools.logging :as log]
         [clojure.java.io :as jio])
   (:import [java.io File]
-           [org.eclipse.rdf4j.common.iteration CloseableIteration]
            [org.eclipse.rdf4j.model Resource Statement]
            [org.eclipse.rdf4j.rio Rio RDFFormat ParserConfig RDFParseException]
            [org.eclipse.rdf4j.repository RepositoryResult RepositoryConnection]
            [org.eclipse.rdf4j.repository.http HTTPRepository]
            [org.eclipse.rdf4j.repository.sail SailRepository]
            [org.eclipse.rdf4j.sail.memory MemoryStore]))
-
-(defn count-statements "Counts statements in SPARQL result." [^CloseableIteration result]
-  (try
-    (loop [count 0]
-      (if (.hasNext result)
-        (do
-          (.next result)  ;; ignore result
-          (recur (inc count)))
-        count))
-    (catch Exception e (log/error "Some error: " (.getMessage e)))
-    (finally (.close result))))
 
 
 #_(deftest connect-triple 							; temporary switching off integration test
@@ -53,10 +41,11 @@
   (log/debug "repository class: " (class repository))
   (with-open-repository [c repository]
     (let [result (.getStatements c nil nil nil false (into-array Resource '[]))
-          statement-total (count-statements result)]
+          statement-total (count-items result)]
       (is (= expected statement-total))
       (log/debug (format "Found %d statements" statement-total))
       )))
+
 
 (deftest load-mock-repo
   (let [repo (make-mem-repository)

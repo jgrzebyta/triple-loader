@@ -26,7 +26,7 @@
       collector)))
 
 (deftest test-reading "Provides main reading job" []
-  (let [collector (read-rdf-file "tests/22-rdf-syntax-ns.ttl" "turtle")]
+  (let [collector (read-rdf-file "tests/resources/22-rdf-syntax-ns.ttl" "turtle")]
     (testing "Test RDF file reading"
 ;;      (is (instance? collector))
       (is (< 0 (count (.getNamespaces collector))))
