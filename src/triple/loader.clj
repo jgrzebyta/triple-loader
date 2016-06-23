@@ -28,21 +28,20 @@
     RDFFormat/TURTLE))
 
   (defn init-connection "Initialise Repository."
-    ([^RepositoryConnection connection] (init-connection connection false))
-    ([^RepositoryConnection connection ^Boolean auto-commit]
-     (let [repository (.getRepository connection)]
-       (log/debug "Repository: " (if (instance? HTTPRepository repository)
-                                   (.getRepositoryURL repository)
-                                   (.getAbsolutePath (.getDataDir repository)))))
-     (try
-       (.setParserConfig connection (make-parser-config))
-       (.setAutoCommit connection auto-commit)
-       (catch RepositoryException e (do
-                                      (log/error (format "Error message: %s" (.getMessage e)))
-                                      (throw e)))
-       (catch Throwable t (do
-                            (log/error "Error: " (.getMessage t))
-                            (System/exit 1))))))
+    [^RepositoryConnection connection]
+    (let [repository (.getRepository connection)]
+      (log/debug "Repository: " (if (instance? HTTPRepository repository)
+                                  (.getRepositoryURL repository)
+                                  (.getAbsolutePath (.getDataDir repository)))))
+    (try
+      (.setParserConfig connection (make-parser-config))
+      ;; (.setAutoCommit connection auto-commit) ;; deprecated
+      (catch RepositoryException e (do
+                                     (log/error (format "Error message: %s" (.getMessage e)))
+                                     (throw e)))
+      (catch Throwable t (do
+                           (log/error "Error: " (.getMessage t))
+                           (System/exit -1)))))
 
 
 (defn- do-loading [opts]
@@ -55,7 +54,7 @@
                                   nil x)) (:c opts))]
     (log/debug (format "Context string: '%s' is nil '%s'"
                        context-string (nil? context-string)))
-    (with-open-repository (cnx repository)
+    (with-open-repository [cnx repository]
       (init-connection cnx)
       (.setRDFHandler parser (ref/chunk-commiter cnx context-string))
       (with-open [reader-file (jio/reader file-obj)]
