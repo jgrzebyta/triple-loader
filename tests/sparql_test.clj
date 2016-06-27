@@ -1,11 +1,12 @@
 (ns sparql-test
   (:gen-class)
-  (:use [sparql]
+  (:use [sparql :exclude [-main]]
         [clojure.tools.logging :as log]
         [clojure.java.io :as jio]
         [clojure.string :as st :exclude [reverse replace]]
         [clojure.test]
         [triple.repository]
+        [triple.loader :exclude [-main]]
         [triple.loader-test])
   (:import [org.eclipse.rdf4j.rio RDFFormat]))
 

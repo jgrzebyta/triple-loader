@@ -24,9 +24,9 @@
           (.parse pars fr (.toString (.toURI file-obj)))
           (.commit con))
         (log/debug "All data should be loaded... validation")
-        (let [all-triples-total (iter-seq (get-statements con nil nil nil false (context-array)))
-              all-triples-no-cont (iter-seq (get-statements con nil nil nil false (context-array nil)))
-              all-triples (iter-seq (get-statements con nil nil nil false (context-array con *context-string*)))]
+        (let [all-triples-total (get-statements con nil nil nil false (context-array))
+              all-triples-no-cont (get-statements con nil nil nil false (context-array nil))
+              all-triples (get-statements con nil nil nil false (context-array con *context-string*))]
           (log/debug (format "no. triples is %d." (count all-triples-total))) 						; display number of triples
           (log/debug (format "no. triples witout context is %d" (count all-triples-no-cont)))
           (log/debug (format "no. triples in context '%s' is %d" *context-string* (count all-triples)))

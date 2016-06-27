@@ -10,6 +10,7 @@
            [org.eclipse.rdf4j.common.iteration CloseableIteration]
            [org.eclipse.rdf4j.model.impl SimpleValueFactory]
            [org.eclipse.rdf4j.model Resource IRI Value]
+           ;[org.eclipse.rdf4j.rio Rio RDFFormat ParserConfig RDFParseException]
            [org.eclipse.rdf4j.repository RepositoryConnection Repository]
            [org.eclipse.rdf4j.sail Sail]
            [org.eclipse.rdf4j.repository.sail SailRepository]
@@ -49,7 +50,6 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
 
 
 ;;; End Uils methods
-
 
 
 (defn make-repository "Create repository for given store. By default it is MemeoryStore"
@@ -114,7 +114,6 @@ Code was adapted from kr-sesame: sesame-context-array."
                         (cons a rest))
                    out)))
 
-
 (defn count-items "Counts statements in SPARQL result." [^CloseableIteration result]
   (try
     (loop [count 0]
@@ -126,16 +125,21 @@ Code was adapted from kr-sesame: sesame-context-array."
     (catch Exception e (log/error "Some error: " (.getMessage e)))
     (finally (.close result))))
 
-(defmulti get-statements "Return all statements either from repository or repository connection meeting given pattern. " (fn [r s p o use-reified context] (type r)))
+(defmulti get-statements "Return a sequence of all statements either from repository or repository connection meeting given pattern. " (fn [r s p o use-reified context] (type r)))
 
 (defmethod get-statements Repository [r s p o use-reified context] (with-open-repository [i r]
-                                                                     (doall (lazy-seq (get-statements i s p o use-reified context)))))
-(defmethod get-statements RepositoryConnection [kb s p o use-reified context] (.getStatements kb
-                                                                                              ^Resource s
-                                                                                              ^IRI p
-                                                                                              ^Value o
-                                                                                              (boolean use-reified)
-                                                                                              context))
+                                                                     (get-statements i s p o use-reified context)))
+
+(defmethod get-statements RepositoryConnection [kb s p o use-reified context] (doall
+                                                                               (lazy-seq (iter-seq (.getStatements kb
+                                                                                                                   ^Resource s
+                                                                                                                   ^IRI p
+                                                                                                                   ^Value o
+                                                                                                                   (boolean use-reified)
+                                                                                                                   context)))))
+
+(defn get-all-statements [^Repository r]
+  (get-statements r nil nil nil false (context-array)))
 
 
 ;; TODO: in the future both functions: make-repository-with-lucene and delete-temp-repository

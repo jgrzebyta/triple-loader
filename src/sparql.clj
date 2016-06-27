@@ -18,10 +18,9 @@
            [org.eclipse.rdf4j.query.parser ParsedQuery ParsedBooleanQuery ParsedGraphQuery ParsedTupleQuery]
            [org.eclipse.rdf4j.query.resultio.text.csv SPARQLResultsCSVWriter]
            [org.eclipse.rdf4j.query QueryResults TupleQueryResult GraphQueryResult TupleQuery GraphQuery BooleanQuery]
-           [org.eclipse.rdf4j.repository RepositoryResult RepositoryConnection]
-           [org.eclipse.rdf4j.repository.sail.helpers RDFSailInserter]))
+           [org.eclipse.rdf4j.repository RepositoryResult RepositoryConnection]))
 
-(declare load-data load-multidata process-sparql-query load-sparql)
+(declare load-multidata process-sparql-query load-sparql)
 
 
 (defn- multioption->seq "Function handles multioptions for command line arguments"
@@ -87,65 +86,16 @@
       (.evaluate query writer))))
 
 
-(defn load-multidata "Load multiple data into repository using NTHREADS." [repository data-col nthreads]
+(defn load-multidata "Load multiple data into repository" [repository data-col]
   (assert (some? repository) "Repository is null")
-  (let [pool (Executors/newFixedThreadPool nthreads)
-        tasks (map (fn [data-it]
-                     (fn []  ;; there is inner function which will be used as a thread body !!!!!!
-                       ;; let for debugging purposes
-                       (let [th-id (.getId (Thread/currentThread))
-                             th-name (.getName (Thread/currentThread))]
-                         (log/trace "Dataset: " (let [w (StringWriter.)]
-                                                  (pp/pprint data-it w)
-                                                  (.toString w)))
-                         (log/debug (format "Run thread \"%s\" [id: %d]" th-name th-id)))
-                       (load-data repository (get data-it :data-file) (get data-it :type))))
-                   data-col)]
-    ;; start data loading
-    (try
-      (assert (some? tasks) "Tasks no exists")
-      (assert (some? pool) "Poll no exists")
-      (doseq [time (.invokeAll pool tasks)]
-        ;; wait until all work competed
-        (.get time))
-      (catch Exception e (do
-                           (log/error "There is error: " (type e))
-                           (.printStackTrace e) ))
-    (finally (.shutdown pool)))))
-
-
-(defmulti load-data "Load formated file into repository. The data format is one described by decode-format."
-  (fn [repository file file-type] (type file-type)))
-
-(defmethod load-data String [repository file file-type] (load-data repository file (decode-format file-type)))
-
-(defmethod load-data RDFFormat [repository file file-type] 
-  (let [file-obj (io/file file)
-        file-reader (io/reader file-obj)
-        parser (Rio/createParser file-type)]
-    (log/trace (format "File data: %s [exists: %s, readable: %s]"
-                       (.getPath file-obj)
-                       (.exists file-obj)
-                       (.canRead file-obj)))
-    (with-open-repository (cnx repository)
-      (init-connection cnx true)
-      (log/debug "is repository autocomit: " (.isAutoCommit cnx))
-      (.setRDFHandler parser (RDFSailInserter. (.getSailConnection cnx) (value-factory repository))) ;; add RDF Handler suitable for sail Repository
-      (log/debug "Parser installed ...")
-      ;; run parsing
-      (try
-        (.begin cnx) ;; begin transaction
-        (.parse parser file-reader (.toString (.toURI file-obj)))
-        (catch RDFParseException e
-          #(log/error "Error: % for URI: %" (.getMessage e)
-                      (.toString (.toURI file-obj)))
-          (.rollback cnx))
-        (catch Throwable t #(do
-                              (.rollback cnx)
-                              (log/error "The other error caused by " (.getMessage t))
-                              (.printStackTrace t)
-                              (System/exit -1)))
-        (finally (.commit cnx))))))
+  (assert (not (empty? data-col)) "Data collection is empty")
+  (loop [itms data-col]
+    (let [itm (first itms)]
+      (when (map? itm)
+        (do
+          (log/debug "Load record: " (pp/pprint itm))
+          (load-data repository (get itm :data-file) (get itm :type))
+          (recur (rest itms)))))))
 
 
 (defn load-sparql [^String sparql-res] "Load SPARQL query from file."

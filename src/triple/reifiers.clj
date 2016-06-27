@@ -27,7 +27,7 @@
 (defn chunk-commiter "Implements RDFHandler. It accepts 2 arguments "
   ([connection] (chunk-commiter connection nil))
   ([connection context-string]
-   (let [statement-converter (if (not (nil? context-string))
+   (let [statement-converter (if (some? context-string)
                                (partial context-statement connection context-string)
                                (fn [x] (do x)))
          inserter (RDFInserter. connection)
