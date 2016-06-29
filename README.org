@@ -21,7 +21,7 @@ echo "${version}"
 
 #+RESULTS: get-version
 :RESULTS:
-Current version: 0.1.5
+Current version: 0.1.6
 :END:
 
 ** All binnary releases
@@ -35,6 +35,7 @@ Table contains list of all binnary releases with commit and date of commit. The 
 
 #+RESULTS: list-tags
 |     Tag | Commit  | Date                           |
+|   0.1.6 | a516a21 | Wed Jun 29 23:53:06 2016 +0100 |
 |   0.1.5 | bf65658 | Wed Jun 29 15:00:35 2016 +0100 |
 |   0.1.4 | bfd3489 | Wed Jun 29 10:51:07 2016 +0100 |
 | 0.1.3.1 | 20dc78f | Tue Jun 7 16:49:38 2016 +0100  |
