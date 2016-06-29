@@ -16,7 +16,7 @@
                           [org.apache.logging.log4j/log4j-slf4j-impl "2.5"]
                           [org.apache.logging.log4j/log4j-core "2.5"]
                           [boot/core "2.6.0" :scope "test"]
-                          [degree9/boot-semver "1.3.0-SNAPSHOT" :scope "test"]])
+                          [degree9/boot-semver "1.2.4" :scope "test"]])
 
 (require '[boot-semver.core :refer :all]
          '[clojure.test :as test]
@@ -58,7 +58,7 @@
 
 
 (defn get-build [& _]
-  (str/join "." [(semver-date-dot-time) (semver-short-git)]))
+  (str (semver-date-dot-time)))
 
 (deftask build
   "Build without dependencies" []
