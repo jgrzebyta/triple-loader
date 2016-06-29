@@ -1,9 +1,9 @@
 
 FROM debian:jessie-backports
 
-ENV LOADER_VERSION 0.1.3-SNAPSHOT
+ENV LOADER_VERSION 0.1.4
 ENV LOADER_NAME sesame-loader
-ENV LOADER_URL https://github.com/jgrzebyta/sesame-loader/releases/download/0.1.3.1/triple-loader-"$LOADER_VERSION"-standalone.jar
+ENV LOADER_URL https://github.com/jgrzebyta/sesame-loader/releases/download/${LOADER_VERSION}/triple-loader-standalone.jar
 ENV LOADER_DIR /opt/"$LOADER_NAME"
 
 ENV PATH "$LOADER_DIR":$PATH
