@@ -7,9 +7,9 @@
         [clojure.string :as st :exclude [reverse replace]]
         [triple.repository]
         [triple.reifiers]
-        [triple.loader :exclude [-main]])
+        [triple.loader :exclude [-main]]
+        [triple.version :exclude [-main] :as v])
   (:import [java.io FileReader StringWriter]
-           [java.util.concurrent Executors]
            [org.eclipse.rdf4j.query MalformedQueryException]
            [org.eclipse.rdf4j.rio Rio RDFFormat RDFWriter ParserConfig RDFParseException]
            [org.eclipse.rdf4j.rio.helpers BasicParserSettings StatementCollector]
@@ -46,22 +46,25 @@
 (defn -main [& args]
   "Does SPARQL request"
   (let [[opts args banner] (cli args
-                                ["-h" "--help" "Print this screen" :default false :flag true]
-                                ["-f" "--file" "Data file path. Multiple values accepted." :assoc-fn #'multioption->seq ]
-                                ["-t" "--file-type" "Data file type. One of: turtle, n3, nq, rdfxml, rdfa"
+                                ["--help" "-h" "Print this screen" :default false :flag true]
+                                ["--file FILE" "-f" "Data file path" :assoc-fn #'multioption->seq]
+                                ["--file-type TYPE" "-t" "Data file type. One of: turtle, n3, nq, rdfxml, rdfa"
                                  :default "turtle"
                                  :assoc-fn #'multioption->seq ]
-                                ["-q" "--query" "SPARQL query. Either as path to file or as string."])]
-    (when (:help opts)
-      (println banner)
-      (System/exit 0))
-    (let [repository (make-repository-with-lucene)
-          sparql (load-sparql (:query opts))
-          dataset (map-seqs (:file opts) (:file-type opts))]
-      (load-multidata repository dataset)
-      (with-open-repository [cx repository]
-        (process-sparql-query cx sparql))
-      (delete-temp-repository))))
+                                ["--query" "-q" "SPARQL query. Either as path to file or as string."]
+                                ["--version" "-V" "Display program version" :defult false :flag true])]
+    (cond
+      (:h opts) (do (println banner)
+                       (System/exit 0))
+      (:V opts) (do (println "Version: " (v/get-version))
+                          (System/exit 0))
+      :else (let [repository (make-repository-with-lucene)
+                  sparql (load-sparql (:q opts))
+                  dataset (map-seqs (:f opts) (:t opts))]
+              (load-multidata repository dataset)
+              (with-open-repository [cx repository]
+                (process-sparql-query cx sparql))
+              (delete-temp-repository)))))
 
 (defn sparql-type "Returns a type of given SPARQL query. There are three type of queries: :tuple, :graph and :boolean"
   [^String sparql]

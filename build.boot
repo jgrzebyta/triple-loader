@@ -4,24 +4,32 @@
 (set-env! :source-paths #{"src"}
           :resource-paths #{"resources"}
           :project 'adalab/triple-loader
-          :version "0.1.3-SNAPSHOT"
           :dependencies '[[org.clojure/clojure "1.8.0"]
                           [org.clojure/tools.cli "0.3.5"]
                           [org.clojure/tools.logging "0.3.1"]
                           [clj-pid/clj-pid "0.1.2"]
                           [commons-io/commons-io "2.5"]
-                          [org.eclipse.rdf4j/rdf4j-repository-http "2.0-SNAPSHOT" :exclusions [commons-io org.slf4j/slf4j-api]]
-                          [org.eclipse.rdf4j/rdf4j-runtime "2.0-SNAPSHOT" :exclusions [org.slf4j/slf4j-api]]
-                          [org.eclipse.rdf4j/rdf4j-repository-sail "2.0-SNAPSHOT" :scope "test" :exclusions [org.slf4j/slf4j-api]]
+                          [org.eclipse.rdf4j/rdf4j-repository-http "2.0M2" :exclusions [commons-io org.slf4j/slf4j-api]]
+                          [org.eclipse.rdf4j/rdf4j-runtime "2.0M2" :exclusions [org.slf4j/slf4j-api]]
+                          [org.eclipse.rdf4j/rdf4j-repository-sail "2.0M2" :scope "test" :exclusions [org.slf4j/slf4j-api]]
                           [org.slf4j/jcl-over-slf4j "1.7.21"]
                           [org.apache.logging.log4j/log4j-slf4j-impl "2.5"]
-                          [org.apache.logging.log4j/log4j-core "2.5"]])
+                          [org.apache.logging.log4j/log4j-core "2.5"]
+                          [boot/core "2.6.0" :scope "test"]
+                          [degree9/boot-semver "1.3.0-SNAPSHOT" :scope "test"]])
 
-(require '[clojure.test :as test])
+(require '[boot-semver.core :refer :all]
+         '[clojure.test :as test]
+         '[clojure.pprint :as pp]
+         '[boot.util :as util]
+         '[clojure.java.io :as io]
+         '[clojure.string :as str])
+
 
 (task-options!
- pom {:project (get-env :project) :version (get-env :version)}
- aot { :namespace '#{triple.repository triple.loader sparql} })
+ version {:minor 'one :patch 'two :pre-release 'three :build 'get-build}
+ pom {:project (get-env :project) }
+ aot {:namespace '#{triple.repository triple.loader sparql triple.version}})
 
 (deftask run-test "Run unit tests"
   [t test-name NAME str "Test to execute. Run all tests if not given."]
@@ -43,9 +51,20 @@
       )))
 
 
+(deftask logging []
+  (with-pre-wrap [fileset]
+    (util/info "Resoure %s" (util/pp-str (boot.core/user-dirs fileset)))
+    fileset))
+
+
+(defn get-build [& _]
+  (str/join "." [(semver-date-dot-time) (semver-short-git)]))
+
 (deftask build
   "Build without dependencies" []
   (comp
+   (version)
+   (jar)
    (pom)
    (aot)
    (jar)
@@ -54,9 +73,9 @@
 (deftask build-standalone
   "Build standalone version" []
   (comp
+   (version)
    (pom)
    (aot)
    (uber)
-   (jar :file (format "%s-%s-standalone.jar" (name (get-env :project))
-                      (get-env :version)))
+   (jar :file (format "%s-standalone.jar" (name (get-env :project))))
    (target)))
