@@ -4,6 +4,7 @@
         [clojure.tools.logging :as log]
         [clojure.java.io :as io]
         [triple.reifiers :as ref]
+        [triple.version :refer [get-version]]
         [triple.repository])
   (:import [org.eclipse.rdf4j IsolationLevel IsolationLevels]
            [org.eclipse.rdf4j.model Resource]
@@ -135,13 +136,10 @@
                                ["--repositiry NAME" "-r" "Repository id" :default "test"]
                                ["--file FILE" "-f" "Data file path"]
                                ["--file-type TYPE" "-t" "Data file type. One of: turtle, n3, nq, rdfxml, rdfa" :default "turtle"]
-                               ["--context IRI" "-c" "Context (graph name) of the dataset" :default nil])]
-  ;; print help message
-  (when (:h opts)
-    (println banner)
-    (System/exit 0))
+                               ["--context IRI" "-c" "Context (graph name) of the dataset" :default nil]
+                               ["--version" "-V" "Display program version" :defult false :flag true])]
 
-  ;; run proper loading
-  (do-loading opts)))
-
-
+    (cond
+      (:h opts) (println banner)
+      (:V opts) (println "Version: " (get-version))
+      :else (do-loading opts))))
