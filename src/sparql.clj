@@ -28,7 +28,7 @@
   (assoc previous key
          (if-let [oldval (get previous key)]
            (merge oldval val)
-           (hash-set val))))
+           (list val))))
 
 (defn- map-seqs "Join data files with related type"
   [data-files types]
@@ -51,7 +51,7 @@
                                 ["--file FILE" "-f" "Data file path" :assoc-fn #'multioption->seq]
                                 ["--file-type TYPE" "-t" "Data file type. One of: turtle, n3, nq, rdfxml, rdfa" :assoc-fn #'multioption->seq ]
                                 ["--query" "-q" "SPARQL query. Either as path to file or as string."]
-                                ["--version" "-V" "Display program version" :defult false :flag true])]
+                                ["--version" "-V" "Display program version" :default false :flag true])]
     (cond
       (:h opts) (do (println banner)
                        (System/exit 0))

@@ -1,6 +1,3 @@
-(def +rdf4j-version+ "2.1-SNAPSHOT")
-
-
 (set-env! :source-paths #{"src"}
           :resource-paths #{"resources"}
           :project 'adalab/triple-loader
@@ -27,7 +24,7 @@
 
 
 (task-options!
- version {:minor 'one :patch 'five}
+ version {:minor 'one :patch 'six}
  pom {:project (get-env :project) }
  aot {:namespace '#{triple.repository triple.loader sparql triple.version}})
 

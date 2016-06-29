@@ -1,14 +1,51 @@
 (ns sparql-test
   (:gen-class)
   (:use [sparql :exclude [-main]]
+        [clojure.tools.cli :refer [cli parse-opts]]
         [clojure.tools.logging :as log]
         [clojure.java.io :as jio]
         [clojure.string :as st :exclude [reverse replace]]
+        [clojure.pprint :as pp]
         [clojure.test]
         [triple.repository]
         [triple.loader :exclude [-main]]
         [triple.loader-test])
-  (:import [org.eclipse.rdf4j.rio RDFFormat]))
+  (:import [org.eclipse.rdf4j.rio RDFFormat]
+           [clojure.lang ArraySeq]
+           [java.io StringWriter]))
+
+
+(defn- multioption->seq "Function handles multioptions for command line arguments"
+  [previous key val]
+  (assoc previous key
+         (if-let [oldval (get previous key)]
+           (merge oldval val)
+           (list val))))
+
+
+
+(deftest args-parsing-test
+  (let [args (->
+              ["-f" "yeast_rdf" "-t" "turtle" "-q" "join_yeastract_sparql" "-f" "gene_rdf" "-t" "turtle"]
+              (to-array)
+              (ArraySeq/create))
+        options [["-h" "--help" "Print this screen" :default false]
+                 ["-f" "--file FILE" "Data file path" :assoc-fn multioption->seq ]
+                 ["-t" "--file-type TYPE" "Data file type. One of: turtle, n3, nq, rdfxml, rdfa" :assoc-fn multioption->seq ]
+                 ["-q" "--query SPARQL" "SPARQL query. Either as path to file or as string."]
+                 ["-V" "--version" "Display program version" :default false]]
+        parse-out (parse-opts args options)]
+    (testing "parsing outcome"
+      (let [wrt (StringWriter.)]
+        (pp/pprint parse-out wrt)
+        (log/debug (format "structure: \n %s\n" (.toString wrt))))
+      (log/debug "Data:" (-> parse-out (get :options) (get :file)))
+      (log/debug "Data type:" (-> parse-out (get :options) (get :file-type)))
+      (is (= (count (-> parse-out (get :options) (get :file)))
+             (count (-> parse-out (get :options) (get :file-type)))) "Data file and file type arrays has different size"))
+    ))
+
+
 
 
 (deftest test-load-data 
