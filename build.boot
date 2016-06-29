@@ -27,7 +27,7 @@
 
 
 (task-options!
- version {:minor 'one :patch 'two :pre-release 'three :build 'get-build}
+ version {:minor 'one :patch 'four}
  pom {:project (get-env :project) }
  aot {:namespace '#{triple.repository triple.loader sparql triple.version}})
 
@@ -56,9 +56,6 @@
     (util/info "Resoure %s" (util/pp-str (boot.core/user-dirs fileset)))
     fileset))
 
-
-(defn get-build [& _]
-  (str (semver-date-dot-time)))
 
 (deftask build
   "Build without dependencies" []
