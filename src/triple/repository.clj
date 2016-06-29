@@ -88,10 +88,11 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
                      `(make-repository)
                      repo-init)]
     `(let [^org.eclipse.rdf4j.repository.Repository repository# ~repository-seq#]
-       (.initialize repository#)
-       (with-open [~connection-var (.getConnection repository#)]
-         ~@body)
-       (.shutDown repository#))))
+       (try (.initialize repository#)
+            (with-open [~connection-var (.getConnection repository#)]
+              ~@body)
+            (finally 
+              (.shutDown repository#))))))
 
 
 (defn context-array
@@ -131,14 +132,14 @@ Code was adapted from kr-sesame: sesame-context-array."
                                                                      (get-statements i s p o use-reified context)))
 
 (defmethod get-statements RepositoryConnection [kb s p o use-reified context] (doall
-                                                                               (lazy-seq (iter-seq (.getStatements kb
-                                                                                                                   ^Resource s
-                                                                                                                   ^IRI p
-                                                                                                                   ^Value o
-                                                                                                                   (boolean use-reified)
-                                                                                                                   context)))))
+                                                                               (iter-seq (.getStatements kb
+                                                                                                         ^Resource s
+                                                                                                         ^IRI p
+                                                                                                         ^Value o
+                                                                                                         (boolean use-reified)
+                                                                                                         context))))
 
-(defn get-all-statements [^Repository r]
+(defn get-all-statements [r]
   (get-statements r nil nil nil false (context-array)))
 
 

@@ -58,7 +58,7 @@
     (let [repository (make-repository-with-lucene)
           sparql (load-sparql (:query opts))
           dataset (map-seqs (:file opts) (:file-type opts))]
-      (load-multidata repository dataset 5)
+      (load-multidata repository dataset)
       (with-open-repository [cx repository]
         (process-sparql-query cx sparql))
       (delete-temp-repository))))
@@ -91,7 +91,7 @@
   (assert (not (empty? data-col)) "Data collection is empty")
   (loop [itms data-col]
     (let [itm (first itms)]
-      (when (map? itm)
+      (when itm
         (do
           (log/debug "Load record: " (pp/pprint itm))
           (load-data repository (get itm :data-file) (get itm :type))

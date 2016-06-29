@@ -7,7 +7,7 @@
     </Appenders>
     
     <Loggers>
-      <Logger name="triple" level="trace"/>
+      <Logger name="triple" level="debug"/>
       <Logger name="sparql-test" level="debug"/>
         <Root level="warn">
             <AppenderRef ref="Console"/>

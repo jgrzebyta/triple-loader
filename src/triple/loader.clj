@@ -77,18 +77,23 @@
                        (.getPath file-obj)
                        (.exists file-obj)
                        (.canRead file-obj)))
+    (log/trace (format "data type: %s" file-type))
     (with-open-repository [cnx repository]
       (init-connection cnx)
-
-      
       (let [rdf-handler-object (if (some? rdf-handler)
                                  (if (fn? rdf-handler)
                                    (apply rdf-handler cnx context-uri)
                                    (apply (resolve rdf-handler) cnx context-uri)) nil)]
-        (.setRDFHandler parser rdf-handler-object)
+        ; Set up handler only if the handler was given
+        (when (some? rdf-handler-object)
+          (log/debug "Set up rdf handler: " rdf-handler-object)
+          (.setRDFHandler parser rdf-handler-object))
+        
+        (log/debug (format "RDF handler: %s" rdf-handler-object))
+        
                                         ; (.setRDFHandler parser (RDFSailInserter. (.getSailConnection cnx) (value-factory repository))) ;; add RDF Handler suitable for sail Repository
-                                        ; (.setRDFHandler parser (RDFInserter. cnx))
-        (log/debug "Connection installed ... " (if (instance? SailRepositoryConnection cnx) (.getSailConnection cnx) cnx))
+;        (.setRDFHandler parser (RDFInserter. cnx))
+        (log/debug "Connection installed ... " cnx)
         ;; run parsing
         (try
           (.begin cnx IsolationLevels/READ_COMMITTED) ;; begin transaction
@@ -101,7 +106,12 @@
               (.parse parser file-reader (.toString (.toURI file-obj))))
             (do
               (log/debug "Using .add method")
-              (.add cnx file-obj (.toString (.toURI file-obj)) file-type (make-array Resource 0))))
+              (.add cnx file-obj (.toString (.toURI file-obj)) file-type (make-array Resource 0))
+              ;(.parse parser file-reader (.toString (.toURI file-obj)))
+              ))
+          
+          ;;(.parse parser file-reader (.toString (.toURI file-obj))) ;; that works
+ ;;         (.add cnx file-obj (.toString (.toURI file-obj)) file-type (context-array))
           
           (catch RDFParseException e
             #(log/error "Error: % for URI: %" (.getMessage e)
@@ -116,18 +126,6 @@
                      (log/debug "finish...")
                      (.commit cnx))))
         ))))
-
-
-(defn- populate-repository "Populate a repository in a single thread. Takes data from channel."
-  [repository ch]
-  (with-open-repository [cnx repository]
-    (try
-      (.begin cnx)
-      (finally (do
-                 (log/debug "finish...")
-                 (.commit cnx)))
-      )
-    ))
 
 
 (defn -main [& args]
