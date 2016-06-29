@@ -3,7 +3,7 @@ PREFIX search: <http://www.openrdf.org/contrib/lucenesail#>
 
 select ?sub ?score ?coutry where {
   ?sub search:matches [search:query "Germany Poland";
-				    search:property <file:/tmp2/beet-1.csvCountries>;
-        search:score ?score] ;
-  <file:/tmp2/beet-1.csvCountries> ?coutry
-} 
+		       search:property <file:/tmp2/beet-1.csvCountries> ;
+                       search:score ?score] .
+  ?sub <file:/tmp2/beet-1.csvCountries> ?coutry
+}
