@@ -15,13 +15,13 @@
 
 #+name: get-version
 #+begin_src shell :exports results :results output raw drawer
-version=$(gawk '{match($0,/^ *:version \"(.*)\"/,mt);if (mt[0]!=""){print mt[1]} }' build.boot)
-echo ${version}
+version=$(gawk '{match($0,/VERSION=(.*$)/,g); if(length(g)>0) {print "Current version: " g[1] }}' version.properties)
+echo "${version}"
 #+end_src
 
 #+RESULTS: get-version
 :RESULTS:
-0.1.3-SNAPSHOT
+Current version: 0.1.4
 :END:
 
 ** All binnary releases
@@ -35,7 +35,7 @@ Table contains list of all binnary releases with commit and date of commit. The 
 
 #+RESULTS: list-tags
 |     Tag | Commit  | Date                           |
-|   0.1.4 | ede649e | Wed Jun 29 10:49:10 2016 +0100 |
+|   0.1.4 | bfd3489 | Wed Jun 29 10:51:07 2016 +0100 |
 | 0.1.3.1 | 20dc78f | Tue Jun 7 16:49:38 2016 +0100  |
 |   0.1.3 | 3bdb25f | Tue Jun 7 01:14:42 2016 +0100  |
 |   0.1.2 | c9ac85d | Mon Jun 6 17:33:38 2016 +0100  |
@@ -61,7 +61,9 @@ java -cp triple-loader-0.1.1-SNAPSHOT-standalone.jar triple.loader [options]
     - --file FILE, -f :: Data file path                                       
     - --file-type TYPE, -t :: Data file type. One of: turtle, n3, nq, rdfxml, rdfa. Default: turtle
     - --context IRI, -c :: Context (graph name) of the dataset
+    - --version, -V :: Print version number
     - --help, -h :: Help
+
 ** sparql
 Executes SPARQL /query/ on data provided by /file/.  
 
@@ -73,6 +75,7 @@ java -cp triple-loader-0.1.1-SNAPSHOT-standalone.jar sparql [options]
     - --file FILE, -f :: Data file path 
     - --file-type TYPE, -t :: Declares type of data. Possible formats are listed [[#user-content-options][here]]
     - --query STRINGm -q :: Path to file with query or the query itself
+    - --version, -v :: Print version number
     - --help, -h :: Help
 * 3. Contacts
 To contact with me please use *Issues* interface.
