@@ -1,4 +1,4 @@
-(ns triple.multiload
+(ns triple.multiload-test
   (:use [sparql :exclude [-main]]
         [triple.repository]
         [triple.loader-test :import [test-repository]]

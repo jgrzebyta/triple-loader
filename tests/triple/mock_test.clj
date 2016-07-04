@@ -1,4 +1,4 @@
-(ns triple.mock
+(ns triple.mock-test
   (:use [clojure.java.io :as jio]
         [clojure.test :as test]
         [clojure.tools.logging :as log])
