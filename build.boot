@@ -1,3 +1,5 @@
+
+
 (set-env! :source-paths #{"src"}
           :resource-paths #{"resources"}
           :project 'adalab/triple-loader
@@ -47,6 +49,9 @@
       (test/test-var (resolve (symbol (:test-name *opts*))))
       )))
 
+(deftask testing []
+  (set-env! :source-paths #(conj % "tests"))
+  identity)
 
 (deftask logging []
   (with-pre-wrap [fileset]
