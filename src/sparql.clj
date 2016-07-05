@@ -80,16 +80,29 @@
       :else :unknown)))
 
 
-(defn process-sparql-query "Execute SPARQL query through connection."
-  [^RepositoryConnection connection sparql-string]
+(defn process-sparql-query "Execute SPARQL query through connection. 
+If :writer parameter is nil than load results to relevant QueryResultWriter.
+If the parameter is :none than returns TupleQueryResult;
+otherwise evaluates query with method (.evaluate query writer) with given writer."
+  [^RepositoryConnection connection sparql-string & {:keys [writer]}]
   (log/trace (format "SPRQL query: \n%s" sparql-string))
-  (let [query (.prepareQuery connection sparql-string)
-        writer (cond
-                 (instance? TupleQuery query) (SPARQLResultsCSVWriter. System/out)
-                 (instance? GraphQuery query) (TurtleWriter. System/out))]
-    (if (instance? BooleanQuery query)
-      (print (.evaluate query))
-      (.evaluate query writer))))
+  (try
+    (let [query (.prepareQuery connection sparql-string)
+          writer (cond
+                   (= writer :none) :none
+                   (some? writer) writer
+                   (instance? TupleQuery query) (SPARQLResultsCSVWriter. System/out)
+                   (instance? GraphQuery query) (TurtleWriter. System/out))]
+    (log/debug "Writer: " writer)
+    (if (= writer :none)
+      (.evaluate query)
+      (if (instance? BooleanQuery query)
+        (print (.evaluate query))
+        (.evaluate query writer))))
+    (catch Throwable t (do
+                          (.rollback connection)
+                          (throw t)))
+    (finally (.commit connection))))
 
 
 (defn load-multidata "Load multiple data into repository" [repository data-col]

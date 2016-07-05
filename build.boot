@@ -36,9 +36,8 @@
   (set-env! :source-paths #(conj % "tests"))
   (println (format "%s" (get-env :source-paths)))
   (use '[triple.loader-test]
-       '[triple.mock]
        '[triple.context-test]
-       '[triple.multiload]
+       '[triple.multiload-test]
        '[sparql-test])
   (if (nil? (:test-name *opts*))
     (do
