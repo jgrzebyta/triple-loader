@@ -1,5 +1,4 @@
 (ns sparql-test
-  (:gen-class)
   (:use [sparql :exclude [-main]]
         [clojure.tools.cli :refer [cli parse-opts]]
         [clojure.tools.logging :as log]
@@ -9,10 +8,12 @@
         [clojure.test]
         [triple.repository]
         [triple.loader :exclude [-main]]
-        [triple.loader-test])
+        [triple.loader-test]
+        [triple.multiload-test :refer [+datasets+]])
   (:import [org.eclipse.rdf4j.rio RDFFormat]
            [clojure.lang ArraySeq]
-           [java.io StringWriter]))
+           [java.io StringWriter ByteArrayOutputStream]
+           [org.eclipse.rdf4j.query.resultio.text.csv SPARQLResultsCSVWriter]))
 
 
 (defn- multioption->seq "Function handles multioptions for command line arguments"
@@ -21,8 +22,6 @@
          (if-let [oldval (get previous key)]
            (merge oldval val)
            (list val))))
-
-
 
 (deftest args-parsing-test
   (let [args (->
@@ -92,3 +91,39 @@
   (testing "sparql from non existing file"
     (let [sparql-file "nonexists.sparql"]
       (is (thrown? RuntimeException (load-sparql sparql-file))))))
+
+
+(def +local-test+ '({:data-file "./tests/resources/yeastract_raw.ttl" :type "turtle"}
+                    {:data-file "./tests/resources/Uniprot_scer.rdf" :type "rdfxml"}))
+
+(deftest test-search-sparql "Test search sparql "
+  (testing "try simple search"
+    (let [sparql1 (load-sparql "tests/resources/spql1.sparql")
+          repo (make-repository-with-lucene)
+          output (ByteArrayOutputStream.)
+          writer (SPARQLResultsCSVWriter. output)]
+      ;; load dataset
+      (load-multidata repo +datasets+)
+      (with-open-repository [c repo]
+        (process-sparql-query c sparql1 :writer writer)
+        (let [response (.toString output)]
+          (is (some? response))
+          (is (instance? String response) "Response is not string")
+          (is (> (count response) 0))
+          (log/debug (format "Response:\n=======\n%s\n========\n" response))))
+      (delete-temp-repository))))
+
+
+(deftest test-eclipse-rdf4j-220
+  (testing "test for issue eclipse/rdf4j#220"
+    (let [repo (make-repository-with-lucene)
+          sparql220 (load-sparql "tests/resources/issue220.sparql")
+          output (ByteArrayOutputStream.)
+          writer (SPARQLResultsCSVWriter. output)]
+      (load-multidata repo +local-test+)
+      (with-open-repository [c repo]
+        ;;(process-sparql-query c sparql220 :writer :none)
+        (let [response (process-sparql-query c sparql220)]
+          ;;(is (some? response))
+          (log/debug (format "Response:\n=======\n%s\n========\n" response)))))
+    (delete-temp-repository)))

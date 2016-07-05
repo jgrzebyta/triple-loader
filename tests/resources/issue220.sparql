@@ -1,0 +1,11 @@
+prefix search: <http://www.openrdf.org/contrib/lucenesail#>
+prefix u: <http://purl.uniprot.org/core/>
+prefix r: <urn:raw:yeastract#>
+
+select ?obj ?term_id ?score where {
+  ?term r:Yeast_id ?term_id .
+  ?obj search:matches [
+  search:query ?term_id ;
+  search:score ?score
+  ]
+}
