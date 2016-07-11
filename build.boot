@@ -8,9 +8,9 @@
                           [org.clojure/tools.logging "0.3.1"]
                           [clj-pid/clj-pid "0.1.2"]
                           [commons-io/commons-io "2.5"]
-                          [org.eclipse.rdf4j/rdf4j-repository-http "2.0M2" :exclusions [commons-io org.slf4j/slf4j-api]]
-                          [org.eclipse.rdf4j/rdf4j-runtime "2.0M2" :exclusions [org.slf4j/slf4j-api]]
-                          [org.eclipse.rdf4j/rdf4j-repository-sail "2.0M2" :scope "test" :exclusions [org.slf4j/slf4j-api]]
+                          [org.eclipse.rdf4j/rdf4j-repository-http "2.0M3" :exclusions [commons-io org.slf4j/slf4j-api]]
+                          [org.eclipse.rdf4j/rdf4j-runtime "2.0M3" :exclusions [org.slf4j/slf4j-api]]
+                          [org.eclipse.rdf4j/rdf4j-repository-sail "2.0M3" :scope "test" :exclusions [org.slf4j/slf4j-api]]
                           [org.slf4j/jcl-over-slf4j "1.7.21"]
                           [org.apache.logging.log4j/log4j-slf4j-impl "2.5"]
                           [org.apache.logging.log4j/log4j-core "2.5"]
@@ -26,14 +26,20 @@
 
 
 (task-options!
- version {:minor 'one :patch 'six}
+ version {:minor 'one :patch 'seven}
  pom {:project (get-env :project) }
  aot {:namespace '#{triple.repository triple.loader sparql triple.version}})
+
+
+(deftask testing "Attach tests/ directory to classpath." []
+  (set-env! :source-paths #(conj % "tests"))
+  identity)
+
 
 (deftask run-test "Run unit tests"
   [t test-name NAME str "Test to execute. Run all tests if not given."]
   *opts*
-  (set-env! :source-paths #(conj % "tests"))
+  (testing)
   (println (format "%s" (get-env :source-paths)))
   (use '[triple.loader-test]
        '[triple.context-test]
@@ -48,16 +54,6 @@
       (println (format "Run test: %s" (:test-name *opts*)))
       (test/test-var (resolve (symbol (:test-name *opts*))))
       )))
-
-(deftask testing []
-  (set-env! :source-paths #(conj % "tests"))
-  identity)
-
-(deftask logging []
-  (with-pre-wrap [fileset]
-    (util/info "Resoure %s" (util/pp-str (boot.core/user-dirs fileset)))
-    fileset))
-
 
 (deftask build
   "Build without dependencies" []
