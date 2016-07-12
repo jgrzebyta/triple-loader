@@ -12,7 +12,7 @@ ENV BOOT_AS_ROOT yes
 
 RUN apt-get update \
     && apt-get -y dist-upgrade \
-    && apt-get -y install curl openjdk-8-jre
+    && apt-get -y install curl openjdk-8-jre gettext-base
 
 # install sesame-loader
 RUN curl --create-dirs -Lfo "${LOADER_DIR}"/sesame-loader.jar "${LOADER_URL}"
