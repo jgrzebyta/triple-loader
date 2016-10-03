@@ -11,9 +11,7 @@
                           [org.eclipse.rdf4j/rdf4j-repository-http "2.0.1" :exclusions [commons-io org.slf4j/slf4j-api]]
                           [org.eclipse.rdf4j/rdf4j-runtime "2.0.1" :exclusions [org.slf4j/slf4j-api]]
                           [org.eclipse.rdf4j/rdf4j-repository-sail "2.0.1" :scope "test" :exclusions [org.slf4j/slf4j-api]]
-                          [org.slf4j/jcl-over-slf4j "1.7.21"]
-                          [org.apache.logging.log4j/log4j-slf4j-impl "2.5"]
-                          [org.apache.logging.log4j/log4j-core "2.5"]
+                          [ch.qos.logback/logback-classic "1.1.7"]
                           [boot/core "2.6.0" :scope "test"]
                           [degree9/boot-semver "1.2.4" :scope "test"]])
 
