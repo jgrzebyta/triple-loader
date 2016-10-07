@@ -31,7 +31,7 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
 (defmulti value-factory "Returns instance of value-factory for given optional object. The object might be either RepositoryConnection or Repository" (fn [& [x]] (type x)))
 
 (defmethod value-factory Repository [x] (.getValueFactory x))
-(defmethod value-factory RepositoryConnection [x] (value-factory (.getRepository x)))
+(defmethod value-factory RepositoryConnection [x] (.getValueFactory x))
 (defmethod value-factory :default [& _] (SimpleValueFactory/getInstance))
 
 
@@ -83,16 +83,19 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
   Where initseq is (CONNECTION-VARIABLE REPOSITORY). For example (cnx :memory)
   If REPOSITORY has value ':memory' then memory repository is created."
   [initseq & body]
-  (let [[connection-var repo-init] initseq
-        repository-seq# (if (= repo-init :memory)
-                     `(make-repository)
-                     repo-init)]
-    `(let [^org.eclipse.rdf4j.repository.Repository repository# ~repository-seq#]
-       (try (.initialize repository#)
+  (let [[connection-var repo-init] initseq]
+    `(let [^org.eclipse.rdf4j.repository.Repository repository# ~repo-init]
+       (log/trace (format "repository instance: %s" (.toString repository#)))
+       (try (when-not (.isInitialized repository#)
+              (log/debug "Initialize repository")
+              (.initialize repository#))
             (with-open [~connection-var (.getConnection repository#)]
               ~@body)
-            (finally 
-              (.shutDown repository#))))))
+            (catch Exception e# (do
+                                  (log/error (format "Initialise error [%s]: %s"
+                                                     (.getName (.getClass e#))
+                                                     (.getMessage e#)))
+                                  (throw e#)))))))
 
 
 (defn context-array

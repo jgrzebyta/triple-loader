@@ -8,9 +8,9 @@
                           [org.clojure/tools.logging "0.3.1"]
                           [clj-pid/clj-pid "0.1.2"]
                           [commons-io/commons-io "2.5"]
-                          [org.eclipse.rdf4j/rdf4j-repository-http "2.0.1" :exclusions [commons-io org.slf4j/slf4j-api]]
-                          [org.eclipse.rdf4j/rdf4j-runtime "2.0.1" :exclusions [org.slf4j/slf4j-api]]
-                          [org.eclipse.rdf4j/rdf4j-repository-sail "2.0.1" :scope "test" :exclusions [org.slf4j/slf4j-api]]
+                          [org.eclipse.rdf4j/rdf4j-repository-http "2.1-SNAPSHOT" :exclusions [commons-io org.slf4j/slf4j-api]]
+                          [org.eclipse.rdf4j/rdf4j-runtime "2.1-SNAPSHOT" :exclusions [org.slf4j/slf4j-api]]
+                          [org.eclipse.rdf4j/rdf4j-repository-sail "2.1-SNAPSHOT" :scope "test" :exclusions [org.slf4j/slf4j-api]]
                           [ch.qos.logback/logback-classic "1.1.7"]
                           [boot/core "2.6.0" :scope "test"]
                           [degree9/boot-semver "1.2.4" :scope "test"]])

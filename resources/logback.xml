@@ -8,9 +8,9 @@
 	</appender>
 	
         
-	<Logger name="triple" level="debug"/>
+<!--	<Logger name="triple" level="debug"/>
 	<Logger name="sparql-test" level="debug"/>
-
+-->
 	
 	<root>
 		<level value="info" />
