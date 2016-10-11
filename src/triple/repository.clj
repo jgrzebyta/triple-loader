@@ -90,12 +90,15 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
               (log/debug "Initialize repository")
               (.initialize repository#))
             (with-open [~connection-var (.getConnection repository#)]
-              ~@body)
-            (catch Exception e# (do
-                                  (log/error (format "Initialise error [%s]: %s"
-                                                     (.getName (.getClass e#))
-                                                     (.getMessage e#)))
-                                  (throw e#)))))))
+              (try
+                ~@body
+                (catch Exception e#
+                  (.rollback ~connection-var)
+                  (throw e#))))
+            (catch Exception e# (log/error (format "Initialise error [%s]: %s"
+                                                   (.getName (.getClass e#))
+                                                   (.getMessage e#)))
+                   (throw e#))))))
 
 
 (defn context-array
@@ -131,8 +134,8 @@ Code was adapted from kr-sesame: sesame-context-array."
 
 (defmulti get-statements "Return a sequence of all statements either from repository or repository connection meeting given pattern. " (fn [r s p o use-reified context] (type r)))
 
-(defmethod get-statements Repository [r s p o use-reified context] (with-open-repository [i r]
-                                                                     (get-statements i s p o use-reified context)))
+(defmethod get-statements Repository [rep s p o use-reified context] (with-open-repository [cnx rep]
+                                                                       (get-statements cnx s p o use-reified context)))
 
 (defmethod get-statements RepositoryConnection [kb s p o use-reified context] (doall
                                                                                (iter-seq (.getStatements kb

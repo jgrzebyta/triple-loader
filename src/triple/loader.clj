@@ -6,7 +6,9 @@
         [triple.reifiers :as ref]
         [triple.version :refer [get-version]]
         [triple.repository])
-  (:import [org.eclipse.rdf4j IsolationLevel IsolationLevels]
+  (:import [java.nio.file Paths Path]
+           [java.io File]
+           [org.eclipse.rdf4j IsolationLevel IsolationLevels]
            [org.eclipse.rdf4j.model Resource]
            [org.eclipse.rdf4j.repository.http HTTPRepository HTTPRepositoryConnection]
            [org.eclipse.rdf4j.repository RepositoryConnection RepositoryException]
@@ -23,9 +25,21 @@
 (defn make-parser-config []
     (doto
         (ParserConfig.)
-        (.set BasicParserSettings/PRESERVE_BNODE_IDS true)))
+      (.set BasicParserSettings/PRESERVE_BNODE_IDS true)))
 
-(defn init-connection "Initialise Repository."
+(defmulti normalise-path "Proceeds path string normalisation. Additionally replace '~' character by Java's 'user.home' system property content."
+  (fn [path] (type path)))
+
+(defmethod normalise-path String [path]
+  (normalise-path (Paths/get path (make-array String 0))))
+
+(defmethod normalise-path Path [path]
+  (let [path-as-string (.toString path)]
+    (.normalize (Paths/get (.replaceFirst path-as-string "^~" (System/getProperty "user.home"))
+                           (make-array String 0)))))
+
+
+(defn init-connection "Initialise Connection."
   [^RepositoryConnection connection]
   (log/trace "connection instance: " connection)
   (let [repository (.getRepository connection)]
@@ -34,7 +48,6 @@
                                 (.getAbsolutePath (.getDataDir repository)))))
   (try
     (.setParserConfig connection (make-parser-config))
-    ;; (.setAutoCommit connection auto-commit) ;; deprecated
     (catch RepositoryException e (do
                                    (log/error (format "Error message: %s" (.getMessage e)))
                                    (throw e)))
@@ -42,43 +55,36 @@
                          (log/error "Error: " (.getMessage t))
                          (System/exit -1)))))
 
-(defn decode-format [^String format]
-  (case format
-    "n3" RDFFormat/N3
-    "nq" RDFFormat/NQUADS
-    "rdfxml" RDFFormat/RDFXML
-    "rdfa" RDFFormat/RDFA
-    "turtle" RDFFormat/TURTLE
-    RDFFormat/TURTLE))
-
-
 (defn- do-loading [opts]
-  (let [type (decode-format (:t opts))
-        file-obj (io/file (:f opts))
+  (let [file-obj (io/file (:f opts))
         repository (HTTPRepository. (:s opts) (:r opts))
         context-string ((fn [x] (if (or (= x "nil")                        ; convert "nil" and "null" texts into boolean nil
                                         (= x "null"))
                                   nil x)) (:c opts))]
     (log/debug (format "Context string: '%s' is nil '%s'"
                        context-string (nil? context-string)))
-    (load-data repository (:f opts) type :rdf-handler ref/chunk-commiter)))
+    (try
+      (load-data repository (:f opts) :rdf-handler ref/chunk-commiter)
+      (finally (.shutDown repository)))))
 
 
 
-(defmulti load-data "Load formated file into repository. The data format is one described by decode-format."
-  (fn [repository file file-type & {:keys [rdf-handler context-uri] }] (type file-type)))
+(defmulti load-data "Load formated file into repository."
+  (fn [repository file & {:keys [rdf-handler context-uri] }] (type file)))
 
-(defmethod load-data String [repository file file-type & {:keys [rdf-handler context-uri]}] (load-data repository file (decode-format file-type) :rdf-handler rdf-handler))
+(defmethod load-data String [repository file & {:keys [rdf-handler context-uri]}] (load-data repository (normalise-path file) :rdf-handler rdf-handler :context-uri context-uri))
 
-(defmethod load-data RDFFormat [repository file file-type & {:keys [rdf-handler context-uri]}]
-  (let [file-obj (io/file file)
-        file-reader (io/reader file-obj)
-        parser (Rio/createParser file-type)]
+(defmethod load-data Path [repository file & {:keys [rdf-handler context-uri]}] (load-data repository (.toFile file) :rdf-handler rdf-handler :context-uri context-uri))
+
+(defmethod load-data File [repository file & {:keys [rdf-handler context-uri]}]
+  (let [file-reader (io/reader file)
+        parser-format (.get (Rio/getParserFormatForFileName (.getName file)))
+        parser (Rio/createParser parser-format)]
     (log/trace (format "File data: %s [exists: %s, readable: %s]"
-                       (.getPath file-obj)
-                       (.exists file-obj)
-                       (.canRead file-obj)))
-    (log/trace (format "data type: %s" file-type))
+                       (.getPath file)
+                       (.exists file)
+                       (.canRead file)))
+    (log/trace (format "data type: %s" parser-format))
     (with-open-repository [cnx repository]
       (init-connection cnx)
       (let [rdf-handler-object (if (some? rdf-handler)
@@ -94,7 +100,7 @@
         
                                         ; (.setRDFHandler parser (RDFSailInserter. (.getSailConnection cnx) (value-factory repository))) ;; add RDF Handler suitable for sail Repository
 ;        (.setRDFHandler parser (RDFInserter. cnx))
-        (log/debug "Connection installed ... " cnx)
+
         ;; run parsing
         (try
           (.begin cnx IsolationLevels/READ_COMMITTED) ;; begin transaction
@@ -104,25 +110,18 @@
           (if (some? rdf-handler-object)
             (do
               (log/debug "Using own parser...")
-              (.parse parser file-reader (.toString (.toURI file-obj))))
+              (.parse parser file-reader (.toString (.toURI file))))
             (do
               (log/debug "Using .add method")
-              (.add cnx file-obj (.toString (.toURI file-obj)) file-type (make-array Resource 0))
+              (.add cnx file (.toString (.toURI file)) parser-format (into-array Resource (if (some? context-uri)
+                                                                                            [(.createIRI (value-factory cnx) context-uri)]
+                                                                                            nil) ))
               ;(.parse parser file-reader (.toString (.toURI file-obj)))
               ))
           
           ;;(.parse parser file-reader (.toString (.toURI file-obj))) ;; that works
  ;;         (.add cnx file-obj (.toString (.toURI file-obj)) file-type (context-array))
-          
-          (catch RDFParseException e
-            #(log/error "Error: % for URI: %" (.getMessage e)
-                        (.toString (.toURI file-obj)))
-            (.rollback cnx))
-          (catch Throwable t #(do
-                                (.rollback cnx)
-                                (log/error "The other error caused by " (.getMessage t))
-                                (.printStackTrace t)
-                                (System/exit -1)))
+                    
           (finally (do
                      (log/debug "finish...")
                      (.commit cnx))))
@@ -135,7 +134,6 @@
                                ["--server URL" "-s" "Sesame SPARQL endpoint URL" :default "http://localhost:8080/rdf4j-server"]
                                ["--repositiry NAME" "-r" "Repository id" :default "test"]
                                ["--file FILE" "-f" "Data file path"]
-                               ["--file-type TYPE" "-t" "Data file type. One of: turtle, n3, nq, rdfxml, rdfa" :default "turtle"]
                                ["--context IRI" "-c" "Context (graph name) of the dataset" :default nil]
                                ["--version" "-V" "Display program version" :defult false :flag true])]
 

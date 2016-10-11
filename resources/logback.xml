@@ -7,11 +7,11 @@
 		</encoder>
 	</appender>
 	
-        
-<!--	<Logger name="triple" level="debug"/>
-	<Logger name="sparql-test" level="debug"/>
--->
-	
+
+	<!-- <logger name="triple.repository" level="debug"/> -->
+	<!-- <Logger name="triple.loader" level="trace"/> -->
+	<!-- <Logger name="sparql-test" level="debug"/> -->
+
 	<root>
 		<level value="info" />
 		<appender-ref ref="STDOUT" />

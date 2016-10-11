@@ -18,7 +18,7 @@
   (testing "Load data into named graph"
     (let [pars (Rio/createParser RDFFormat/RDFXML)
           file-obj (jio/file "tests/beet.rdf")]
-      (with-open-repository [^RepositoryConnection con :memory]
+      (with-open-repository [^RepositoryConnection con (make-mem-repository)]
         (.setRDFHandler pars (chunk-commiter con *context-string*))
         (with-open [fr (jio/reader file-obj)]
           (.parse pars fr (.toString (.toURI file-obj)))

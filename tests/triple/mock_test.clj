@@ -8,25 +8,20 @@
 
 
 (defn read-rdf-file "Reads RDF file"
-  [filename filetype]
-  (with-open [rdr (jio/input-stream filename)]
-    (let [format (case filetype
-                 "n3" RDFFormat/N3
-                 "nq" RDFFormat/NQUADS
-                 "rdfxml" RDFFormat/RDFXML
-                 "rdfa" RDFFormat/RDFA
-                 "turtle" RDFFormat/TURTLE
-                 RDFFormat/TURTLE)
-          rdf-parser (Rio/createParser format)
-          collector (StatementCollector.)]
-      (.setRDFHandler rdf-parser collector)
-      (log/debug "Parser: " (type rdf-parser))
-      ;; run parsing process
-      (.parse rdf-parser rdr "urn:data")
-      collector)))
+  [filename]
+  (let [file-obj (jio/file filename)
+        parser-format (.get (Rio/getParserFormatForFileName (.getName file-obj)))
+        rdf-parser (Rio/createParser parser-format)
+        collector (StatementCollector.)]
+    (.setRDFHandler rdf-parser collector)
+    (log/info "Parser: " (type rdf-parser))
+    ;; run parsing process
+    (with-open [rdr (jio/input-stream filename)]
+      (.parse rdf-parser rdr "urn:data"))
+    collector))
 
 (deftest test-reading "Provides main reading job" []
-  (let [collector (read-rdf-file "tests/resources/22-rdf-syntax-ns.ttl" "turtle")]
+  (let [collector (read-rdf-file "tests/resources/22-rdf-syntax-ns.ttl")]
     (testing "Test RDF file reading"
 ;;      (is (instance? collector))
       (is (< 0 (count (.getNamespaces collector))))

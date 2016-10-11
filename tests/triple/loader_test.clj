@@ -64,7 +64,8 @@
         (log/debug "Is Connection empty?: " (.isEmpty conn)))
       )
     (testing "Does more tests ... "
-      (test-repository repo 68))))
+      (test-repository repo 68))
+    (.shutDown repo)))
 
 (deftest test-delete-temp-repository
   (testing "Delete tmp repository")
@@ -78,6 +79,10 @@
 
 (deftest load-data-test
   (let [repo (make-repository-with-lucene nil)]
-    (load-data repo "tests/beet.rdf" RDFFormat/RDFXML)
-    (test-repository repo 68)
-    ))
+    (try 
+      (load-data repo "tests/beet.rdf")
+      (test-repository repo 68)
+      (finally
+        (.shutDown repo)
+        (delete-temp-repository))
+    )))

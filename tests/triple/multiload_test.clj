@@ -9,9 +9,7 @@
   (:import [java.io StringWriter]))
 
 
-(def +datasets+ '({:data-file "./tests/resources/22-rdf-syntax-ns.ttl" :type "turtle"}
-                  {:data-file "./tests/resources/rdf-schema.rdf" :type "rdfxml"}
-                  {:data-file "./tests/beet.rdf" :type "rdfxml"}))
+(def +datasets+ '("./tests/resources/22-rdf-syntax-ns.ttl" "./tests/resources/rdf-schema.rdf" "./tests/beet.rdf"))
 
 
 (deftest test-load-multidata "load multiple data."
@@ -24,5 +22,6 @@
         (log/trace "Fount statements: " (.toString wrt))
         (log/debug "Count statements: " (count sts))
         (is (> (count sts) 0))))
+    (.shutDown repo)
     (delete-temp-repository)
     ))

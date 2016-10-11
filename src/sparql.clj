@@ -49,7 +49,6 @@
   (let [[opts args banner] (cli args
                                 ["--help" "-h" "Print this screen" :default false :flag true]
                                 ["--file FILE" "-f" "Data file path" :assoc-fn #'multioption->seq]
-                                ["--file-type TYPE" "-t" "Data file type. One of: turtle, n3, nq, rdfxml, rdfa" :assoc-fn #'multioption->seq ]
                                 ["--query" "-q" "SPARQL query. Either as path to file or as string."]
                                 ["--version" "-V" "Display program version" :default false :flag true])]
     (cond
@@ -59,13 +58,14 @@
                           (System/exit 0))
       :else (let [repository (make-repository-with-lucene)
                   sparql (load-sparql (:q opts))
-                  dataset (map-seqs (:f opts) (:t opts))]
+                  dataset (:f opts)]
               (let [wrt (StringWriter. 100)]
                 (pp/pprint dataset wrt)
                 (log/trace "Request: " (.toString wrt)))
               (load-multidata repository dataset)
               (with-open-repository [cx repository]
                 (process-sparql-query cx sparql))
+              (.shutDown repository)
               (delete-temp-repository)))))
 
 (defn sparql-type "Returns a type of given SPARQL query. There are three type of queries: :tuple, :graph and :boolean"
@@ -115,7 +115,8 @@ otherwise evaluates query with method (.evaluate query writer) with given writer
     (let [itm (first itms)]
       (when itm
         (do
-          (load-data repository (get itm :data-file) (get itm :type))
+          (log/info (format "Load record: %s" itm))
+          (load-data repository itm)
           (recur (rest itms)))))))
 
 

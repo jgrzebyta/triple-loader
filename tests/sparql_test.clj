@@ -50,7 +50,7 @@
 
 (deftest test-load-data 
   (let [repo (make-repository-with-lucene)]
-    (load-data repo "tests/beet.rdf" RDFFormat/RDFXML)
+    (load-data repo "tests/beet.rdf")
   (testing "Count number of triples in repository"
     (test-repository repo 68))
   (delete-temp-repository)))
@@ -58,7 +58,7 @@
 
 (deftest test-sparql-query
   (let [repo (make-repository-with-lucene)]
-    (load-data repo "tests/beet.rdf" RDFFormat/RDFXML)
+    (load-data repo "tests/beet.rdf")
     (testing "execute simple SPARQL query"
       (let [sparql-str "select * where {?s ?p ?o}"]
         (with-open-repository [cx repo]
