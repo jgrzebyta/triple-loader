@@ -25,10 +25,10 @@ install:
   - chmod 755 ${boot_path}
 
 script:
-  - boot run-test
+  - boot travis-setup run-test
 
 before_deploy:
-  - boot build-standalone
+  - boot travis-setup build-standalone
   - ls -la target/
   - rvm install 2.2.0
   - rvm use 2.2.0
