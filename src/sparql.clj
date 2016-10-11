@@ -30,18 +30,18 @@
            (merge oldval val)
            (list val))))
 
-(defn- map-seqs "Join data files with related type"
-  [data-files types]
-  ;; check if both sets are not empty
-  (log/debug (format "data: %s\t types: %s" data-files types))
-  (while (or (empty? data-files) (empty? types)) (ex-info "Empty arguments") { :causes #{:empty-collection-not-expected}})
-  ;; check if lenght of both sets it the same
-  (while (not= (count data-files)
-               (count types)) (throw
-                               (ex-info "Data files and types are not matched" { :causes #{:data-files-and-types-not-matched}
-                                                                                :length {:data (count data-files) :types (count types)}})))
-  ;; create a colletion of map with keys: :data-file and :type.
-  (map (fn [x y] {:data-file x :type y}) data-files types))
+;; (defn- map-seqs "Join data files with related type"
+;;   [data-files types]
+;;   ;; check if both sets are not empty
+;;   (log/debug (format "data: %s\t types: %s" data-files types))
+;;   (while (or (empty? data-files) (empty? types)) (ex-info "Empty arguments") { :causes #{:empty-collection-not-expected}})
+;;   ;; check if lenght of both sets it the same
+;;   (while (not= (count data-files)
+;;                (count types)) (throw
+;;                                (ex-info "Data files and types are not matched" { :causes #{:data-files-and-types-not-matched}
+;;                                                                                 :length {:data (count data-files) :types (count types)}})))
+;;   ;; create a colletion of map with keys: :data-file and :type.
+;;   (map (fn [x y] {:data-file x :type y}) data-files types))
 
 
 (defn -main [& args]
@@ -116,7 +116,7 @@ otherwise evaluates query with method (.evaluate query writer) with given writer
       (when itm
         (do
           (log/info (format "Load record: %s" itm))
-          (load-data repository itm)
+          (load-data repository (normalise-path itm))
           (recur (rest itms)))))))
 
 

@@ -38,7 +38,7 @@
   [t test-name NAME str "Test to execute. Run all tests if not given."]
   *opts*
   (testing)
-  (println (format "%s" (get-env :source-paths)))
+  (println (format "Repositories: %s" (get-env :repositories)))
   (use '[triple.loader-test]
        '[triple.context-test]
        '[triple.multiload-test]
@@ -74,5 +74,7 @@
    (target)))
 
 
-(deftask travis-setup "Prepare build environment for Travis"
-  (set-env! :repositories #(conj % '["sonatype-snaps" {:uri "https://oss.sonatype.org/content/repositories/snapshots/"}])))
+(deftask travis-setup "Prepare build environment for Travis" []
+  (set-env! :repositories #(conj % ["sonatype-snaps" {:url "https://oss.sonatype.org/content/repositories/snapshots" :snapshots true} ] ))
+  identity)
+
