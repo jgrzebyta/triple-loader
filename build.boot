@@ -72,9 +72,3 @@
    (uber)
    (jar :file (format "%s-standalone.jar" (name (get-env :project))))
    (target)))
-
-
-(deftask travis-setup "Prepare build environment for Travis" []
-  (set-env! :repositories #(conj % ["sonatype-snaps" {:url "https://oss.sonatype.org/content/repositories/snapshots" :snapshots true} ] ))
-  identity)
-
