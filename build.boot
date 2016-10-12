@@ -24,7 +24,7 @@
 
 
 (task-options!
- version {:minor 'one :patch 'seven}
+ version {:minor 'one :patch 'eight}
  pom {:project (get-env :project) }
  aot {:namespace '#{triple.repository triple.loader sparql triple.version}})
 
