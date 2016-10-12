@@ -13,9 +13,9 @@
                           [org.eclipse.rdf4j/rdf4j-repository-sail "2.0.1" :scope "test" :exclusions [org.slf4j/slf4j-api]]
                           [ch.qos.logback/logback-classic "1.1.7"]
                           [boot/core "2.6.0" :scope "test"]
-                          [degree9/boot-semver "1.2.4" :scope "test"]])
+                          [degree9/boot-semver "1.3.6" :scope "test"]])
 
-(require '[boot-semver.core :refer :all]
+(require '[degree9.boot-semver :refer :all]
          '[clojure.test :as test]
          '[clojure.pprint :as pp]
          '[boot.util :as util]
@@ -24,7 +24,7 @@
 
 
 (task-options!
- version {:minor 'one :patch 'eight}
+ version {:minor 'one :patch 'nine :include true}
  pom {:project (get-env :project) }
  aot {:namespace '#{triple.repository triple.loader sparql triple.version}})
 

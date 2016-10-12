@@ -21,7 +21,7 @@ echo "${version}"
 
 #+RESULTS: get-version
 :RESULTS:
-Current version: 0.1.8
+Current version: 0.1.9
 :END:
 
 ** All binnary releases
