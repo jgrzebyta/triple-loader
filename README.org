@@ -1,7 +1,7 @@
 #+startup: indent showall
 #+title: README file for sesame loader
 #+author: Jacek Grzebyta
-#+date: <2016-06-01 Wed>
+#+date: <2016-10-12 Wed>
 #+startup: showall
 
 [[https://travis-ci.org/jgrzebyta/sesame-loader.svg?branch=master]]
@@ -35,7 +35,7 @@ Table contains list of all binnary releases with commit and date of commit. The 
 
 #+RESULTS: list-tags
 |     Tag | Commit  | Date                           |
-|   0.1.8 | 3392925 | Wed Oct 12 11:37:46 2016 +0100 |
+|   0.1.8 | dc8deb6 | Wed Oct 12 11:42:17 2016 +0100 |
 |   0.1.7 | d991e73 | Mon Jul 11 11:34:09 2016 +0100 |
 |   0.1.6 | a516a21 | Wed Jun 29 23:53:06 2016 +0100 |
 |   0.1.5 | bf65658 | Wed Jun 29 15:00:35 2016 +0100 |
