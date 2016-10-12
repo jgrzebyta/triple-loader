@@ -15,15 +15,6 @@
            [java.io StringWriter]))
 
 
-(defn- multioption->seq "Function handles multioptions for command line arguments"
-  [previous key val]
-  (assoc previous key
-         (if-let [oldval (get previous key)]
-           (merge oldval val)
-           (list val))))
-
-
-
 (deftest args-parsing-test
   (let [args (->
               ["-f" "yeast_rdf" "-t" "turtle" "-q" "join_yeastract_sparql" "-f" "gene_rdf" "-t" "turtle"]

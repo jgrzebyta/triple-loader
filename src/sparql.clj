@@ -20,28 +20,8 @@
            [org.eclipse.rdf4j.query QueryResults TupleQueryResult GraphQueryResult TupleQuery GraphQuery BooleanQuery]
            [org.eclipse.rdf4j.repository RepositoryResult RepositoryConnection]))
 
-(declare load-multidata process-sparql-query load-sparql)
+(declare process-sparql-query load-sparql)
 
-
-(defn- multioption->seq "Function handles multioptions for command line arguments"
-  [previous key val]
-  (assoc previous key
-         (if-let [oldval (get previous key)]
-           (merge oldval val)
-           (list val))))
-
-;; (defn- map-seqs "Join data files with related type"
-;;   [data-files types]
-;;   ;; check if both sets are not empty
-;;   (log/debug (format "data: %s\t types: %s" data-files types))
-;;   (while (or (empty? data-files) (empty? types)) (ex-info "Empty arguments") { :causes #{:empty-collection-not-expected}})
-;;   ;; check if lenght of both sets it the same
-;;   (while (not= (count data-files)
-;;                (count types)) (throw
-;;                                (ex-info "Data files and types are not matched" { :causes #{:data-files-and-types-not-matched}
-;;                                                                                 :length {:data (count data-files) :types (count types)}})))
-;;   ;; create a colletion of map with keys: :data-file and :type.
-;;   (map (fn [x y] {:data-file x :type y}) data-files types))
 
 
 (defn -main [& args]
@@ -60,7 +40,7 @@
                   sparql (load-sparql (:q opts))
                   dataset (:f opts)]
               (let [wrt (StringWriter. 100)]
-                (pp/pprint dataset wrt)
+                (pprint dataset wrt)
                 (log/trace "Request: " (.toString wrt)))
               (load-multidata repository dataset)
               (with-open-repository [cx repository]
@@ -103,22 +83,6 @@ otherwise evaluates query with method (.evaluate query writer) with given writer
                           (.rollback connection)
                           (throw t)))
     (finally (.commit connection))))
-
-
-(defn load-multidata "Load multiple data into repository" [repository data-col]
-  (assert (some? repository) "Repository is null")
-  (assert (not (empty? data-col)) "Data collection is empty")
-  (let [wrt (StringWriter.)]
-    (pp/pprint data-col wrt)
-    (log/debug (format "Data collection [%s]: %s" (type data-col) (.toString wrt))))
-  (loop [itms data-col]
-    (let [itm (first itms)]
-      (when itm
-        (do
-          (log/info (format "Load record: %s" itm))
-          (load-data repository (normalise-path itm))
-          (recur (rest itms)))))))
-
 
 (defn load-sparql [^String sparql-res] "Load SPARQL query from file."
   ;;detect if argument is a file

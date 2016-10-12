@@ -1,5 +1,5 @@
 (ns triple.multiload-test
-  (:use [sparql :exclude [-main]]
+  (:use [triple.loader :exclude [-main]]
         [triple.repository]
         [triple.loader-test :import [test-repository]]
         [clojure.test]

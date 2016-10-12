@@ -3,11 +3,12 @@
   (:use [clojure.tools.cli :refer [cli]]
         [clojure.tools.logging :as log]
         [clojure.java.io :as io]
+        [clojure.pprint :as pp]
         [triple.reifiers :as ref]
         [triple.version :refer [get-version]]
         [triple.repository])
   (:import [java.nio.file Paths Path]
-           [java.io File]
+           [java.io File StringWriter]
            [org.eclipse.rdf4j IsolationLevel IsolationLevels]
            [org.eclipse.rdf4j.model Resource]
            [org.eclipse.rdf4j.repository.http HTTPRepository HTTPRepositoryConnection]
@@ -127,13 +128,37 @@
                      (.commit cnx))))
         ))))
 
+(defn load-multidata "Load multiple data files into repository"
+  ([repository data-col & { :keys [rdf-handler context-uri]}]
+   (assert (some? repository) "Repository is null")
+   (assert (not (empty? data-col)) "Data collection is empty")
+   (let [wrt (StringWriter.)]
+     (pp/pprint data-col wrt)
+     (log/debug (format "Data collection [%s]: %s" (type data-col) (.toString wrt))))
+   (loop [itms data-col]
+     (let [itm (first itms)]
+       (when itm
+         (do
+           (log/info (format "Load record: %s" itm))
+           (load-data repository (normalise-path itm) rdf-handler context-uri)
+           (recur (rest itms))))))))
+
+
+(defn multioption->seq "Function handles multioptions for command line arguments"
+  [previous key val]
+  (assoc previous key
+         (if-let [oldval (get previous key)]
+           (merge oldval val)
+           (list val))))
+
+
 
 (defn -main [& args]
   (let [[opts args banner] (cli args
                                ["--help" "-h" "Print this screen" :default false :flag true]
                                ["--server URL" "-s" "Sesame SPARQL endpoint URL" :default "http://localhost:8080/rdf4j-server"]
                                ["--repositiry NAME" "-r" "Repository id" :default "test"]
-                               ["--file FILE" "-f" "Data file path"]
+                               ["--file FILE" "-f" "Data file path" :assoc-fn #'multioption->seq]
                                ["--context IRI" "-c" "Context (graph name) of the dataset" :default nil]
                                ["--version" "-V" "Display program version" :defult false :flag true])]
 
