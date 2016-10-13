@@ -11,7 +11,8 @@
            [org.eclipse.rdf4j.repository RepositoryResult RepositoryConnection]
            [org.eclipse.rdf4j.repository.http HTTPRepository]
            [org.eclipse.rdf4j.repository.sail SailRepository]
-           [org.eclipse.rdf4j.sail.memory MemoryStore]))
+           [org.eclipse.rdf4j.sail.memory MemoryStore]
+           [org.eclipse.rdf4j.sail.lucene LuceneSail]))
 
 
 #_(deftest connect-triple 							; temporary switching off integration test
@@ -68,14 +69,14 @@
     (.shutDown repo)))
 
 (deftest test-delete-temp-repository
-  (testing "Delete tmp repository")
-  (let [repository (make-repository-with-lucene)
-        tmp-dir (@temp-repository :path)]
-    (is (instance? File tmp-dir))
-    (is (.exists tmp-dir))  ;; repository still exists
-    (delete-temp-repository)
-    (log/debug "state after: " @temp-repository)  ;; repository is deleted
-    ))
+  (testing "Delete tmp repository"
+    (let [repository (make-repository-with-lucene)
+          tmp-dir (@temp-repository :path)]
+      (is (instance? File tmp-dir))
+      (is (.exists tmp-dir))  ;; repository still exists
+      (delete-temp-repository)
+      (log/debug "state after: " @temp-repository)  ;; repository is deleted
+      )))
 
 (deftest load-data-test
   (let [repo (make-repository-with-lucene nil)]
@@ -86,3 +87,21 @@
         (.shutDown repo)
         (delete-temp-repository))
     )))
+
+(deftest repository-deduping-test
+  (testing "issue #15"
+    (let [repo (make-repository-with-lucene)
+          vf (value-factory)]
+      (with-open-repository [cnx repo]
+       (try 
+         ;; load dirty data
+         (.add cnx (.createIRI vf "urn:subject/1") (.createIRI vf "urn:predicate1") (.createLiteral vf "Ala") (make-array Resource 0))
+         (.add cnx (.createIRI vf "urn:subject/1") (.createIRI vf "urn:predicate1") (.createLiteral vf "ma") (make-array Resource 0))
+         (.add cnx (.createIRI vf "urn:subject/1") (.createIRI vf "urn:predicate1") (.createLiteral vf "kota") (make-array Resource 0))
+         (.add cnx (.createIRI vf "urn:subject/1") (.createIRI vf "urn:predicate1") (.createLiteral vf "kota") (make-array Resource 0))
+         (finally (.commit cnx))))
+      ;; check number of triples
+      (test-repository repo 3)
+      (.shutDown repo)
+      (delete-temp-repository))
+    ))
