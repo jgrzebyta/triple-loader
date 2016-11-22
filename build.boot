@@ -8,9 +8,9 @@
                           [org.clojure/tools.logging "0.3.1"]
                           [clj-pid/clj-pid "0.1.2"]
                           [commons-io/commons-io "2.5"]
-                          [org.eclipse.rdf4j/rdf4j-repository-http "2.0.1" :exclusions [commons-io org.slf4j/slf4j-api]]
-                          [org.eclipse.rdf4j/rdf4j-runtime "2.0.1" :exclusions [org.slf4j/slf4j-api]]
-                          [org.eclipse.rdf4j/rdf4j-repository-sail "2.0.1" :scope "test" :exclusions [org.slf4j/slf4j-api]]
+                          [org.eclipse.rdf4j/rdf4j-repository-http "2.1.2" :exclusions [commons-io org.slf4j/slf4j-api]]
+                          [org.eclipse.rdf4j/rdf4j-runtime "2.1.2" :exclusions [org.slf4j/slf4j-api]]
+                          [org.eclipse.rdf4j/rdf4j-repository-sail "2.1.2" :scope "test" :exclusions [org.slf4j/slf4j-api]]
                           [ch.qos.logback/logback-classic "1.1.7"]
                           [boot/core "2.6.0" :scope "test"]
                           [degree9/boot-semver "1.3.6" :scope "test"]])
@@ -22,9 +22,10 @@
          '[clojure.java.io :as io]
          '[clojure.string :as str])
 
+(defn ten [& _] "10")
 
 (task-options!
- version {:minor 'one :patch 'nine :include true}
+ version {:minor 'one :patch 'ten :include true}
  pom {:project (get-env :project) }
  aot {:namespace '#{triple.repository triple.loader sparql triple.version}})
 

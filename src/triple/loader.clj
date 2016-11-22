@@ -21,7 +21,7 @@
            [org.eclipse.rdf4j.repository.sail.helpers RDFSailInserter]
            [org.eclipse.rdf4j.repository.util RDFInserter]))
 
-(declare load-data)
+(declare load-data load-multidata)
 
 (defn make-parser-config []
     (doto
@@ -57,15 +57,14 @@
                          (System/exit -1)))))
 
 (defn- do-loading [opts]
-  (let [file-obj (io/file (:f opts))
-        repository (HTTPRepository. (:s opts) (:r opts))
+  (let [repository (HTTPRepository. (:s opts) (:r opts))
         context-string ((fn [x] (if (or (= x "nil")                        ; convert "nil" and "null" texts into boolean nil
                                         (= x "null"))
                                   nil x)) (:c opts))]
     (log/debug (format "Context string: '%s' is nil '%s'"
                        context-string (nil? context-string)))
     (try
-      (load-data repository (:f opts) :rdf-handler ref/chunk-commiter)
+      (load-multidata repository (:f opts) :rdf-handler ref/chunk-commiter)
       (finally (.shutDown repository)))))
 
 
@@ -104,7 +103,7 @@
 
         ;; run parsing
         (try
-          (.begin cnx IsolationLevels/READ_COMMITTED) ;; begin transaction
+          (.begin cnx) ;; begin transaction
           (log/trace "Isolation level: " (.getIsolationLevel cnx)) ;; this features returns null for SailRepositoryConnection
           (log/debug "is repository active: " (.isActive cnx))
           

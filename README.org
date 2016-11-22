@@ -21,7 +21,7 @@ echo "${version}"
 
 #+RESULTS: get-version
 :RESULTS:
-Current version: 0.1.9
+Current version: 0.1.10
 :END:
 
 ** All binnary releases
@@ -56,8 +56,8 @@ Loads data into triple store.
 This is implementation of method described in [article] (http://www.rivuli-development.com/further-reading/sesame-cookbook/loading-large-file-in-sesame-native/) published in Rivuli's *The Sesame Coocbook*.
 
 
-#+begin_src shell :exports source
-java -cp triple-loader-0.1.1-SNAPSHOT-standalone.jar triple.loader [options]
+#+begin_src shell
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar triple.loader [options]
 #+end_src
 
 *** Options
@@ -67,12 +67,20 @@ java -cp triple-loader-0.1.1-SNAPSHOT-standalone.jar triple.loader [options]
     - --context IRI, -c :: Context (graph name) of the dataset
     - --version, -V :: Print version number
     - --help, -h :: Help
+*** Example
+
+Populate triple store at =http://localhost:8090/rdf4j-server/test= with data from two files.
+
+#+begin_src shell
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar triple.loader -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl
+#+end_src
+
 
 ** sparql
 Executes SPARQL /query/ on data provided by /file/.  
 
-#+begin_src sh :exports source
-java -cp triple-loader-0.1.1-SNAPSHOT-standalone.jar sparql [options]
+#+begin_src shell
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar sparql [options]
 #+end_src
 
 *** Options
@@ -80,5 +88,23 @@ java -cp triple-loader-0.1.1-SNAPSHOT-standalone.jar sparql [options]
     - --query STRINGm -q :: Path to file with query or the query itself
     - --version, -v :: Print version number
     - --help, -h :: Help
+*** Example
+
+1. Process SPARQL request =select * where {?s ?p ?o} limit 10= on data located in two files.
+
+#+begin_src shell
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar sparql -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl -q "select * where {?s ?p ?o} limit 10"
+#+end_src
+
+
+2. Process SPARQL request from file =~/database/process.sparql= on data located in two files.
+
+#+begin_src shell
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar sparql -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl -q ~/database/process.sparql
+#+end_src
+
+
+
+
 * 3. Contacts
 To contact with me please use *Issues* interface.
