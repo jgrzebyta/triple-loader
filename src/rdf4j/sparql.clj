@@ -14,7 +14,7 @@
            [org.eclipse.rdf4j.rio Rio RDFFormat RDFWriter ParserConfig RDFParseException]
            [org.eclipse.rdf4j.rio.helpers BasicParserSettings StatementCollector]
            [org.eclipse.rdf4j.query.parser.sparql SPARQLParser SPARQLParserFactory]
-           [org.eclipse.rdf4j.rio.turtle TurtleWriter]
+           [org.eclipse.rdf4j.rio.trig TriGWriter]
            [org.eclipse.rdf4j.query.parser ParsedQuery ParsedBooleanQuery ParsedGraphQuery ParsedTupleQuery]
            [org.eclipse.rdf4j.query.resultio.text.csv SPARQLResultsCSVWriter]
            [org.eclipse.rdf4j.query QueryResults TupleQueryResult GraphQueryResult TupleQuery GraphQuery BooleanQuery]
@@ -72,7 +72,7 @@ otherwise evaluates query with method (.evaluate query writer) with given writer
                    (= writer :none) :none
                    (some? writer) writer
                    (instance? TupleQuery query) (SPARQLResultsCSVWriter. System/out)
-                   (instance? GraphQuery query) (TurtleWriter. System/out))]
+                   (instance? GraphQuery query) (TriGWriter. System/out))]
     (log/debug "Writer: " writer)
     (if (= writer :none)
       (.evaluate query)

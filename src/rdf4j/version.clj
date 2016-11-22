@@ -4,7 +4,6 @@
         [clojure.pprint :as pp]
         [clojure.string :as str :exclude [replace reverse]])
   (:import [java.util.jar JarFile]
-           
            [java.util Properties]))
 
 (declare get-version get-current-jar find-in-jarfile pom-properties)
