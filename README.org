@@ -91,14 +91,14 @@ java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar sparql [options]
     - --help, -h :: Help
 *** Example
 
-1. Process SPARQL request =select * where {?s ?p ?o} limit 10= on data located in two files.
+Process SPARQL request =select * where {?s ?p ?o} limit 10= on data located in two files.
 
 #+begin_src shell
 java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar sparql -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl -q "select * where {?s ?p ?o} limit 10"
 #+end_src
 
 
-2. Process SPARQL request from file =~/database/process.sparql= on data located in two files.
+Process SPARQL request from file =~/database/process.sparql= on data located in two files.
 
 #+begin_src shell
 java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar sparql -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl -q ~/database/process.sparql
