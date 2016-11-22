@@ -27,7 +27,7 @@
 (task-options!
  version {:minor 'one :patch 'ten :include true}
  pom {:project (get-env :project) }
- aot {:namespace '#{triple.repository triple.loader sparql triple.version}})
+ aot {:namespace '#{rdf4j.repository rdf4j.loader sparql rdf4j.version}})
 
 
 (deftask testing "Attach tests/ directory to classpath." []
@@ -40,11 +40,11 @@
   *opts*
   (testing)
   (println (format "Repositories: %s" (get-env :repositories)))
-  (use '[triple.loader-test]
-       '[triple.context-test]
-       '[triple.multiload-test]
-       '[triple.mock-test]
-       '[sparql-test])
+  (use '[rdf4j.loader-test]
+       '[rdf4j.context-test]
+       '[rdf4j.multiload-test]
+       '[rdf4j.mock-test]
+       '[rdf4j.sparql-test])
   (if (nil? (:test-name *opts*))
     (do
       (println "Run all tests")

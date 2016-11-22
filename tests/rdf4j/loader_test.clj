@@ -1,7 +1,7 @@
-(ns triple.loader-test
-  (:use [triple.loader]
-        [triple.repository]
-        [triple.reifiers :only [chunk-commiter]]
+(ns rdf4j.loader-test
+  (:use [rdf4j.loader]
+        [rdf4j.repository]
+        [rdf4j.reifiers :only [chunk-commiter]]
         [clojure.test]
         [clojure.tools.logging :as log]
         [clojure.java.io :as jio])
@@ -19,7 +19,7 @@
     (testing "Test initialising connection."
       (let [server-url "http://localhost:8080/openrdf-sesame"
             repository-id "test"
-            init-connection-f #'triple.loader/init-connection]                  ; access to prive function
+            init-connection-f #'rdf4j.loader/init-connection]                  ; access to prive function
         (with-open-repository (c (HTTPRepository. server-url repository-id))
           (init-connection-f c)
           (is (instance? org.eclipse.rdf4j.repository.RepositoryConnection c))

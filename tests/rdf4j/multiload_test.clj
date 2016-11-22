@@ -1,7 +1,7 @@
-(ns triple.multiload-test
-  (:use [triple.loader :exclude [-main]]
-        [triple.repository]
-        [triple.loader-test :import [test-repository]]
+(ns rdf4j.multiload-test
+  (:use [rdf4j.loader :exclude [-main]]
+        [rdf4j.repository]
+        [rdf4j.loader-test :import [test-repository]]
         [clojure.test]
         [clojure.tools.logging :as log]
         [clojure.java.io :as jio]

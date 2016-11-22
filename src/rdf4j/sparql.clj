@@ -1,14 +1,14 @@
-(ns sparql
+(ns rdf4j.sparql
   (:gen-class)
   (:use [clojure.tools.cli :refer [cli]]
         [clojure.tools.logging :as log]
         [clojure.pprint :as pp]
         [clojure.java.io :as io]
         [clojure.string :as st :exclude [reverse replace]]
-        [triple.repository]
-        [triple.reifiers]
-        [triple.loader :exclude [-main]]
-        [triple.version :exclude [-main] :as v])
+        [rdf4j.repository]
+        [rdf4j.reifiers]
+        [rdf4j.loader :exclude [-main]]
+        [rdf4j.version :exclude [-main] :as v])
   (:import [java.io FileReader StringWriter]
            [org.eclipse.rdf4j.query MalformedQueryException]
            [org.eclipse.rdf4j.rio Rio RDFFormat RDFWriter ParserConfig RDFParseException]

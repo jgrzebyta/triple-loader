@@ -1,4 +1,4 @@
-(ns triple.repository
+(ns rdf4j.repository
   (:use [clojure.tools.logging :as log]
         [clojure.java.io :as io]
         [clj-pid.core :as pid]

@@ -1,10 +1,10 @@
-(ns triple.context-test
+(ns rdf4j.context-test
   (:gen-class)
   (:use [clojure.tools.logging :as log]
         [clojure.java.io :as jio]
         [clojure.test]
-        [triple.repository]
-        [triple.reifiers])
+        [rdf4j.repository]
+        [rdf4j.reifiers])
   (:import [org.eclipse.rdf4j.model Resource IRI URI Value]
            [org.eclipse.rdf4j.repository RepositoryConnection]
            [org.eclipse.rdf4j.query QueryLanguage]

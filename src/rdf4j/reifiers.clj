@@ -1,5 +1,5 @@
-(ns triple.reifiers
-  (:use [triple.repository]
+(ns rdf4j.reifiers
+  (:use [rdf4j.repository]
         [clojure.tools.logging :as log])
   (:import [org.eclipse.rdf4j.model ValueFactory]
            [org.eclipse.rdf4j.model.impl ContextStatement]

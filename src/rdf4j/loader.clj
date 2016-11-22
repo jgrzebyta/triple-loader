@@ -1,12 +1,12 @@
-(ns triple.loader
+(ns rdf4j.loader
   (:gen-class)
   (:use [clojure.tools.cli :refer [cli]]
         [clojure.tools.logging :as log]
         [clojure.java.io :as io]
         [clojure.pprint :as pp]
-        [triple.reifiers :as ref]
-        [triple.version :refer [get-version]]
-        [triple.repository])
+        [rdf4j.reifiers :as ref]
+        [rdf4j.version :refer [get-version]]
+        [rdf4j.repository])
   (:import [java.nio.file Paths Path]
            [java.io File StringWriter]
            [org.eclipse.rdf4j IsolationLevel IsolationLevels]

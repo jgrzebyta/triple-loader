@@ -1,15 +1,15 @@
-(ns sparql-test
+(ns rdf4j.sparql-test
   (:gen-class)
-  (:use [sparql :exclude [-main]]
+  (:use [rdf4j.sparql :exclude [-main]]
         [clojure.tools.cli :refer [cli parse-opts]]
         [clojure.tools.logging :as log]
         [clojure.java.io :as jio]
         [clojure.string :as st :exclude [reverse replace]]
         [clojure.pprint :as pp]
         [clojure.test]
-        [triple.repository]
-        [triple.loader :exclude [-main]]
-        [triple.loader-test])
+        [rdf4j.repository]
+        [rdf4j.loader :exclude [-main]]
+        [rdf4j.loader-test])
   (:import [org.eclipse.rdf4j.rio RDFFormat]
            [clojure.lang ArraySeq]
            [java.io StringWriter]))

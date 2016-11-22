@@ -58,7 +58,7 @@ This is implementation of method described in [article] (http://www.rivuli-devel
 
 
 #+begin_src shell
-java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar triple.loader [options]
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.loader [options]
 #+end_src
 
 *** Options
@@ -73,7 +73,7 @@ java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar triple.loader [options]
 Populate triple store at =http://localhost:8090/rdf4j-server/test= with data from two files.
 
 #+begin_src shell
-java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar triple.loader -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.loader -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl
 #+end_src
 
 
@@ -81,7 +81,7 @@ java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar triple.loader -s http://lo
 Executes SPARQL /query/ on data provided by /file/.  
 
 #+begin_src shell
-java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar sparql [options]
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.sparql [options]
 #+end_src
 
 *** Options
@@ -94,14 +94,14 @@ java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar sparql [options]
 Process SPARQL request =select * where {?s ?p ?o} limit 10= on data located in two files.
 
 #+begin_src shell
-java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar sparql -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl -q "select * where {?s ?p ?o} limit 10"
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf.4sparql -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl -q "select * where {?s ?p ?o} limit 10"
 #+end_src
 
 
 Process SPARQL request from file =~/database/process.sparql= on data located in two files.
 
 #+begin_src shell
-java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar sparql -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl -q ~/database/process.sparql
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.sparql -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl -q ~/database/process.sparql
 #+end_src
 
 
