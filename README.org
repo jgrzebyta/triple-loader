@@ -105,7 +105,7 @@ java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.sparql -s http://loc
 #+end_src
 
 ** rdf4j.dump
-Creates remote repository dump file in *TriG* format. =[[rdf4j.loader]]= function is suitable for restoring triple. 
+Creates remote repository dump file in *TriG* format. [[#rdf4jloader][rdf4j.loader]] function is suitable for restoring triple. 
 
 #+begin_src shell
 java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.dump [options]
@@ -122,14 +122,14 @@ java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.dump [options]
 Dump =http://localhpost:8090/rdf4j-server/test= repository to standard output.
 
 #+begin_src shell
-java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.dump -s http://localhpost:8090/rdf4j-server/test -r test
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.dump -s http://localhpost:8090/rdf4j-server -r test
 #+end_src
 
 
 Dump =http://localhpost:8090/rdf4j-server/test= repository to =/tmp/test-repo.trig= file.
 
 #+begin_src shell
-java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.dump -s http://localhpost:8090/rdf4j-server/test -r test -f /tmp/test-repo.trig
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.dump -s http://localhpost:8090/rdf4j-server -r test -f /tmp/test-repo.trig
 #+end_src
 
 * 3. Contacts
