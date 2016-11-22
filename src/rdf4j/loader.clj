@@ -158,7 +158,7 @@
                                ["--server URL" "-s" "Sesame SPARQL endpoint URL" :default "http://localhost:8080/rdf4j-server"]
                                ["--repositiry NAME" "-r" "Repository id" :default "test"]
                                ["--file FILE" "-f" "Data file path" :assoc-fn #'multioption->seq]
-                               ["--context IRI" "-c" "Context (graph name) of the dataset" :default nil]
+                               ["--context IRI" "-c" "Context (graph name) of the dataset. Ignored if file format is context aware, e.g. TriG" :default nil]
                                ["--version" "-V" "Display program version" :defult false :flag true])]
 
     (cond

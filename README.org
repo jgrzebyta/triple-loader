@@ -52,7 +52,7 @@ Table contains list of all binnary releases with commit and date of commit. The 
 
 
 * 2. List of commands
-** triple.loader
+** rdf4j.loader
 Loads data into triple store.
 This is implementation of method described in [article] (http://www.rivuli-development.com/further-reading/sesame-cookbook/loading-large-file-in-sesame-native/) published in Rivuli's *The Sesame Coocbook*.
 
@@ -65,7 +65,7 @@ java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.loader [options]
     - --server URL, -s :: Sesame SPARQL endpoint URL. Default: http://localhost:8080/rdf4j-server                  
     - --repositiry NAME, -r :: Repository id. Default: test
     - --file FILE, -f :: Data file path                                       
-    - --context IRI, -c :: Context (graph name) of the dataset
+    - --context IRI, -c :: Context (graph name) of the dataset. *If FILE's format is context-aware (e.g. TriG) than this option is ignored.* 
     - --version, -V :: Print version number
     - --help, -h :: Help
 *** Example
@@ -77,7 +77,7 @@ java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.loader -s http://loc
 #+end_src
 
 
-** sparql
+** rdf4.sparql
 Executes SPARQL /query/ on data provided by /file/.  
 
 #+begin_src shell
@@ -104,8 +104,33 @@ Process SPARQL request from file =~/database/process.sparql= on data located in 
 java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.sparql -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl -q ~/database/process.sparql
 #+end_src
 
+** rdf4j.dump
+Creates remote repository dump file in *TriG* format. =[[rdf4j.loader]]= function is suitable for restoring triple. 
+
+#+begin_src shell
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.dump [options]
+#+end_src
+
+*** Options
+- --help, -h :: Help
+- --server URL, -s :: RDF4J SPARQL endpoint URL, default =http://localhost:8080/rdf4j-server=
+- --repositiry NAME, -r :: Repository id, default: =test=
+- --file FILE, -f :: Data file path or standard output if not given 
+- --version, -V :: Display program version 
+
+*** Example
+Dump =http://localhpost:8090/rdf4j-server/test= repository to standard output.
+
+#+begin_src shell
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.dump -s http://localhpost:8090/rdf4j-server/test -r test
+#+end_src
 
 
+Dump =http://localhpost:8090/rdf4j-server/test= repository to =/tmp/test-repo.trig= file.
+
+#+begin_src shell
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.dump -s http://localhpost:8090/rdf4j-server/test -r test -f /tmp/test-repo.trig
+#+end_src
 
 * 3. Contacts
 To contact with me please use *Issues* interface.

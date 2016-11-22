@@ -28,7 +28,7 @@
 (task-options!
  version {:minor 'one :patch 'ten :include true}
  pom {:project (get-env :project) }
- aot {:namespace '#{rdf4j.repository rdf4j.loader sparql rdf4j.version}})
+ aot {:namespace '#{rdf4j.repository rdf4j.loader rdf4j.sparql rdf4j.version rdf4j.dump}})
 
 
 (deftask testing "Attach tests/ directory to classpath." []
