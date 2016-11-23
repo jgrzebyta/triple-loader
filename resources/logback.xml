@@ -9,12 +9,13 @@
 	</appender>
 	
 
+	<!-- <logger name="rdf4j.dump" level="debug"/> -->
 	<!-- <logger name="triple.repository" level="debug"/> -->
 	<!-- <Logger name="triple.loader" level="trace"/> -->
 	<!-- <Logger name="sparql-test" level="debug"/> -->
 
 	<root>
-		<level value="warn" />
+		<level value="info" />
 		<appender-ref ref="STDERR" />
 	</root>
 </configuration>

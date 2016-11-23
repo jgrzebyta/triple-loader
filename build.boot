@@ -23,10 +23,10 @@
          '[clojure.java.io :as io]
          '[clojure.string :as str])
 
-(defn ten [& _] "10")
+(defn current [& _] "11")
 
 (task-options!
- version {:minor 'one :patch 'ten :include true}
+ version {:minor 'one :patch 'current :include true}
  pom {:project (get-env :project) }
  aot {:namespace '#{rdf4j.repository rdf4j.loader rdf4j.sparql rdf4j.version rdf4j.dump}})
 

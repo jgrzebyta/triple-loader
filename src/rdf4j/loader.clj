@@ -3,6 +3,7 @@
   (:use [clojure.tools.cli :refer [cli]]
         [clojure.tools.logging :as log]
         [clojure.java.io :as io]
+        [clojure.string :refer [blank?]]
         [clojure.pprint :as pp]
         [rdf4j.reifiers :as ref]
         [rdf4j.version :refer [get-version]]
@@ -28,11 +29,15 @@
         (ParserConfig.)
       (.set BasicParserSettings/PRESERVE_BNODE_IDS true)))
 
-(defmulti normalise-path "Proceeds path string normalisation. Additionally replace '~' character by Java's 'user.home' system property content."
+(defmulti normalise-path
+  "Proceeds path string normalisation. Additionally replace '~' character by Java's 'user.home' system property content.
+  If string is blank (ref. clojure.string/blank?) than returns nil."
   (fn [path] (type path)))
 
 (defmethod normalise-path String [path]
-  (normalise-path (Paths/get path (make-array String 0))))
+  (if-not (blank? path)
+    (normalise-path (Paths/get path (make-array String 0)))
+    nil))
 
 (defmethod normalise-path Path [path]
   (let [path-as-string (.toString path)]
