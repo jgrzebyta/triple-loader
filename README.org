@@ -86,10 +86,12 @@ java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.sparql [options]
 #+end_src
 
 *** Options
-    - --file FILE, -f :: Data file path 
-    - --query STRINGm -q :: Path to file with query or the query itself
-    - --version, -v :: Print version number
-    - --help, -h :: Help
+    - --file FILE, -f :: Data file path.
+    - --query STRINGm -q :: Path to file with query or the query itself.
+    - --formaT -t :: Format of SPARQL query resut. Option '-t :list' gives full list of supported formats. 
+                     By default writers formats are =sparql/tsv= and =trig= for =tuple query= and =graph query= respectively.
+    - --version, -v :: Print version number.
+    - --help, -h :: Help.
 *** Example
 
 Process SPARQL request =select * where {?s ?p ?o} limit 10= on data located in two files.
@@ -104,6 +106,13 @@ Process SPARQL request from file =~/database/process.sparql= on data located in 
 #+begin_src shell
 java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.sparql -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl -q ~/database/process.sparql
 #+end_src
+
+Process SPARQL request from file =~/database/process.sparql= on data located in two files and print results in =sprarql/json= format.
+
+#+begin_src shell
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.sparql -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl -q ~/database/process.sparql -t sparql/json
+#+end_src
+
 
 ** rdf4j.dump
 Creates remote repository dump file in *TriG* format. [[#rdf4jloader][rdf4j.loader]] function is suitable for restoring triple. 
