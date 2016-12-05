@@ -35,6 +35,7 @@ Table contains list of all binnary releases with commit and date of commit. The 
 
 #+RESULTS: list-tags
 |     Tag | Commit  | Date                           |
+|  0.1.12 | eca1168 | Mon Dec 5 11:37:50 2016 +0000  |
 |  0.1.11 | 69bbc47 | Wed Nov 23 14:37:09 2016 +0000 |
 |  0.1.10 | 03a67c0 | Tue Nov 22 12:32:54 2016 +0000 |
 |   0.1.9 | e65c17f | Wed Oct 12 16:36:17 2016 +0100 |
@@ -87,7 +88,7 @@ java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.sparql [options]
 
 *** Options
     - --file FILE, -f :: Data file path.
-    - --query STRINGm -q :: Path to file with query or the query itself.
+    - --query STRING -q :: Path to file with query or the query itself.
     - --formaT -t :: Format of SPARQL query resut. Option '-t :list' gives full list of supported formats. 
                      By default writers formats are =sparql/tsv= and =trig= for =tuple query= and =graph query= respectively.
     - --version, -v :: Print version number.
@@ -97,7 +98,7 @@ java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.sparql [options]
 Process SPARQL request =select * where {?s ?p ?o} limit 10= on data located in two files.
 
 #+begin_src shell
-java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf.4sparql -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl -q "select * where {?s ?p ?o} limit 10"
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.sparql -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl -q "select * where {?s ?p ?o} limit 10"
 #+end_src
 
 
