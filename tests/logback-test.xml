@@ -8,9 +8,11 @@
 	  <target>System.err</target>
 	</appender>
 	
-	<logger name="rdf4j.reifiers" level="debug" />
+	<!-- <logger name="rdf4j.reifiers" level="debug" />-->
 	<logger name="rdf4j.loader-test" level="debug"/>
 	<logger name="rdf4j.repository" level="debug"/>
+	<logger name="rdf4j.loader" level="debug"/>
+	<logger name="rdf4j.context-test" level="debug"/> -->
 
 	<root>
 		<level value="info" />

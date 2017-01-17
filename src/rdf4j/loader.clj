@@ -45,13 +45,12 @@
                            (make-array String 0)))))
 
 
-(defn init-connection "Initialise Connection."
-  [^RepositoryConnection connection]
+(defn init-connection "Initialise Connection." [^RepositoryConnection connection]
   (log/trace "connection instance: " connection)
   (let [repository (.getRepository connection)]
     (log/debug "Repository: " (if (instance? HTTPRepository repository)
                                 (.getRepositoryURL repository)
-                                (.getAbsolutePath (.getDataDir repository)))))
+                                (.toString repository)))
   (try
     (.setParserConfig connection (make-parser-config))
     (catch RepositoryException e (do
@@ -59,17 +58,18 @@
                                    (throw e)))
     (catch Throwable t (do
                          (log/error "Error: " (.getMessage t))
-                         (System/exit -1)))))
+                         (System/exit -1))))))
 
 (defn- do-loading [opts]
   (let [repository (HTTPRepository. (:s opts) (:r opts))
         context-string ((fn [x] (if (or (= x "nil")                        ; convert "nil" and "null" texts into boolean nil
-                                        (= x "null"))
+                                        (= x "null")
+                                        (= x ""))
                                   nil x)) (:c opts))]
     (log/debug (format "Context string: '%s' is nil '%s'"
                        context-string (nil? context-string)))
     (try
-      (load-multidata repository (:f opts) :rdf-handler ref/chunk-commiter)
+      (load-multidata repository (:f opts) :rdf-handler ref/chunk-commiter :context-uri context-string)
       (finally (.shutDown repository)))))
 
 
@@ -94,8 +94,8 @@
       (init-connection cnx)
       (let [rdf-handler-object (if (some? rdf-handler)
                                  (if (fn? rdf-handler)
-                                   (apply rdf-handler cnx context-uri)
-                                   (apply (resolve rdf-handler) cnx context-uri)) nil)]
+                                   (apply rdf-handler [cnx context-uri])
+                                   (apply (resolve rdf-handler) [cnx context-uri])) nil)]
         ; Set up handler only if the handler was given
         (when (some? rdf-handler-object)
           (log/debug "Set up rdf handler: " rdf-handler-object)
@@ -143,8 +143,8 @@
      (let [itm (first itms)]
        (when itm
          (do
-           (log/info (format "Load record: %s" itm))
-           (load-data repository (normalise-path itm) rdf-handler context-uri)
+           (log/info (format "Load dataset: %s into context: %s" itm context-uri))
+           (load-data repository (normalise-path itm) :rdf-handler rdf-handler :context-uri context-uri)
            (recur (rest itms))))))))
 
 

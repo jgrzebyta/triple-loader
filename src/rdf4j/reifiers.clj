@@ -9,7 +9,7 @@
            [org.eclipse.rdf4j.repository.util RDFInserter]))
 
 
-(def chunk-size 1000)
+(def chunk-size 10000)
 
 
 (defn context-statement "Create context statement"
