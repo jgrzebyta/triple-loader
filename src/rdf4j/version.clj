@@ -1,5 +1,4 @@
 (ns rdf4j.version
-  (:gen-class)
   (:use [clojure.java.io :as io]
         [clojure.pprint :as pp]
         [clojure.string :as str :exclude [replace reverse]])
