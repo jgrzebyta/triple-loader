@@ -1,7 +1,7 @@
 (ns rdf4j.loader-test
   (:use [rdf4j.loader]
         [rdf4j.repository]
-        [rdf4j.reifiers :only [chunk-commiter]]
+        [rdf4j.reifiers :only [counter-commiter]]
         [clojure.test]
         [clojure.tools.logging :as log]
         [clojure.java.io :as jio])
@@ -58,7 +58,7 @@
                   fr (jio/reader file-obj)]
         ;; parse file
         (log/debug "start file parsing")
-        (.setRDFHandler pars (chunk-commiter conn))
+        (.setRDFHandler pars (counter-commiter conn))
         (.parse pars fr (.toString (.toURI file-obj)))
         (.commit conn)
         (is (not (.isEmpty conn)))

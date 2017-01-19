@@ -69,8 +69,9 @@
     (log/debug (format "Context string: '%s' is nil '%s'"
                        context-string (nil? context-string)))
     (try
-      (load-multidata repository (:f opts) :rdf-handler ref/chunk-commiter :context-uri context-string)
-      (finally (.shutDown repository)))))
+      (load-multidata repository (:f opts) :rdf-handler ref/counter-commiter :context-uri context-string)
+      (finally (.shutDown repository)))
+    (log/info (format "Loaded %d statements" (ref/countStatements)))))
 
 
 

@@ -9,9 +9,6 @@
            [org.eclipse.rdf4j.repository.util RDFInserter]))
 
 
-(def chunk-size 10000)
-
-
 (defn context-statement "Create context statement"
   [connection context-string simple-statement]
   (let [vf (value-factory connection)
@@ -22,16 +19,18 @@
                       (.getObject simple-statement)
                       context-uri)))
 
+;; Chunk loading is implemented internally in HTTPRepositoryConnection 
+#_(defn chunk-commiter (nil))
 
+(def cnt (atom 0))
 
-(defn chunk-commiter "Implements RDFHandler. It accepts 2 arguments "
-  ([connection] (chunk-commiter connection nil))
+(defn counter-commiter "Implements RDFHandler. It accepts 2 arguments "
+  ([connection] (counter-commiter connection nil))
   ([connection context-string]
    (let [statement-converter (if (some? context-string)
                                (partial context-statement connection context-string)
                                (fn [x] (do x)))
          inserter (RDFInserter. connection)
-         cnt (atom 0)
          value-factory (value-factory connection)]
      (proxy [AbstractRDFHandler] []
        (startRDF [] (do
@@ -46,21 +45,7 @@
                                       (.handleStatement inserter (statement-converter statement))
                                       (log/debug (format "[%d] --statement --" @cnt))
                                       (log/trace (format "statement instance %s" (type statement)))
-                                      
                                       (swap! cnt inc) ;; increase value of cnt by 1 
-                                      (if (= 0 (mod @cnt chunk-size))  ;; @cnt gives value of cnt
-                                        (try
-                                          (log/debug (format "[%d] time to commit!" @cnt))
-                                          (.commit connection)
-                                          (catch RepositoryException e (RDFHandlerException. e))
-                                          ))))))))
+                                      ))))))
 
-;; (defn statement-counter "implement statement counter based on Sesame's manual: 
-;;   http://rdf4j.org/doc/4/programming.docbook?view#chapter-rio1" []
-;;   (let [counter 0]
-;;     (proxy [AbstractRDFHandler] []
-;;       (handleStatement [_]
-;;         (alter-var-root 'counter inc))
-;;       (getCountedStatements []
-;;         counter)
-;;       )))
+(defn countStatements [] (deref cnt))
