@@ -1,0 +1,96 @@
+@base <urn:file:beet#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix csv: <http://vocab.sindice.net/csv/> .
+@prefix : <file:/tmp2/> .
+
+
+ <urn:world-beet-production> {
+<file:/tmp2/beet-1.csv>
+csv:numberOfColumns 3 ;
+csv:numberOfRows 10 ;
+csv:row <file:/tmp2/beet-1.csvrow/0>, <file:/tmp2/beet-1.csvrow/1>, <file:/tmp2/beet-1.csvrow/2>, <file:/tmp2/beet-1.csvrow/3>, <file:/tmp2/beet-1.csvrow/4>, <file:/tmp2/beet-1.csvrow/5>, <file:/tmp2/beet-1.csvrow/6>, <file:/tmp2/beet-1.csvrow/7>, <file:/tmp2/beet-1.csvrow/8>, <file:/tmp2/beet-1.csvrow/9> .
+
+<file:/tmp2/beet-1.csvCountries>
+csv:columnPosition 1 ;
+rdfs:label "Countries" .
+
+<file:/tmp2/beet-1.csvRank>
+csv:columnPosition 0 ;
+rdfs:label "Rank" .
+
+<file:/tmp2/beet-1.csvTons>
+csv:columnPosition 2 ;
+rdfs:label "Tons" .
+
+<file:/tmp2/beet-1.csvrow/0>
+:beet-1.csvCountries "Russia"^^<http://www.w3.org/2001/XMLSchema#string> ;
+:beet-1.csvRank 1 ;
+:beet-1.csvTons 45057000 ;
+csv:rowPosition "0" ;
+a csv:Row .
+
+<file:/tmp2/beet-1.csvrow/1>
+:beet-1.csvCountries "France"^^<http://www.w3.org/2001/XMLSchema#string> ;
+:beet-1.csvRank 2 ;
+:beet-1.csvTons 33688393 ;
+csv:rowPosition "1" ;
+a csv:Row .
+
+<file:/tmp2/beet-1.csvrow/2>
+:beet-1.csvCountries "UnitedStates"^^<http://www.w3.org/2001/XMLSchema#string> ;
+:beet-1.csvRank 3 ;
+:beet-1.csvTons 31954713 ;
+csv:rowPosition "2" ;
+a csv:Row .
+
+<file:/tmp2/beet-1.csvrow/3>
+:beet-1.csvCountries "Germany"^^<http://www.w3.org/2001/XMLSchema#string> ;
+:beet-1.csvRank 4 ;
+:beet-1.csvTons 27891000 ;
+csv:rowPosition "3" ;
+a csv:Row .
+
+<file:/tmp2/beet-1.csvrow/4>
+:beet-1.csvCountries "Ukraine"^^<http://www.w3.org/2001/XMLSchema#string> ;
+:beet-1.csvRank 5 ;
+:beet-1.csvTons 18438900 ;
+csv:rowPosition "4" ;
+a csv:Row .
+
+<file:/tmp2/beet-1.csvrow/5>
+:beet-1.csvCountries "Turkey"^^<http://www.w3.org/2001/XMLSchema#string> ;
+:beet-1.csvRank 6 ;
+:beet-1.csvTons 15000000 ;
+csv:rowPosition "5" ;
+a csv:Row .
+
+<file:/tmp2/beet-1.csvrow/6>
+:beet-1.csvCountries "Poland"^^<http://www.w3.org/2001/XMLSchema#string> ;
+:beet-1.csvRank 7 ;
+:beet-1.csvTons 12349546 ;
+csv:rowPosition "6" ;
+a csv:Row .
+
+<file:/tmp2/beet-1.csvrow/7>
+:beet-1.csvCountries "Chinamainland"^^<http://www.w3.org/2001/XMLSchema#string> ;
+:beet-1.csvRank 8 ;
+:beet-1.csvTons 11469050 ;
+csv:rowPosition "7" ;
+a csv:Row .
+
+<file:/tmp2/beet-1.csvrow/8>
+:beet-1.csvCountries "Egypt"^^<http://www.w3.org/2001/XMLSchema#string> ;
+:beet-1.csvRank 9 ;
+:beet-1.csvTons 9126058 ;
+csv:rowPosition "8" ;
+a csv:Row .
+
+<file:/tmp2/beet-1.csvrow/9>
+:beet-1.csvCountries "UnitedKingdom"^^<http://www.w3.org/2001/XMLSchema#string> ;
+:beet-1.csvRank 10 ;
+:beet-1.csvTons 7291000 ;
+csv:rowPosition "9" ;
+a csv:Row .
+
+}

@@ -1,4 +1,4 @@
-(ns triple.repository
+(ns rdf4j.repository
   (:use [clojure.tools.logging :as log]
         [clojure.java.io :as io]
         [clj-pid.core :as pid]
@@ -31,7 +31,7 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
 (defmulti value-factory "Returns instance of value-factory for given optional object. The object might be either RepositoryConnection or Repository" (fn [& [x]] (type x)))
 
 (defmethod value-factory Repository [x] (.getValueFactory x))
-(defmethod value-factory RepositoryConnection [x] (value-factory (.getRepository x)))
+(defmethod value-factory RepositoryConnection [x] (.getValueFactory x))
 (defmethod value-factory :default [& _] (SimpleValueFactory/getInstance))
 
 
@@ -83,16 +83,22 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
   Where initseq is (CONNECTION-VARIABLE REPOSITORY). For example (cnx :memory)
   If REPOSITORY has value ':memory' then memory repository is created."
   [initseq & body]
-  (let [[connection-var repo-init] initseq
-        repository-seq# (if (= repo-init :memory)
-                     `(make-repository)
-                     repo-init)]
-    `(let [^org.eclipse.rdf4j.repository.Repository repository# ~repository-seq#]
-       (try (.initialize repository#)
+  (let [[connection-var repo-init] initseq]
+    `(let [^org.eclipse.rdf4j.repository.Repository repository# ~repo-init]
+       (log/trace (format "repository instance: %s" (.toString repository#)))
+       (try (when-not (.isInitialized repository#)
+              (log/debug "Initialize repository")
+              (.initialize repository#))
             (with-open [~connection-var (.getConnection repository#)]
-              ~@body)
-            (finally 
-              (.shutDown repository#))))))
+              (try
+                ~@body
+                (catch Exception e#
+                  (.rollback ~connection-var)
+                  (throw e#))))
+            (catch Exception e# (log/error (format "Initialise error [%s]: %s"
+                                                   (.getName (.getClass e#))
+                                                   (.getMessage e#)))
+                   (throw e#))))))
 
 
 (defn context-array
@@ -128,8 +134,8 @@ Code was adapted from kr-sesame: sesame-context-array."
 
 (defmulti get-statements "Return a sequence of all statements either from repository or repository connection meeting given pattern. " (fn [r s p o use-reified context] (type r)))
 
-(defmethod get-statements Repository [r s p o use-reified context] (with-open-repository [i r]
-                                                                     (get-statements i s p o use-reified context)))
+(defmethod get-statements Repository [rep s p o use-reified context] (with-open-repository [cnx rep]
+                                                                       (get-statements cnx s p o use-reified context)))
 
 (defmethod get-statements RepositoryConnection [kb s p o use-reified context] (doall
                                                                                (iter-seq (.getStatements kb

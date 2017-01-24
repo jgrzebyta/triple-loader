@@ -1,5 +1,5 @@
-(ns triple.reifiers
-  (:use [triple.repository]
+(ns rdf4j.reifiers
+  (:use [rdf4j.repository]
         [clojure.tools.logging :as log])
   (:import [org.eclipse.rdf4j.model ValueFactory]
            [org.eclipse.rdf4j.model.impl ContextStatement]
@@ -9,7 +9,7 @@
            [org.eclipse.rdf4j.repository.util RDFInserter]))
 
 
-(def chunk-size 1000)
+(def chunk-size 10000)
 
 
 (defn context-statement "Create context statement"

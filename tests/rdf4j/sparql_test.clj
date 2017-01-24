@@ -1,27 +1,20 @@
-(ns sparql-test
-  (:use [sparql :exclude [-main]]
+(ns rdf4j.sparql-test
+  (:gen-class)
+  (:use [rdf4j.sparql :exclude [-main]]
         [clojure.tools.cli :refer [cli parse-opts]]
         [clojure.tools.logging :as log]
         [clojure.java.io :as jio]
         [clojure.string :as st :exclude [reverse replace]]
         [clojure.pprint :as pp]
         [clojure.test]
-        [triple.repository]
-        [triple.loader :exclude [-main]]
-        [triple.loader-test]
-        [triple.multiload-test :refer [+datasets+]])
+        [rdf4j.repository]
+        [rdf4j.loader :exclude [-main]]
+        [rdf4j.loader-test])
   (:import [org.eclipse.rdf4j.rio RDFFormat]
            [clojure.lang ArraySeq]
            [java.io StringWriter ByteArrayOutputStream]
            [org.eclipse.rdf4j.query.resultio.text.csv SPARQLResultsCSVWriter]))
 
-
-(defn- multioption->seq "Function handles multioptions for command line arguments"
-  [previous key val]
-  (assoc previous key
-         (if-let [oldval (get previous key)]
-           (merge oldval val)
-           (list val))))
 
 (deftest args-parsing-test
   (let [args (->
@@ -49,7 +42,7 @@
 
 (deftest test-load-data 
   (let [repo (make-repository-with-lucene)]
-    (load-data repo "tests/beet.rdf" RDFFormat/RDFXML)
+    (load-data repo "tests/beet.rdf")
   (testing "Count number of triples in repository"
     (test-repository repo 68))
   (delete-temp-repository)))
@@ -57,7 +50,7 @@
 
 (deftest test-sparql-query
   (let [repo (make-repository-with-lucene)]
-    (load-data repo "tests/beet.rdf" RDFFormat/RDFXML)
+    (load-data repo "tests/beet.rdf")
     (testing "execute simple SPARQL query"
       (let [sparql-str "select * where {?s ?p ?o}"]
         (with-open-repository [cx repo]

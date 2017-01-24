@@ -1,7 +1,7 @@
-(ns triple.loader-test
-  (:use [triple.loader]
-        [triple.repository]
-        [triple.reifiers :only [chunk-commiter]]
+(ns rdf4j.loader-test
+  (:use [rdf4j.loader]
+        [rdf4j.repository]
+        [rdf4j.reifiers :only [chunk-commiter]]
         [clojure.test]
         [clojure.tools.logging :as log]
         [clojure.java.io :as jio])
@@ -11,14 +11,15 @@
            [org.eclipse.rdf4j.repository RepositoryResult RepositoryConnection]
            [org.eclipse.rdf4j.repository.http HTTPRepository]
            [org.eclipse.rdf4j.repository.sail SailRepository]
-           [org.eclipse.rdf4j.sail.memory MemoryStore]))
+           [org.eclipse.rdf4j.sail.memory MemoryStore]
+           [org.eclipse.rdf4j.sail.lucene LuceneSail]))
 
 
 #_(deftest connect-triple 							; temporary switching off integration test
     (testing "Test initialising connection."
       (let [server-url "http://localhost:8080/openrdf-sesame"
             repository-id "test"
-            init-connection-f #'triple.loader/init-connection]                  ; access to prive function
+            init-connection-f #'rdf4j.loader/init-connection]                  ; access to prive function
         (with-open-repository (c (HTTPRepository. server-url repository-id))
           (init-connection-f c)
           (is (instance? org.eclipse.rdf4j.repository.RepositoryConnection c))
@@ -64,20 +65,43 @@
         (log/debug "Is Connection empty?: " (.isEmpty conn)))
       )
     (testing "Does more tests ... "
-      (test-repository repo 68))))
+      (test-repository repo 68))
+    (.shutDown repo)))
 
 (deftest test-delete-temp-repository
-  (testing "Delete tmp repository")
-  (let [repository (make-repository-with-lucene)
-        tmp-dir (@temp-repository :path)]
-    (is (instance? File tmp-dir))
-    (is (.exists tmp-dir))  ;; repository still exists
-    (delete-temp-repository)
-    (log/debug "state after: " @temp-repository)  ;; repository is deleted
-    ))
+  (testing "Delete tmp repository"
+    (let [repository (make-repository-with-lucene)
+          tmp-dir (@temp-repository :path)]
+      (is (instance? File tmp-dir))
+      (is (.exists tmp-dir))  ;; repository still exists
+      (delete-temp-repository)
+      (log/debug "state after: " @temp-repository)  ;; repository is deleted
+      )))
 
 (deftest load-data-test
   (let [repo (make-repository-with-lucene nil)]
-    (load-data repo "tests/beet.rdf" RDFFormat/RDFXML)
-    (test-repository repo 68)
+    (try 
+      (load-data repo "tests/beet.rdf")
+      (test-repository repo 68)
+      (finally
+        (.shutDown repo)
+        (delete-temp-repository))
+    )))
+
+(deftest repository-deduping-test
+  (testing "issue #15"
+    (let [repo (make-repository-with-lucene)
+          vf (value-factory)]
+      (with-open-repository [cnx repo]
+       (try 
+         ;; load dirty data
+         (.add cnx (.createIRI vf "urn:subject/1") (.createIRI vf "urn:predicate1") (.createLiteral vf "Ala") (make-array Resource 0))
+         (.add cnx (.createIRI vf "urn:subject/1") (.createIRI vf "urn:predicate1") (.createLiteral vf "ma") (make-array Resource 0))
+         (.add cnx (.createIRI vf "urn:subject/1") (.createIRI vf "urn:predicate1") (.createLiteral vf "kota") (make-array Resource 0))
+         (.add cnx (.createIRI vf "urn:subject/1") (.createIRI vf "urn:predicate1") (.createLiteral vf "kota") (make-array Resource 0))
+         (finally (.commit cnx))))
+      ;; check number of triples
+      (test-repository repo 3)
+      (.shutDown repo)
+      (delete-temp-repository))
     ))

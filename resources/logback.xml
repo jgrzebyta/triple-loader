@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false">
+
+	<appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+	  <encoder>
+	    <pattern>%d{mm:ss.SSS} [%.10thread] %-5level %logger{15} -- %msg%n</pattern>
+	  </encoder>
+	  <target>System.err</target>
+	</appender>
+	
+
+	<!-- <logger name="rdf4j.dump" level="debug"/> -->
+	<!-- <logger name="triple.repository" level="debug"/> -->
+	<!-- <Logger name="triple.loader" level="trace"/> -->
+	<!-- <Logger name="sparql-test" level="debug"/> -->
+
+	<root>
+		<level value="info" />
+		<appender-ref ref="STDERR" />
+	</root>
+</configuration>

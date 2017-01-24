@@ -1,47 +1,28 @@
-(ns sparql
+(ns rdf4j.sparql
   (:gen-class)
   (:use [clojure.tools.cli :refer [cli]]
         [clojure.tools.logging :as log]
         [clojure.pprint :as pp]
         [clojure.java.io :as io]
         [clojure.string :as st :exclude [reverse replace]]
-        [triple.repository]
-        [triple.reifiers]
-        [triple.loader :exclude [-main]]
-        [triple.version :exclude [-main] :as v])
+        [rdf4j.repository]
+        [rdf4j.reifiers]
+        [rdf4j.writer :as w]
+        [rdf4j.loader :exclude [-main]]
+        [rdf4j.version :exclude [-main] :as v])
   (:import [java.io FileReader StringWriter]
            [org.eclipse.rdf4j.query MalformedQueryException]
-           [org.eclipse.rdf4j.rio Rio RDFFormat RDFWriter ParserConfig RDFParseException]
+           [org.eclipse.rdf4j.rio Rio RDFFormat RDFWriter ParserConfig RDFParseException RDFHandler]
            [org.eclipse.rdf4j.rio.helpers BasicParserSettings StatementCollector]
            [org.eclipse.rdf4j.query.parser.sparql SPARQLParser SPARQLParserFactory]
-           [org.eclipse.rdf4j.rio.turtle TurtleWriter]
+           [org.eclipse.rdf4j.rio.trig TriGWriter]
            [org.eclipse.rdf4j.query.parser ParsedQuery ParsedBooleanQuery ParsedGraphQuery ParsedTupleQuery]
            [org.eclipse.rdf4j.query.resultio.text.csv SPARQLResultsCSVWriter]
-           [org.eclipse.rdf4j.query QueryResults TupleQueryResult GraphQueryResult TupleQuery GraphQuery BooleanQuery]
+           [org.eclipse.rdf4j.query QueryResults TupleQueryResult TupleQueryResultHandler GraphQueryResult TupleQuery GraphQuery BooleanQuery]
            [org.eclipse.rdf4j.repository RepositoryResult RepositoryConnection]))
 
-(declare load-multidata process-sparql-query load-sparql)
+(declare process-sparql-query load-sparql)
 
-
-(defn- multioption->seq "Function handles multioptions for command line arguments"
-  [previous key val]
-  (assoc previous key
-         (if-let [oldval (get previous key)]
-           (merge oldval val)
-           (list val))))
-
-(defn- map-seqs "Join data files with related type"
-  [data-files types]
-  ;; check if both sets are not empty
-  (log/debug (format "data: %s\t types: %s" data-files types))
-  (while (or (empty? data-files) (empty? types)) (ex-info "Empty arguments") { :causes #{:empty-collection-not-expected}})
-  ;; check if lenght of both sets it the same
-  (while (not= (count data-files)
-               (count types)) (throw
-                               (ex-info "Data files and types are not matched" { :causes #{:data-files-and-types-not-matched}
-                                                                                :length {:data (count data-files) :types (count types)}})))
-  ;; create a colletion of map with keys: :data-file and :type.
-  (map (fn [x y] {:data-file x :type y}) data-files types))
 
 
 (defn -main [& args]
@@ -49,23 +30,27 @@
   (let [[opts args banner] (cli args
                                 ["--help" "-h" "Print this screen" :default false :flag true]
                                 ["--file FILE" "-f" "Data file path" :assoc-fn #'multioption->seq]
-                                ["--file-type TYPE" "-t" "Data file type. One of: turtle, n3, nq, rdfxml, rdfa" :assoc-fn #'multioption->seq ]
                                 ["--query" "-q" "SPARQL query. Either as path to file or as string."]
+                                ["--format" "-t" "Format of SPARQL query resut. Option '-t :list' gives full list of supported formats. By default writers formats are sparql/tsv and trig for tuple query and graph query respectively."]
                                 ["--version" "-V" "Display program version" :default false :flag true])]
     (cond
       (:h opts) (do (println banner)
-                       (System/exit 0))
+                    (System/exit 0))
       (:V opts) (do (println "Version: " (v/get-version))
-                          (System/exit 0))
+                    (System/exit 0))
+      (= ":list" (:t opts)) (do (w/help)
+                                (System/exit 0))
       :else (let [repository (make-repository-with-lucene)
                   sparql (load-sparql (:q opts))
-                  dataset (map-seqs (:f opts) (:t opts))]
+                  dataset (:f opts)
+                  writer-factory-name (:t opts)]
               (let [wrt (StringWriter. 100)]
-                (pp/pprint dataset wrt)
+                (pprint dataset wrt)
                 (log/trace "Request: " (.toString wrt)))
               (load-multidata repository dataset)
               (with-open-repository [cx repository]
-                (process-sparql-query cx sparql))
+                (process-sparql-query cx sparql :writer-factory-name writer-factory-name))
+              (.shutDown repository)
               (delete-temp-repository)))))
 
 (defn sparql-type "Returns a type of given SPARQL query. There are three type of queries: :tuple, :graph and :boolean"
@@ -84,40 +69,30 @@
 If :writer parameter is nil than load results to relevant QueryResultWriter.
 If the parameter is :none than returns TupleQueryResult;
 otherwise evaluates query with method (.evaluate query writer) with given writer."
-  [^RepositoryConnection connection sparql-string & {:keys [writer]}]
+  [^RepositoryConnection connection sparql-string & {:keys [writer-factory-name]}]
   (log/trace (format "SPRQL query: \n%s" sparql-string))
   (try
     (let [query (.prepareQuery connection sparql-string)
-          writer (cond
-                   (= writer :none) :none
-                   (some? writer) writer
-                   (instance? TupleQuery query) (SPARQLResultsCSVWriter. System/out)
-                   (instance? GraphQuery query) (TurtleWriter. System/out))]
-    (log/debug "Writer: " writer)
-    (if (= writer :none)
-      (.evaluate query)
+          writer-factory (cond
+                           (some? writer-factory-name) (w/get-factory-by-name writer-factory-name)
+                           (instance? TupleQuery query) (w/get-factory-by-name "sparql/tsv")
+                           (instance? GraphQuery query) (w/get-factory-by-name "trig"))
+          writer (.getWriter writer-factory System/out)]
+      (log/debug "Writer: " writer)
+      ;; validate writer type
+      (if (instance? GraphQuery query)
+        (when (not (instance? RDFHandler writer))
+          (throw (ex-info "This writer is not suitable for GRAPH queries" { :is (.getClass writer) :expected RDFHandler}))))
+      (if (instance? TupleQuery query)
+        (when (not (instance? TupleQueryResultHandler writer))
+          (throw (ex-info "This writer is not suitable for TUPLE queries" { :is (.getClass writer) :expected TupleQueryResultHandler}))))
       (if (instance? BooleanQuery query)
         (print (.evaluate query))
-        (.evaluate query writer))))
+        (.evaluate query writer)))
     (catch Throwable t (do
-                          (.rollback connection)
-                          (throw t)))
+                         (.rollback connection)
+                         (throw t)))
     (finally (.commit connection))))
-
-
-(defn load-multidata "Load multiple data into repository" [repository data-col]
-  (assert (some? repository) "Repository is null")
-  (assert (not (empty? data-col)) "Data collection is empty")
-  (let [wrt (StringWriter.)]
-    (pp/pprint data-col wrt)
-    (log/debug (format "Data collection [%s]: %s" (type data-col) (.toString wrt))))
-  (loop [itms data-col]
-    (let [itm (first itms)]
-      (when itm
-        (do
-          (load-data repository (get itm :data-file) (get itm :type))
-          (recur (rest itms)))))))
-
 
 (defn load-sparql [^String sparql-res] "Load SPARQL query from file."
   ;;detect if argument is a file

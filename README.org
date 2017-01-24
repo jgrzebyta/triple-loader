@@ -1,10 +1,10 @@
 #+startup: indent showall
 #+title: README file for sesame loader
 #+author: Jacek Grzebyta
-#+date: <2016-06-01 Wed>
+#+date: <2016-10-12 Wed>
 #+startup: showall
 
-[[https://travis-ci.org/jgrzebyta/sesame-loader.svg?branch=master]]
+[[https://travis-ci.org/jgrzebyta/sesame-loader?branch=master][https://travis-ci.org/jgrzebyta/sesame-loader.svg?branch=master]]
 
 
 * 1. What is that?
@@ -21,7 +21,7 @@ echo "${version}"
 
 #+RESULTS: get-version
 :RESULTS:
-Current version: 0.1.6
+Current version: 0.1.12
 :END:
 
 ** All binnary releases
@@ -35,6 +35,12 @@ Table contains list of all binnary releases with commit and date of commit. The 
 
 #+RESULTS: list-tags
 |     Tag | Commit  | Date                           |
+|  0.1.12 | eca1168 | Mon Dec 5 11:37:50 2016 +0000  |
+|  0.1.11 | 69bbc47 | Wed Nov 23 14:37:09 2016 +0000 |
+|  0.1.10 | 03a67c0 | Tue Nov 22 12:32:54 2016 +0000 |
+|   0.1.9 | e65c17f | Wed Oct 12 16:36:17 2016 +0100 |
+|   0.1.8 | dc8deb6 | Wed Oct 12 11:42:17 2016 +0100 |
+|   0.1.7 | d991e73 | Mon Jul 11 11:34:09 2016 +0100 |
 |   0.1.6 | a516a21 | Wed Jun 29 23:53:06 2016 +0100 |
 |   0.1.5 | bf65658 | Wed Jun 29 15:00:35 2016 +0100 |
 |   0.1.4 | bfd3489 | Wed Jun 29 10:51:07 2016 +0100 |
@@ -48,36 +54,94 @@ Table contains list of all binnary releases with commit and date of commit. The 
 
 
 * 2. List of commands
-** triple.loader
+** rdf4j.loader
 Loads data into triple store.
 This is implementation of method described in [article] (http://www.rivuli-development.com/further-reading/sesame-cookbook/loading-large-file-in-sesame-native/) published in Rivuli's *The Sesame Coocbook*.
 
 
-#+begin_src shell :exports source
-java -cp triple-loader-0.1.1-SNAPSHOT-standalone.jar triple.loader [options]
+#+begin_src shell
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.loader [options]
 #+end_src
 
 *** Options
     - --server URL, -s :: Sesame SPARQL endpoint URL. Default: http://localhost:8080/rdf4j-server                  
     - --repositiry NAME, -r :: Repository id. Default: test
     - --file FILE, -f :: Data file path                                       
-    - --file-type TYPE, -t :: Data file type. One of: turtle, n3, nq, rdfxml, rdfa. Default: turtle
-    - --context IRI, -c :: Context (graph name) of the dataset
+    - --context IRI, -c :: Context (graph name) of the dataset. *If FILE's format is context-aware (e.g. TriG) than this option is ignored.* 
     - --version, -V :: Print version number
     - --help, -h :: Help
+*** Example
 
-** sparql
+Populate triple store at =http://localhost:8090/rdf4j-server/test= with data from two files.
+
+#+begin_src shell
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.loader -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl
+#+end_src
+
+
+** rdf4.sparql
 Executes SPARQL /query/ on data provided by /file/.  
 
-#+begin_src sh :exports source
-java -cp triple-loader-0.1.1-SNAPSHOT-standalone.jar sparql [options]
+#+begin_src shell
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.sparql [options]
 #+end_src
 
 *** Options
-    - --file FILE, -f :: Data file path 
-    - --file-type TYPE, -t :: Declares type of data. Possible formats are listed [[#user-content-options][here]]
-    - --query STRINGm -q :: Path to file with query or the query itself
-    - --version, -v :: Print version number
-    - --help, -h :: Help
+    - --file FILE, -f :: Data file path.
+    - --query STRING -q :: Path to file with query or the query itself.
+    - --formaT -t :: Format of SPARQL query resut. Option '-t :list' gives full list of supported formats. 
+                     By default writers formats are =sparql/tsv= and =trig= for =tuple query= and =graph query= respectively.
+    - --version, -v :: Print version number.
+    - --help, -h :: Help.
+*** Example
+
+Process SPARQL request =select * where {?s ?p ?o} limit 10= on data located in two files.
+
+#+begin_src shell
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.sparql -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl -q "select * where {?s ?p ?o} limit 10"
+#+end_src
+
+
+Process SPARQL request from file =~/database/process.sparql= on data located in two files.
+
+#+begin_src shell
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.sparql -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl -q ~/database/process.sparql
+#+end_src
+
+Process SPARQL request from file =~/database/process.sparql= on data located in two files and print results in =sprarql/json= format.
+
+#+begin_src shell
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.sparql -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl -q ~/database/process.sparql -t sparql/json
+#+end_src
+
+
+** rdf4j.dump
+Creates remote repository dump file in *TriG* format. [[#rdf4jloader][rdf4j.loader]] function is suitable for restoring triple. 
+
+#+begin_src shell
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.dump [options]
+#+end_src
+
+*** Options
+- --help, -h :: Help
+- --server URL, -s :: RDF4J SPARQL endpoint URL, default =http://localhost:8080/rdf4j-server=
+- --repositiry NAME, -r :: Repository id, default: =test=
+- --file FILE, -f :: Data file path or standard output if not given 
+- --version, -V :: Display program version 
+
+*** Example
+Dump =http://localhpost:8090/rdf4j-server/test= repository to standard output.
+
+#+begin_src shell
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.dump -s http://localhpost:8090/rdf4j-server -r test
+#+end_src
+
+
+Dump =http://localhpost:8090/rdf4j-server/test= repository to =/tmp/test-repo.trig= file.
+
+#+begin_src shell
+java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.dump -s http://localhpost:8090/rdf4j-server -r test -f /tmp/test-repo.trig
+#+end_src
+
 * 3. Contacts
 To contact with me please use *Issues* interface.
