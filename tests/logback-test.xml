@@ -12,7 +12,8 @@
 	<logger name="rdf4j.loader-test" level="debug"/>
 	<logger name="rdf4j.repository" level="debug"/>
 	<logger name="rdf4j.loader" level="debug"/>
-	<logger name="rdf4j.context-test" level="debug"/> -->
+	<logger name="rdf4j.context-test" level="debug"/>
+	<logger name="rdf4j.sparql-test" level="debug"/>
 
 	<root>
 		<level value="info" />

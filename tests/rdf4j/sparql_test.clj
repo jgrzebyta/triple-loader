@@ -1,5 +1,4 @@
 (ns rdf4j.sparql-test
-  (:gen-class)
   (:use [rdf4j.sparql :exclude [-main]]
         [clojure.tools.cli :refer [cli parse-opts]]
         [clojure.tools.logging :as log]
@@ -86,24 +85,22 @@
       (is (thrown? RuntimeException (load-sparql sparql-file))))))
 
 
-(def +local-test+ '({:data-file "./tests/resources/yeastract_raw.ttl" :type "turtle"}
-                    {:data-file "./tests/resources/Uniprot_scer.rdf" :type "rdfxml"}))
+(def +local-test+ ["./tests/resources/yeastract_raw.ttl",
+                   "./tests/resources/Uniprot_scer.rdf"])
+
 
 (deftest test-search-sparql "Test search sparql "
   (testing "try simple search"
     (let [sparql1 (load-sparql "tests/resources/spql1.sparql")
-          repo (make-repository-with-lucene)
-          output (ByteArrayOutputStream.)
-          writer (SPARQLResultsCSVWriter. output)]
+          repo (make-repository-with-lucene)]
       ;; load dataset
-      (load-multidata repo +datasets+)
+      (load-multidata repo +local-test+)
       (with-open-repository [c repo]
-        (process-sparql-query c sparql1 :writer writer)
-        (let [response (.toString output)]
+        (let [response (process-sparql-query c sparql1 :writer-factory-name :none)
+              cnt (count (iter-seq response))]
           (is (some? response))
-          (is (instance? String response) "Response is not string")
-          (is (> (count response) 0))
-          (log/debug (format "Response:\n=======\n%s\n========\n" response))))
+          (is (> cnt 0))
+          (log/debug (format "triples number: %d" cnt))))
       (delete-temp-repository))))
 
 
@@ -111,12 +108,13 @@
   (testing "test for issue eclipse/rdf4j#220"
     (let [repo (make-repository-with-lucene)
           sparql220 (load-sparql "tests/resources/issue220.sparql")
-          output (ByteArrayOutputStream.)
-          writer (SPARQLResultsCSVWriter. output)]
+          ;;sparql220 (load-sparql "tests/resources/spql1.sparql")
+          ]
+      (log/debug (format "\n======\n%s\n" sparql220))
       (load-multidata repo +local-test+)
       (with-open-repository [c repo]
         ;;(process-sparql-query c sparql220 :writer :none)
-        (let [response (process-sparql-query c sparql220)]
-          ;;(is (some? response))
-          (log/debug (format "Response:\n=======\n%s\n========\n" response)))))
+        (let [response (iter-seq (process-sparql-query c sparql220 :writer-factory-name :none))]
+          (is (> (count response) 0))
+          (log/info (format "Response size: %d" (count response))))))
     (delete-temp-repository)))

@@ -49,6 +49,8 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
     (Files/createTempDirectory prefix (make-array FileAttribute 0))))
 
 
+
+(def temp-repository (atom { :path nil :active false})) ;; create temp-repository variable
 ;;; End Uils methods
 
 
@@ -63,7 +65,7 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
   (let [tmpDir (.toFile (temp-dir))
         defStore (if store store (MemoryStore. tmpDir))
         luceneSail (LuceneSail.)]
-    (def temp-repository (atom { :path tmpDir :active true}))   ;; keep tmpDir in global variable 
+    (swap! temp-repository assoc :path tmpDir :active true)   ;; keep tmpDir in global variable 
     (if (nil? (.getDataDir defStore))
       (.setParameter luceneSail LuceneSail/LUCENE_RAMDIR_KEY "true")
       (.setParameter luceneSail LuceneSail/LUCENE_DIR_KEY (str/join (File/separator) (list tmpDir "lucenedir"))))
