@@ -21,7 +21,7 @@
          '[clojure.java.io :as io]
          '[clojure.string :as str])
 
-(defn current [& _] "12")
+(defn current [& _] "13")
 
 (task-options!
  version {:minor 'one :patch 'current :include true}

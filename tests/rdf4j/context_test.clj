@@ -17,7 +17,7 @@
 
 (t/deftest context-loading
   (t/testing "load data into named graph using default API"
-    (let [rdf-h ref/chunk-commiter
+    (let [rdf-h ref/counter-commiter
           file-obj (jio/file "tests/beet.rdf")
           repos (repo/make-mem-repository)]
       (l/load-data repos file-obj :rdf-handler rdf-h :context-uri *context-string*)
@@ -36,7 +36,7 @@
               (format "no. triples in context '%s' is %d but should be greater than 0" *context-string* (count all-triples)))
           ))))
   (t/testing "load data into named graph using multiloader API"
-    (let [rdf-h ref/chunk-commiter
+    (let [rdf-h ref/counter-commiter
           file-obj (jio/file "tests/beet.rdf")
           repos (repo/make-mem-repository)]
       (l/load-multidata repos ["tests/beet.rdf"] :rdf-handler rdf-h :context-uri *context-string*)
@@ -60,7 +60,7 @@
     (let [pars (Rio/createParser RDFFormat/RDFXML)
           file-obj (jio/file "tests/beet.rdf")]
       (repo/with-open-repository [^RepositoryConnection con (repo/make-mem-repository)]
-        (.setRDFHandler pars (ref/chunk-commiter con *context-string*))
+        (.setRDFHandler pars (ref/counter-commiter con *context-string*))
         (with-open [fr (jio/reader file-obj)]
           (.parse pars fr (.toString (.toURI file-obj)))
           (.commit con))
