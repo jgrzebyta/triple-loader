@@ -61,6 +61,10 @@
                          (System/exit -1))))))
 
 (defn- do-loading [opts]
+  ;; validate options
+  (assert (and (some? (:s opts)) (some? (:r opts))) "Either server or repository is not given")
+  (assert (and (not (blank? (:s opts))) (not (blank? (:r opts)))) "Either server or repository is not given")
+  (log/info (format "Triple store server: [%s] repository name: [%s]" (:s opts) (:r opts)))
   (let [repository (HTTPRepository. (:s opts) (:r opts))
         context-string ((fn [x] (if (or (= x "nil")                        ; convert "nil" and "null" texts into boolean nil
                                         (= x "null")
