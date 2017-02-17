@@ -2,8 +2,7 @@
   (:use [clojure.tools.logging :as log]
         [clojure.java.io :as io]
         [clj-pid.core :as pid]
-        [clojure.string :as str :exclude [reverse replace]]
-        [rdf4j.lucene :as luc])
+        [clojure.string :as str :exclude [reverse replace]])
   (:import [java.util Properties]
            [java.io File]
            [java.nio.file Files Path]
@@ -18,7 +17,8 @@
            [org.eclipse.rdf4j.sail.evaluation TupleFunctionEvaluationMode]
            [org.eclipse.rdf4j.repository.sail SailRepository]
            [org.eclipse.rdf4j.sail.memory MemoryStore]
-           [org.eclipse.rdf4j.sail.lucene LuceneSail SearchIndexQueryContextInitializer]))
+           [org.eclipse.rdf4j.sail.lucene LuceneSail]
+           [org.eclipse.rdf4j.lucene.spin LuceneSpinSail]))
 
 
 ;;; Utils methods
@@ -52,10 +52,9 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
     (Files/createTempDirectory prefix (make-array FileAttribute 0))))
 
 
-(defrecord RepositoryContext [path active lucene-index])
+(defrecord RepositoryContext [path active])
 
-
-(def context (atom (RepositoryContext. nil false nil))) ;; create context variable
+(def context (atom (RepositoryContext. nil false))) ;; create context variable
 ;;; End Uils methods
 
 
@@ -69,25 +68,13 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
   [& [^Sail store]]
   (let [tmpDir (temp-dir)
         defStore (if store store (MemoryStore. (.toFile tmpDir)))
-        luceneIndex (luc/make-lucene-index (doto
-                                               (Properties.)
-                                             (.setProperty LuceneSail/INDEX_CLASS_KEY LuceneSail/DEFAULT_INDEX_CLASS)
-                                             (.setProperty LuceneSail/LUCENE_DIR_KEY (luc/define-lucene-index-path tmpDir))
-                                             (.setProperty LuceneSail/LUCENE_RAMDIR_KEY "true")))
-        spin (doto
-                 (SpinSail. defStore)
-               (.setEvaluationMode TupleFunctionEvaluationMode/TRIPLE_SOURCE)
-               (.addQueryContextInitializer (SearchIndexQueryContextInitializer. luceneIndex)))]
-    (swap! context assoc :path (.toFile tmpDir) :active true :lucene-index luceneIndex)   ;; keep tmpDir in global variable 
-    (log/debug "Storage path: " (.getAbsolutePath tmpDir))
-    (vary-meta (make-repository spin) assoc :with-lucene true)))
-
-(defn is-lucene-repository
-  "Check if Sail repository is binded with Lucene index."
-  [^Sail sail]
-  (let [m (meta sail)]
-    (if (contains? m :with-lucene)
-      (:with-lucene m) false)))
+        spin (SpinSail. defStore)
+        lucene-spin (doto
+                        (LuceneSpinSail. spin)
+                      (.setDataDir (.toFile tmpDir)))]
+    (swap! context assoc :path (.toFile tmpDir) :active true)   ;; keep tmpDir in global variable 
+    (log/debug "Storage path: " (.toAbsolutePath tmpDir))
+    (make-repository lucene-spin)))
 
 (defn make-mem-repository
   "Backward compatibility"
@@ -169,6 +156,7 @@ Code was adapted from kr-sesame: sesame-context-array."
   (get-statements r nil nil nil false (context-array)))
 
 
+(defn- deactive [ctx] (assoc ctx :active false))
 
 ;; TODO: in the future both functions: make-repository-with-lucene and delete-context
 ;; should be wrapped within a macro.
@@ -178,6 +166,5 @@ Code was adapted from kr-sesame: sesame-context-array."
   That method should be called manually somewhere at the end of code.
   " []
   (try
-    (.close (@context :lucene-index))            ;; close lucene index
-    (FileUtils/deleteDirectory (@context :path)) ;; commons-io supports deleting directory with contents
-    (finally (swap! context assoc :active false))))
+    (FileUtils/deleteDirectory (:path @context)) ;; commons-io supports deleting directory with contents
+    (finally (swap! context deactive))))

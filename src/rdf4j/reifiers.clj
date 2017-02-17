@@ -49,8 +49,3 @@
                                       ))))))
 
 (defn countStatements [] (deref cnt))
-
-
-(defn load-lucene-index
-  "RDFHandler which supports LuceneIndex populating."
-  [rdf-handler])
