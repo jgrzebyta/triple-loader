@@ -51,7 +51,7 @@
               (with-open-repository [cx repository]
                 (process-sparql-query cx sparql :writer-factory-name writer-factory-name))
               (.shutDown repository)
-              (delete-temp-repository)))))
+              (delete-context)))))
 
 (defn sparql-type "Returns a type of given SPARQL query. There are three type of queries: :tuple, :graph and :boolean"
   [^String sparql]
