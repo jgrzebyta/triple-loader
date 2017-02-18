@@ -51,7 +51,7 @@
               (with-open-repository [cx repository]
                 (process-sparql-query cx sparql :writer-factory-name writer-factory-name))
               (.shutDown repository)
-              (delete-temp-repository)))))
+              (delete-context)))))
 
 (defn sparql-type "Returns a type of given SPARQL query. There are three type of queries: :tuple, :graph and :boolean"
   [^String sparql]
@@ -66,9 +66,9 @@
 
 
 (defn process-sparql-query "Execute SPARQL query through connection. 
-If :writer parameter is nil than load results to relevant QueryResultWriter.
-If the parameter is :none than returns TupleQueryResult;
-otherwise evaluates query with method (.evaluate query writer) with given writer."
+  If :writer-factory-name parameter is nil than load results to relevant QueryResultWriter.
+  If value of the parameter is :none than returns QueryResult;
+  otherwise evaluates query with method (.evaluate query writer) with given writer."
   [^RepositoryConnection connection sparql-string & {:keys [writer-factory-name]}]
   (log/trace (format "SPRQL query: \n%s" sparql-string))
   (try
@@ -77,22 +77,25 @@ otherwise evaluates query with method (.evaluate query writer) with given writer
                            (some? writer-factory-name) (w/get-factory-by-name writer-factory-name)
                            (instance? TupleQuery query) (w/get-factory-by-name "sparql/tsv")
                            (instance? GraphQuery query) (w/get-factory-by-name "trig"))
-          writer (.getWriter writer-factory System/out)]
+          writer (if (some? writer-factory) (.getWriter writer-factory System/out) nil)]
       (log/debug "Writer: " writer)
       ;; validate writer type
-      (if (instance? GraphQuery query)
-        (when (not (instance? RDFHandler writer))
-          (throw (ex-info "This writer is not suitable for GRAPH queries" { :is (.getClass writer) :expected RDFHandler}))))
-      (if (instance? TupleQuery query)
-        (when (not (instance? TupleQueryResultHandler writer))
-          (throw (ex-info "This writer is not suitable for TUPLE queries" { :is (.getClass writer) :expected TupleQueryResultHandler}))))
-      (if (instance? BooleanQuery query)
-        (print (.evaluate query))
-        (.evaluate query writer)))
-    (catch Throwable t (do
-                         (.rollback connection)
-                         (throw t)))
-    (finally (.commit connection))))
+      (if (some? writer)
+        (do
+          (if (instance? GraphQuery query)
+            (when (not (instance? RDFHandler writer))
+              (throw (ex-info "This writer is not suitable for GRAPH queries" { :is (.getClass writer) :expected RDFHandler}))))
+          (if (instance? TupleQuery query)
+            (when (not (instance? TupleQueryResultHandler writer))
+              (throw (ex-info "This writer is not suitable for TUPLE queries" { :is (.getClass writer) :expected TupleQueryResultHandler}))))
+          (if (instance? BooleanQuery query)  ;; process main query evaluation.
+            (print (.evaluate query))
+            (.evaluate query writer)))
+        (.evaluate query))) ;; If writer is nil than return only QueryResult
+      (catch Throwable t (do
+                           (.rollback connection)
+                           (throw t)))
+      (finally (.commit connection))))
 
 (defn load-sparql [^String sparql-res] "Load SPARQL query from file."
   ;;detect if argument is a file

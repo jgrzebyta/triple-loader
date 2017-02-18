@@ -1,5 +1,4 @@
 (ns rdf4j.sparql-test
-  (:gen-class)
   (:use [rdf4j.sparql :exclude [-main]]
         [clojure.tools.cli :refer [cli parse-opts]]
         [clojure.tools.logging :as log]
@@ -12,7 +11,8 @@
         [rdf4j.loader-test])
   (:import [org.eclipse.rdf4j.rio RDFFormat]
            [clojure.lang ArraySeq]
-           [java.io StringWriter]))
+           [java.io StringWriter ByteArrayOutputStream]
+           [org.eclipse.rdf4j.query.resultio.text.csv SPARQLResultsCSVWriter]))
 
 
 (deftest args-parsing-test
@@ -44,7 +44,7 @@
     (load-data repo "tests/beet.rdf")
   (testing "Count number of triples in repository"
     (test-repository repo 68))
-  (delete-temp-repository)))
+  (delete-context)))
 
 
 (deftest test-sparql-query
@@ -54,15 +54,21 @@
       (let [sparql-str "select * where {?s ?p ?o}"]
         (with-open-repository [cx repo]
           (println "\n")
-          (process-sparql-query cx sparql-str))))
+          (let [res (process-sparql-query cx sparql-str :writer-factory-name :none)]
+            (is (< 0 (count (iter-seq res))))
+            ))))
     
     (testing "execute lucene SPARQL query"
-      (let [sparql-str "PREFIX search: <http://www.openrdf.org/contrib/lucenesail#>  select * where { ?sub search:matches [search:query \"Germany\"; search:property <file:/tmp2/beet-1.csvCountries>; search:score ?score]}"]
+      (let [sparql-str "
+PREFIX search: <http://www.openrdf.org/contrib/lucenesail#>  
+select ?pred ?score ?snip 
+where { 
+(\"Germany\" search:allMatches search:score) search:search (?pred ?score)}"]
         (with-open-repository [cx repo]
-          (println "\n")
-          (process-sparql-query cx sparql-str))
-        ))
-    (delete-temp-repository)))
+          (let [resp  (process-sparql-query cx sparql-str :writer-factory-name :none)]
+            (is (< 0 (count (iter-seq resp)))))
+        )))
+    (delete-context)))
 
 (deftest test-load-sparql "Test load-sparql function"
   (testing "sparql as string"
@@ -83,3 +89,36 @@
   (testing "sparql from non existing file"
     (let [sparql-file "nonexists.sparql"]
       (is (thrown? RuntimeException (load-sparql sparql-file))))))
+
+
+(def +local-test+ ["./tests/resources/yeastract_raw.ttl",
+                   "./tests/resources/Uniprot_scer.rdf"])
+
+
+(deftest test-search-sparql "Test search sparql "
+  (testing "try simple search"
+    (let [sparql1 (load-sparql "tests/resources/spql1.sparql")
+          repo (make-repository-with-lucene)]
+      ;; load dataset
+      (load-multidata repo +local-test+)
+      (with-open-repository [c repo]
+        (let [response (process-sparql-query c sparql1 :writer-factory-name :none)
+              cnt (count (iter-seq response))]
+          (is (some? response))
+          (is (> cnt 0))
+          (log/debug (format "triples number: %d" cnt))))
+      (delete-context))))
+
+
+(deftest test-eclipse-rdf4j-220
+  (testing "test for issue eclipse/rdf4j#220"
+    (let [repo (make-repository-with-lucene)
+          sparql220 (load-sparql "tests/resources/issue220.sparql")]
+      (log/debug (format "\n======\n%s\n" sparql220))
+      (load-multidata repo +local-test+)
+      (with-open-repository [c repo]
+        ;;(process-sparql-query c sparql220 :writer :none)
+        (let [response (iter-seq (process-sparql-query c sparql220 :writer-factory-name :none))]
+          (is (> (count response) 0))
+          (log/info (format "Response size: %d" (count response))))))
+    (delete-context)))

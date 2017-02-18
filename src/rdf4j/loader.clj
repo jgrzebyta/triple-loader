@@ -107,10 +107,6 @@
           (.setRDFHandler parser rdf-handler-object))
         
         (log/debug (format "RDF handler: %s" rdf-handler-object))
-        
-                                        ; (.setRDFHandler parser (RDFSailInserter. (.getSailConnection cnx) (value-factory repository))) ;; add RDF Handler suitable for sail Repository
-;        (.setRDFHandler parser (RDFInserter. cnx))
-
         ;; run parsing
         (try
           (.begin cnx) ;; begin transaction
@@ -125,13 +121,7 @@
               (log/debug "Using .add method")
               (.add cnx file (.toString (.toURI file)) parser-format (into-array Resource (if (some? context-uri)
                                                                                             [(.createIRI (value-factory cnx) context-uri)]
-                                                                                            nil) ))
-              ;(.parse parser file-reader (.toString (.toURI file-obj)))
-              ))
-          
-          ;;(.parse parser file-reader (.toString (.toURI file-obj))) ;; that works
- ;;         (.add cnx file-obj (.toString (.toURI file-obj)) file-type (context-array))
-                    
+                                                                                            nil) ))))
           (finally (do
                      (log/debug "finish...")
                      (.commit cnx))))

@@ -23,5 +23,5 @@
         (log/debug "Count statements: " (count sts))
         (is (> (count sts) 0))))
     (.shutDown repo)
-    (delete-temp-repository)
+    (delete-context)
     ))

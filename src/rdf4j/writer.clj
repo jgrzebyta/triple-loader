@@ -43,9 +43,10 @@
 
 
 (defn get-factory-by-name [name]
-  (if (contains-writer name)
-    (get (first (filter #(= name (get % :name)) (list-writers-with-features))) :factory )
-    (throw (ex-info "Writer is either not supported or not exist" {:request-type name}))))
+  (cond
+    (= name :none) nil
+    (contains-writer name) (get (first (filter #(= name (get % :name)) (list-writers-with-features))) :factory )
+    :else (throw (ex-info "Writer is either not supported or not exist" {:request-type name}))))
 
 (defn help
   "Print list of all writers as ascii table"

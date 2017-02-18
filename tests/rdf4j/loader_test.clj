@@ -68,14 +68,14 @@
       (test-repository repo 68))
     (.shutDown repo)))
 
-(deftest test-delete-temp-repository
+(deftest test-delete-context
   (testing "Delete tmp repository"
     (let [repository (make-repository-with-lucene)
-          tmp-dir (@temp-repository :path)]
+          tmp-dir (:path @context)]
       (is (instance? File tmp-dir))
       (is (.exists tmp-dir))  ;; repository still exists
-      (delete-temp-repository)
-      (log/debug "state after: " @temp-repository)  ;; repository is deleted
+      (delete-context)
+      (log/debug "state after: " @context)  ;; repository is deleted
       )))
 
 (deftest load-data-test
@@ -85,7 +85,7 @@
       (test-repository repo 68)
       (finally
         (.shutDown repo)
-        (delete-temp-repository))
+        (delete-context))
     )))
 
 (deftest repository-deduping-test
@@ -103,5 +103,5 @@
       ;; check number of triples
       (test-repository repo 3)
       (.shutDown repo)
-      (delete-temp-repository))
+      (delete-context))
     ))

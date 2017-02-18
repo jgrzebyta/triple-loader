@@ -1,0 +1,5 @@
+prefix search: <http://www.openrdf.org/contrib/lucenesail#>
+
+select ?s ?score where {
+("class" search:allMatches search:score) search:search (?s ?score) .
+}

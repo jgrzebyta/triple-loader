@@ -3,19 +3,22 @@
         [clojure.java.io :as io]
         [clj-pid.core :as pid]
         [clojure.string :as str :exclude [reverse replace]])
-  (:import [java.io File]
+  (:import [java.util Properties]
+           [java.io File]
            [java.nio.file Files Path]
            [java.nio.file.attribute FileAttribute]
            [org.apache.commons.io FileUtils]
            [org.eclipse.rdf4j.common.iteration CloseableIteration]
            [org.eclipse.rdf4j.model.impl SimpleValueFactory]
            [org.eclipse.rdf4j.model Resource IRI Value]
-           ;[org.eclipse.rdf4j.rio Rio RDFFormat ParserConfig RDFParseException]
            [org.eclipse.rdf4j.repository RepositoryConnection Repository]
            [org.eclipse.rdf4j.sail Sail]
+           [org.eclipse.rdf4j.sail.spin SpinSail]
+           [org.eclipse.rdf4j.sail.evaluation TupleFunctionEvaluationMode]
            [org.eclipse.rdf4j.repository.sail SailRepository]
            [org.eclipse.rdf4j.sail.memory MemoryStore]
-           [org.eclipse.rdf4j.sail.lucene LuceneSail]))
+           [org.eclipse.rdf4j.sail.lucene LuceneSail]
+           [org.eclipse.rdf4j.lucene.spin LuceneSpinSail]))
 
 
 ;;; Utils methods
@@ -40,7 +43,7 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
     (apply str (repeatedly length #(rand-nth space)))))
 
 
-(defn- temp-dir ^Path [^String & namespace]
+(defn- ^Path temp-dir [^String & namespace]
   "Create temporary directory."
   (let [pid (pid/current)
         ns (if (str/blank? (first namespace)) "loader" (first namespace))
@@ -49,6 +52,9 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
     (Files/createTempDirectory prefix (make-array FileAttribute 0))))
 
 
+(defrecord RepositoryContext [path active])
+
+(def context (atom (RepositoryContext. nil false))) ;; create context variable
 ;;; End Uils methods
 
 
@@ -58,20 +64,21 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
 
 (defn make-repository-with-lucene
   "Similar to make-repository but adds support for Lucene index. 
-  NB: See delete-temp-repository."
+  NB: See delete-context."
   [& [^Sail store]]
-  (let [tmpDir (.toFile (temp-dir))
-        defStore (if store store (MemoryStore. tmpDir))
-        luceneSail (LuceneSail.)]
-    (def temp-repository (atom { :path tmpDir :active true}))   ;; keep tmpDir in global variable 
-    (if (nil? (.getDataDir defStore))
-      (.setParameter luceneSail LuceneSail/LUCENE_RAMDIR_KEY "true")
-      (.setParameter luceneSail LuceneSail/LUCENE_DIR_KEY (str/join (File/separator) (list tmpDir "lucenedir"))))
-    (log/debug "Storage path: " (.getAbsolutePath tmpDir))
-    (.setBaseSail luceneSail defStore)
-    (make-repository luceneSail)))
+  (let [tmpDir (temp-dir)
+        defStore (if store store (MemoryStore. (.toFile tmpDir)))
+        spin (SpinSail. defStore)
+        lucene-spin (doto
+                        (LuceneSpinSail. spin)
+                      (.setDataDir (.toFile tmpDir)))]
+    (swap! context assoc :path (.toFile tmpDir) :active true)   ;; keep tmpDir in global variable 
+    (log/debug "Storage path: " (.toAbsolutePath tmpDir))
+    (make-repository lucene-spin)))
 
-(defn make-mem-repository "Backward compatibility" []
+(defn make-mem-repository
+  "Backward compatibility"
+  []
   (make-repository))
 
 
@@ -149,13 +156,15 @@ Code was adapted from kr-sesame: sesame-context-array."
   (get-statements r nil nil nil false (context-array)))
 
 
-;; TODO: in the future both functions: make-repository-with-lucene and delete-temp-repository
-;; should be wrapped within a macro.
-(defn delete-temp-repository
-"Delete temporary directory with content.
+(defn- deactive [ctx] (assoc ctx :active false))
 
-That method should be called manually somewhere at the end of code.
-" []
+;; TODO: in the future both functions: make-repository-with-lucene and delete-context
+;; should be wrapped within a macro.
+(defn delete-context
+  "Delete temporary directory with content and close Lucene index
+
+  That method should be called manually somewhere at the end of code.
+  " []
   (try
-    (FileUtils/deleteDirectory (@temp-repository :path)) ;; commons-io supports deleting directory with contents
-    (finally (swap! temp-repository assoc :active false))))
+    (FileUtils/deleteDirectory (:path @context)) ;; commons-io supports deleting directory with contents
+    (finally (swap! context deactive))))
