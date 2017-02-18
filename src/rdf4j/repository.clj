@@ -15,6 +15,7 @@
            [org.eclipse.rdf4j.sail Sail]
            [org.eclipse.rdf4j.sail.spin SpinSail]
            [org.eclipse.rdf4j.sail.evaluation TupleFunctionEvaluationMode]
+           [org.eclipse.rdf4j.sail.inferencer.fc DedupingInferencer]
            [org.eclipse.rdf4j.repository.sail SailRepository]
            [org.eclipse.rdf4j.sail.memory MemoryStore]
            [org.eclipse.rdf4j.sail.lucene LuceneSail]
@@ -60,14 +61,14 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
 
 (defn make-repository "Create repository for given store. By default it is MemeoryStore"
   [& [^Sail store]]
-  (SailRepository. (if store store (MemoryStore.))))
+  (DedupingInferencer. (SailRepository. (if store store (MemoryStore.)))))
 
 (defn make-repository-with-lucene
   "Similar to make-repository but adds support for Lucene index. 
   NB: See delete-context."
   [& [^Sail store]]
   (let [tmpDir (temp-dir)
-        defStore (if store store (MemoryStore. (.toFile tmpDir)))
+        defStore (DedupingInferencer. (if store store (MemoryStore. (.toFile tmpDir))))
         spin (SpinSail. defStore)
         lucene-spin (doto
                         (LuceneSpinSail. spin)
