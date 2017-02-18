@@ -4,7 +4,8 @@
 #+date: <2016-10-12 Wed>
 #+startup: showall
 
-[[https://travis-ci.org/jgrzebyta/sesame-loader?branch=master][https://travis-ci.org/jgrzebyta/sesame-loader.svg?branch=master]]
+# Travis is switched off
+# [[https://travis-ci.org/jgrzebyta/sesame-loader?branch=master][https://travis-ci.org/jgrzebyta/sesame-loader.svg?branch=master]]
 
 
 * 1. What is that?
@@ -21,7 +22,7 @@ echo "${version}"
 
 #+RESULTS: get-version
 :RESULTS:
-Current version: 0.1.13
+Current version: 0.1.14
 :END:
 
 ** All binnary releases

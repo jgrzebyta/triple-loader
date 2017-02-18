@@ -22,7 +22,7 @@
          '[clojure.java.io :as io]
          '[clojure.string :as str])
 
-(defn current [& _] "13")
+(defn current [& _] "14")
 
 (task-options!
  version {:minor 'one :patch 'current :include true}
