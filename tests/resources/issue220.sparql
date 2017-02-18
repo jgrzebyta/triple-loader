@@ -4,8 +4,5 @@ prefix r: <urn:raw:yeastract#>
 
 select ?obj ?term_id ?score where {
   ?term r:Yeast_id ?term_id .
-  ?obj search:matches [
-  search:query ?term_id ;
-  search:score ?score
-  ]
+  (?term_id search:allMatches search:score) search:search (?obj ?score)
 }
