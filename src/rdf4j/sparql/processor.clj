@@ -5,8 +5,14 @@
             [rdf4j.loader :as l :exclude [-main]]))
 
 
-(defmacro with-sparql [args & body]
-  "Process SPARQL request on given resources."
+(defmacro with-sparql
+  " args => [key value ...]
+
+  Evaluates body in context of processed SPARQL request on given data.
+  The query result is exposed to the body with variable defined by key :result and
+  is a sequence of BindingSets or Statements for tuple or graph queries respectively. 
+  Possible keys are: :query or :sparql (required), :result (required) and :data (optional)."
+  [args & body]
   (let [args (apply hash-map args) ;; converts vector of arguments into map
         query (or (:query args) (:sparql args))
         data-seq (seq (:data args))
