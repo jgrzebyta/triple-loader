@@ -7,7 +7,6 @@
 	  </encoder>
 	  <target>System.err</target>
 	</appender>
-	
 
 	<root>
 		<level value="warn" />
