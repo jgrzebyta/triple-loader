@@ -61,7 +61,7 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
 
 (defn make-repository "Create repository for given store. By default it is MemeoryStore"
   [& [^Sail store]]
-  (DedupingInferencer. (SailRepository. (if store store (MemoryStore.)))))
+  (SailRepository. (if store store (DedupingInferencer. (MemoryStore.)))))
 
 (defn make-repository-with-lucene
   "Similar to make-repository but adds support for Lucene index. 
