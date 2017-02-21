@@ -13,7 +13,7 @@
                           [org.eclipse.rdf4j/rdf4j-rio-trig "2.3-SNAPSHOT"]
                           [ch.qos.logback/logback-classic "1.1.9"]
                           [boot/core "2.7.1" :scope "test"]
-                          [degree9/boot-semver "1.3.6" :scope "test"]])
+                          [degree9/boot-semver "1.4.1" :scope "test"]])
 
 (require '[degree9.boot-semver :refer :all]
          '[clojure.test :as test]
@@ -22,10 +22,13 @@
          '[clojure.java.io :as io]
          '[clojure.string :as str])
 
-(defn current [& _] "15")
+;; this line prevents confusing the deployer with dependencies` pom.xml files
+(alter-var-root #'boot.pod/standard-jar-exclusions (constantly (conj boot.pod/standard-jar-exclusions #"/pom\.xml$")))
+
+(defn current [& _] "16")
 
 (task-options!
- version {:minor 'one :patch 'current :include true}
+ version {:minor 'one :patch 'current :pre-release 'snapshot :include true}
  pom {:project (get-env :project) }
  aot {:namespace '#{rdf4j.loader rdf4j.sparql rdf4j.dump}})
 

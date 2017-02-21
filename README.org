@@ -1,39 +1,22 @@
 #+startup: indent showall
-#+title: README file for sesame loader
+#+title: README file for triple loader
 #+author: Jacek Grzebyta
-#+date: <2017-02-20 Mon>
+#+date: <2017-02-21 Tue>
 #+startup: showall
 
 # Travis is switched off
 # [[https://travis-ci.org/jgrzebyta/sesame-loader?branch=master][https://travis-ci.org/jgrzebyta/sesame-loader.svg?branch=master]]
 
+https://img.shields.io/clojars/v/adalab/triple-loader.svg
 
 * 1. What is that?
 
-=Sesame-loader= provides command line tools for managing Eclipse RDF4J/Sesame repository. Moreover since version 0.1.15 this project provides external Clojure API.
-
-** Current package version
-
-#+name: get-version
-#+begin_src shell :exports results :results output raw drawer
-version=$(gawk '{match($0,/VERSION=(.*$)/,g); if(length(g)>0) {print "Current version: " g[1] }}' version.properties)
-echo "${version}"
-#+end_src
-
-#+RESULTS: get-version
-:RESULTS:
-Current version: 0.1.15
-:END:
-
-** All binnary releases
-All releases with binnary files are available from [[https://github.com/jgrzebyta/sesame-loader/releases][GitHub]].
-
-
+=triple-loader= provides command line tools for managing Eclipse RDF4J/Sesame repository. Moreover since version 0.1.15 this project provides external Clojure API. From version *0.1.15* onward both snapshots and releases will be published only on [[https://clojars.org/adalab/triple-loader][Clojars]].
 
 * 2. List of commands
 ** rdf4j.loader
 Loads data into triple store.
-This is implementation of method described in [article] (http://www.rivuli-development.com/further-reading/sesame-cookbook/loading-large-file-in-sesame-native/) published in Rivuli's *The Sesame Coocbook*.
++This is implementation of method described in [article]-- (http://www.rivuli-development.com/further-reading/sesame-cookbook/loading-large-file-in-sesame-native/) published in Rivuli's *The Sesame Coocbook*+. This is not valid any more because currently (version 2.2) =HTTPRepositoryConnection= loads data into remote repository in chunks (sized 200,000). 
 
 
 #+begin_src shell
