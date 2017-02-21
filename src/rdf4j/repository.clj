@@ -84,7 +84,7 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
 
 
 (defmacro with-open-repository
-  "	initseq = [seq-var :memory] | [seq-var (HTTPRepository. server-url repository-id)] 
+  "initseq => [seq-var :memory] | [seq-var (HTTPRepository. server-url repository-id)] 
   
   Opens connetion CONNECTION-VARIABLE to RDF repository.
   

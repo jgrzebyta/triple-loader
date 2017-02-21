@@ -22,7 +22,7 @@
          '[clojure.java.io :as io]
          '[clojure.string :as str])
 
-(defn current [& _] "14")
+(defn current [& _] "15")
 
 (task-options!
  version {:minor 'one :patch 'current :include true}
@@ -44,7 +44,8 @@
        '[rdf4j.context-test]
        '[rdf4j.multiload-test]
        '[rdf4j.mock-test]
-       '[rdf4j.sparql-test])
+       '[rdf4j.sparql-test]
+       '[rdf4j.sparql-processor-test])
   (if (nil? (:test-name *opts*))
     (do
       (println "Run all tests")

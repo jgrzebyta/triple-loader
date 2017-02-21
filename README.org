@@ -1,7 +1,7 @@
 #+startup: indent showall
 #+title: README file for sesame loader
 #+author: Jacek Grzebyta
-#+date: <2016-10-12 Wed>
+#+date: <2017-02-20 Mon>
 #+startup: showall
 
 # Travis is switched off
@@ -10,7 +10,7 @@
 
 * 1. What is that?
 
-=Sesame-loader= provides command line tools for managing Eclipse RDF4J/Sesame repository.
+=Sesame-loader= provides command line tools for managing Eclipse RDF4J/Sesame repository. Moreover since version 0.1.15 this project provides external Clojure API.
 
 ** Current package version
 
@@ -22,7 +22,7 @@ echo "${version}"
 
 #+RESULTS: get-version
 :RESULTS:
-Current version: 0.1.14
+Current version: 0.1.15
 :END:
 
 ** All binnary releases
@@ -120,5 +120,22 @@ Dump =http://localhpost:8090/rdf4j-server/test= repository to =/tmp/test-repo.tr
 java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.dump -s http://localhpost:8090/rdf4j-server -r test -f /tmp/test-repo.trig
 #+end_src
 
-* 3. Contacts
+* 3. Usage as API provider
+
+** macro =with-sparql=
+
+rdf4j.sparql.processor/with-sparql
+ [args & body]
+Macro
+   args => [key value ...]
+
+  Evaluates body in context of processed SPARQL request on given data.
+  The query result is exposed to the body with variable defined by key :result and
+  is a sequence of BindingSets or Statements for tuple or graph queries respectively. 
+  Possible keys are: :query or :sparql (required), :result (required) and :data (optional).
+
+rdf4j.sparql.processor/with-sparql is defined in src/rdf4j/sparql/processor.clj.
+
+
+* 4. Contacts
 To contact with me please use *Issues* interface.
