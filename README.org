@@ -7,7 +7,7 @@
 # Travis is switched off
 # [[https://travis-ci.org/jgrzebyta/sesame-loader?branch=master][https://travis-ci.org/jgrzebyta/sesame-loader.svg?branch=master]]
 
-https://img.shields.io/clojars/v/adalab/triple-loader.svg
+[[https://img.shields.io/clojars/v/adalab/triple-loader.svg]]
 
 * 1. What is that?
 
