@@ -8,6 +8,10 @@
 	  <target>System.err</target>
 	</appender>
 
+	<logger name="rdf4j.sparql" level="warn"/>
+
+	<logger name="rdf4j.sparql-processor-test" level="warn"/>
+	
 	<root>
 		<level value="warn" />
 		<appender-ref ref="STDERR" />

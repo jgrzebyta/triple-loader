@@ -11,8 +11,7 @@
                           [org.eclipse.rdf4j/rdf4j-repository-sail "2.3-SNAPSHOT" :scope "test" :exclusions [org.slf4j/slf4j-api]]
                           [org.eclipse.rdf4j/rdf4j-lucene-spin "2.3-SNAPSHOT"]
                           [org.eclipse.rdf4j/rdf4j-rio-trig "2.3-SNAPSHOT"]
-                          [ch.qos.logback/logback-classic "1.1.9"]
-                          [boot/core "2.7.1" :scope "test"]
+                          [ch.qos.logback/logback-classic "1.2.1"]
                           [degree9/boot-semver "1.4.1" :scope "test"]])
 
 (require '[degree9.boot-semver :refer :all]

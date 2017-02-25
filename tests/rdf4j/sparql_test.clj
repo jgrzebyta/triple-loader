@@ -48,7 +48,8 @@
 
 
 (deftest test-sparql-query
-  (let [repo (make-repository-with-lucene)]
+  (let [repo (make-repository-with-lucene)
+        vf (value-factory)]
     (load-data repo "tests/beet.rdf")
     (testing "execute simple SPARQL query"
       (let [sparql-str "select * where {?s ?p ?o}"]
@@ -59,7 +60,8 @@
             ))))
     
     (testing "execute lucene SPARQL query"
-      (let [sparql-str "
+      (let [binding { :term (value-factory)}
+            sparql-str "
 PREFIX search: <http://www.openrdf.org/contrib/lucenesail#>  
 select ?pred ?score ?snip 
 where { 
@@ -67,7 +69,22 @@ where {
         (with-open-repository [cx repo]
           (let [resp  (process-sparql-query cx sparql-str :writer-factory-name :none)]
             (is (< 0 (count (iter-seq resp)))))
-        )))
+          )))
+    
+    (testing "execute lucene SPARQL query with binding"
+      (let [binding { :term "Germany"}
+            sparql-str "
+PREFIX search: <http://www.openrdf.org/contrib/lucenesail#>  
+
+select 
+?pred ?score
+where {
+(?term search:allMatches search:score) search:search (?pred ?score)
+}"]
+        (with-open-repository [cx repo]
+          (let [resp (iter-seq (process-sparql-query cx sparql-str :writer-factory-name :none :binding binding))]
+            (is (< 0 (count resp)))
+            (log/info "Number: " (count resp))))))
     (delete-context)))
 
 (deftest test-load-sparql "Test load-sparql function"

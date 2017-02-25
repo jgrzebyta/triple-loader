@@ -1,7 +1,8 @@
 (ns rdf4j.sparql-processor-test
   (:require [rdf4j.sparql.processor :as sp]
             [clojure.test :as t]
-            [clojure.tools.logging :as log]))
+            [clojure.tools.logging :as log])
+  (:import [org.eclipse.rdf4j.model.impl SimpleValueFactory]))
 
 
 (t/deftest test-simple-sparql-processing
@@ -43,5 +44,28 @@ WHERE
         (loop [its out]
           (when (some? (first its))
             (log/debug (format "\nlabel: '%s'\n\nabstract: '%s'\n\n" (.getValue (first its) "label") (.getValue (first its) "abstract")))
+            (recur (rest its))))
+        )))
+
+  (t/testing "query with binding"
+    (let [vf (SimpleValueFactory/getInstance)
+          binding {:lbl (.createLiteral vf "Robert Burns" "en")}
+          sparql "PREFIX db:	<http://dbpedia.org/ontology/>
+SELECT ?item ?abstract
+WHERE
+{
+  SERVICE <http://DBpedia.org/sparql>
+  { SELECT *
+    WHERE { ?item rdfs:label ?lbl;
+    db:abstract ?abstract .
+    FILTER (lang(?abstract) = \"en\")
+    }
+  }
+}"]
+      (sp/with-sparql [:query sparql :result out :binding binding]
+        (t/is (< 0 (count out)))
+        (loop [its out]
+          (when (some? (first its))
+            (log/debug (format "\nitem: '%s'\n\nabstract: '%s'\n\n" (.getValue (first its) "item") (.getValue (first its) "abstract")))
             (recur (rest its))))
         ))))

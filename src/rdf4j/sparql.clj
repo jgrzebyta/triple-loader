@@ -18,8 +18,9 @@
            [org.eclipse.rdf4j.rio.trig TriGWriter]
            [org.eclipse.rdf4j.query.parser ParsedQuery ParsedBooleanQuery ParsedGraphQuery ParsedTupleQuery]
            [org.eclipse.rdf4j.query.resultio.text.csv SPARQLResultsCSVWriter]
-           [org.eclipse.rdf4j.query QueryResults TupleQueryResult TupleQueryResultHandler GraphQueryResult TupleQuery GraphQuery BooleanQuery]
-           [org.eclipse.rdf4j.repository RepositoryResult RepositoryConnection]))
+           [org.eclipse.rdf4j.query Query QueryResults TupleQueryResult TupleQueryResultHandler GraphQueryResult TupleQuery GraphQuery BooleanQuery]
+           [org.eclipse.rdf4j.repository RepositoryResult RepositoryConnection]
+           [org.eclipse.rdf4j.model Value]))
 
 (declare process-sparql-query load-sparql)
 
@@ -47,7 +48,8 @@
               (let [wrt (StringWriter. 100)]
                 (pprint dataset wrt)
                 (log/trace "Request: " (.toString wrt)))
-              (load-multidata repository dataset)
+              (when-not (empty? dataset)
+                  (load-multidata repository dataset))
               (with-open-repository [cx repository]
                 (process-sparql-query cx sparql :writer-factory-name writer-factory-name))
               (.shutDown repository)
@@ -65,20 +67,41 @@
       :else :unknown)))
 
 
-(defn process-sparql-query "Execute SPARQL query through connection. 
+(defn process-sparql-query
+  "
+  binding => { :<key> <value> }; value is type of String.
+
+  Execute SPARQL query through connection. 
   If :writer-factory-name parameter is nil than load results to relevant QueryResultWriter.
   If value of the parameter is :none than returns QueryResult;
-  otherwise evaluates query with method (.evaluate query writer) with given writer."
-  [^RepositoryConnection connection sparql-string & {:keys [writer-factory-name]}]
+  otherwise evaluates query with method (.evaluate query writer) with given writer.
+  
+  Option :binding accepts hash-map where "
+  [^RepositoryConnection connection sparql-string & {:keys [writer-factory-name binding]}]
   (log/trace (format "SPRQL query: \n%s" sparql-string))
   (try
-    (let [query (.prepareQuery connection sparql-string)
+    (let [vf (value-factory connection)
+          ^Query query (.prepareQuery connection sparql-string)
           writer-factory (cond
                            (some? writer-factory-name) (w/get-factory-by-name writer-factory-name)
                            (instance? TupleQuery query) (w/get-factory-by-name "sparql/tsv")
                            (instance? GraphQuery query) (w/get-factory-by-name "trig"))
           writer (if (some? writer-factory) (.getWriter writer-factory System/out) nil)]
+      ;; process query binding
+      (when (and (< 0 (count binding)) (map? binding))
+        (log/debug (format "process binding: %s" (count binding)))
+        (loop [ks (keys binding)]
+          (when-let [k (first ks)]
+            (let [value (get binding k)                             ;; get binding value from the map
+                  value-obj (if (instance? Value value)
+                              value                                 ;; if value is instance of org.eclipse.rdf4j.model.Value that take it 
+                              (.createLiteral vf value))]           ;; otherwise convert using ValueFactory.
+              (log/debug "value type: " (type value))
+              (.setBinding query (name k) value-obj)
+              (recur (rest ks)))))
+        )
       (log/debug "Writer: " writer)
+      (log/debug "Bindling: " (.getBindings query))
       ;; validate writer type
       (if (some? writer)
         (do
