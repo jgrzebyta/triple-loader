@@ -12,7 +12,7 @@
                           [org.eclipse.rdf4j/rdf4j-lucene-spin "2.3-SNAPSHOT"]
                           [org.eclipse.rdf4j/rdf4j-rio-trig "2.3-SNAPSHOT"]
                           [ch.qos.logback/logback-classic "1.2.1"]
-                          [degree9/boot-semver "1.4.1" :scope "test"]])
+                          [degree9/boot-semver "1.4.3" :scope "test"]])
 
 (require '[degree9.boot-semver :refer :all]
          '[clojure.test :as test]
