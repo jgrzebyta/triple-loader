@@ -1,12 +1,10 @@
 (ns rdf4j.repository
-  (:use [clojure.tools.logging :as log]
-        [clojure.java.io :as io]
-        [clj-pid.core :as pid]
-        [clojure.string :as str :exclude [reverse replace]])
+  (:require [clojure.tools.logging :as log]
+            [clojure.java.io :as io]
+            [rdf4j.utils :as u])
   (:import [java.util Properties]
            [java.io File]
            [java.nio.file Files Path]
-           [java.nio.file.attribute FileAttribute]
            [org.apache.commons.io FileUtils]
            [org.eclipse.rdf4j.common.iteration CloseableIteration]
            [org.eclipse.rdf4j.model.impl SimpleValueFactory]
@@ -21,42 +19,12 @@
            [org.eclipse.rdf4j.sail.lucene LuceneSail]
            [org.eclipse.rdf4j.lucene.spin LuceneSpinSail]))
 
-
-;;; Utils methods
-
-(defn iter-seq "It is iterator-seq like but works with iterator-like patterns.
-Reused implementation describe in http://stackoverflow.com/questions/9225948/ task."
-  [i] 
-    (lazy-seq 
-      (when (.hasNext i)
-        (cons (.next i) (iter-seq i)))))
+;; Root of application context
+(defrecord RepositoryContext [path active application-context])
 
 
-(defmulti value-factory "Returns instance of value-factory for given optional object. The object might be either RepositoryConnection or Repository" (fn [& [x]] (type x)))
+(def context (atom (RepositoryContext. nil false nil))) ;; create context variable
 
-(defmethod value-factory Repository [x] (.getValueFactory x))
-(defmethod value-factory RepositoryConnection [x] (.getValueFactory x))
-(defmethod value-factory :default [& _] (SimpleValueFactory/getInstance))
-
-
-(defn rand-string [^Integer length]
-  (let [space "QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890"]
-    (apply str (repeatedly length #(rand-nth space)))))
-
-
-(defn- ^Path temp-dir [^String & namespace]
-  "Create temporary directory."
-  (let [pid (pid/current)
-        ns (if (str/blank? (first namespace)) "loader" (first namespace))
-        rand (rand-string 9)
-        prefix (str/join nil (list "rdf4j-" ns "-" rand "." pid))]
-    (Files/createTempDirectory prefix (make-array FileAttribute 0))))
-
-
-(defrecord RepositoryContext [path active])
-
-(def context (atom (RepositoryContext. nil false))) ;; create context variable
-;;; End Uils methods
 
 
 (defn make-repository "Create repository for given store. By default it is MemeoryStore"
@@ -67,7 +35,7 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
   "Similar to make-repository but adds support for Lucene index. 
   NB: See delete-context."
   [& [^Sail store]]
-  (let [tmpDir (temp-dir)
+  (let [tmpDir (u/temp-dir)
         defStore (DedupingInferencer. (if store store (MemoryStore. (.toFile tmpDir))))
         spin (SpinSail. defStore)
         lucene-spin (doto
@@ -117,11 +85,11 @@ Code was adapted from kr-sesame: sesame-context-array."
   ([_] (let [out (make-array Resource 1)]
            (aset out 0 nil)
            out))
-  ([kb a] (let [vf (value-factory kb)
+  ([kb a] (let [vf (u/value-factory kb)
                 out (make-array Resource 1)]
               (aset out 0 (.createIRI vf a))
               out))
-  ([kb a & rest] (let [vf (value-factory kb)
+  ([kb a & rest] (let [vf (u/value-factory kb)
                        out (make-array Resource (inc (count rest)))]
                    (map (fn [i val]
                           (aset out i (.createIRI vf val)))
@@ -146,12 +114,12 @@ Code was adapted from kr-sesame: sesame-context-array."
                                                                        (get-statements cnx s p o use-reified context)))
 
 (defmethod get-statements RepositoryConnection [kb s p o use-reified context] (doall
-                                                                               (iter-seq (.getStatements kb
-                                                                                                         ^Resource s
-                                                                                                         ^IRI p
-                                                                                                         ^Value o
-                                                                                                         (boolean use-reified)
-                                                                                                         context))))
+                                                                               (u/iter-seq (.getStatements kb
+                                                                                                           ^Resource s
+                                                                                                           ^IRI p
+                                                                                                           ^Value o
+                                                                                                           (boolean use-reified)
+                                                                                                           context))))
 
 (defn get-all-statements [r]
   (get-statements r nil nil nil false (context-array)))

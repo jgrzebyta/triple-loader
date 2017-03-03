@@ -6,8 +6,9 @@
         [clojure.string :refer [blank?]]
         [clojure.pprint :as pp]
         [rdf4j.reifiers :as ref]
-        [rdf4j.version :refer [get-version]]
-        [rdf4j.repository])
+        [rdf4j.version :refer [get-version]])
+  (:require [rdf4j.repository :as r]
+            [rdf4j.utils :as u])
   (:import [java.nio.file Paths Path]
            [java.io File StringWriter]
            [org.eclipse.rdf4j IsolationLevel IsolationLevels]
@@ -95,7 +96,7 @@
                        (.exists file)
                        (.canRead file)))
     (log/trace (format "data type: %s" parser-format))
-    (with-open-repository [cnx repository]
+    (r/with-open-repository [cnx repository]
       (init-connection cnx)
       (let [rdf-handler-object (if (some? rdf-handler)
                                  (if (fn? rdf-handler)
@@ -120,7 +121,7 @@
             (do
               (log/debug "Using .add method")
               (.add cnx file (.toString (.toURI file)) parser-format (into-array Resource (if (some? context-uri)
-                                                                                            [(.createIRI (value-factory cnx) context-uri)]
+                                                                                            [(.createIRI (u/value-factory cnx) context-uri)]
                                                                                             nil) ))))
           (finally (do
                      (log/debug "finish...")

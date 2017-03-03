@@ -9,6 +9,7 @@
         [rdf4j.repository]
         [rdf4j.loader :exclude [-main]]
         [rdf4j.loader-test])
+  (:require [rdf4j.utils :as u])
   (:import [org.eclipse.rdf4j.rio RDFFormat]
            [clojure.lang ArraySeq]
            [java.io StringWriter ByteArrayOutputStream]
@@ -49,18 +50,18 @@
 
 (deftest test-sparql-query
   (let [repo (make-repository-with-lucene)
-        vf (value-factory)]
+        vf (u/value-factory)]
     (load-data repo "tests/beet.rdf")
     (testing "execute simple SPARQL query"
       (let [sparql-str "select * where {?s ?p ?o}"]
         (with-open-repository [cx repo]
           (println "\n")
           (let [res (process-sparql-query cx sparql-str :writer-factory-name :none)]
-            (is (< 0 (count (iter-seq res))))
+            (is (< 0 (count (u/iter-seq res))))
             ))))
     
     (testing "execute lucene SPARQL query"
-      (let [binding { :term (value-factory)}
+      (let [binding { :term (u/value-factory)}
             sparql-str "
 PREFIX search: <http://www.openrdf.org/contrib/lucenesail#>  
 select ?pred ?score ?snip 
@@ -68,7 +69,7 @@ where {
 (\"Germany\" search:allMatches search:score) search:search (?pred ?score)}"]
         (with-open-repository [cx repo]
           (let [resp  (process-sparql-query cx sparql-str :writer-factory-name :none)]
-            (is (< 0 (count (iter-seq resp)))))
+            (is (< 0 (count (u/iter-seq resp)))))
           )))
     
     (testing "execute lucene SPARQL query with binding"
@@ -82,7 +83,7 @@ where {
 (?term search:allMatches search:score) search:search (?pred ?score)
 }"]
         (with-open-repository [cx repo]
-          (let [resp (iter-seq (process-sparql-query cx sparql-str :writer-factory-name :none :binding binding))]
+          (let [resp (u/iter-seq (process-sparql-query cx sparql-str :writer-factory-name :none :binding binding))]
             (is (< 0 (count resp)))
             (log/info "Number: " (count resp))))))
     (delete-context)))
@@ -120,7 +121,7 @@ where {
       (load-multidata repo +local-test+)
       (with-open-repository [c repo]
         (let [response (process-sparql-query c sparql1 :writer-factory-name :none)
-              cnt (count (iter-seq response))]
+              cnt (count (u/iter-seq response))]
           (is (some? response))
           (is (> cnt 0))
           (log/debug (format "triples number: %d" cnt))))
@@ -135,7 +136,7 @@ where {
       (load-multidata repo +local-test+)
       (with-open-repository [c repo]
         ;;(process-sparql-query c sparql220 :writer :none)
-        (let [response (iter-seq (process-sparql-query c sparql220 :writer-factory-name :none))]
+        (let [response (u/iter-seq (process-sparql-query c sparql220 :writer-factory-name :none))]
           (is (> (count response) 0))
           (log/info (format "Response size: %d" (count response))))))
     (delete-context)))

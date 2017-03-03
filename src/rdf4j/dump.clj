@@ -4,9 +4,9 @@
         [clojure.tools.logging :as log]
         [clojure.java.io :as io]
         [clojure.string :refer [blank?]]
-        [rdf4j.loader :exclude [-main]]
-        [rdf4j.repository]
         [rdf4j.version :refer [get-version]])
+  (:require [rdf4j.loader :exclude [-main] :as l]
+            [rdf4j.repository :as r])
   (:import [java.nio.file Paths Path]
            [java.io File StringWriter OutputStreamWriter]
            [org.eclipse.rdf4j.repository.contextaware ContextAwareRepository]
@@ -17,7 +17,7 @@
 
 (defn- file-to-path [file-string]
   (if-not (blank? file-string)
-    (normalise-path file-string)
+    (l/normalise-path file-string)
     nil))
 
 
@@ -55,10 +55,10 @@
                                                                          (.getName)))
                     (format "standard output [TriG format]")))
         (try 
-          (with-open-repository [cnx repository]
+          (r/with-open-repository [cnx repository]
             (try
               (.begin cnx)
-              (.export cnx rdf-writer (context-array))
+              (.export cnx rdf-writer (r/context-array))
               (finally (log/debug "Finish...")
                        (.commit cnx))))
           (finally (.shutDown repository)))))))

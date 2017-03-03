@@ -5,6 +5,7 @@
         [clojure.test]
         [clojure.tools.logging :as log]
         [clojure.java.io :as jio])
+  (:require [rdf4j.utils :as u])
   (:import [java.io File]
            [org.eclipse.rdf4j.model Resource Statement]
            [org.eclipse.rdf4j.rio Rio RDFFormat ParserConfig RDFParseException]
@@ -91,7 +92,7 @@
 (deftest repository-deduping-test
   (testing "issue #15"
     (let [repo (make-repository-with-lucene)
-          vf (value-factory)]
+          vf (u/value-factory)]
       (with-open-repository [cnx repo]
        (try 
          ;; load dirty data

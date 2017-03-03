@@ -1,6 +1,6 @@
 (ns rdf4j.reifiers
-  (:use [rdf4j.repository]
-        [clojure.tools.logging :as log])
+  (:use [clojure.tools.logging :as log])
+  (:require [rdf4j.utils :as u])
   (:import [org.eclipse.rdf4j.model ValueFactory]
            [org.eclipse.rdf4j.model.impl ContextStatement]
            [org.eclipse.rdf4j.rio RDFHandler RDFHandlerException Rio RDFFormat]
@@ -11,9 +11,9 @@
 
 (defn context-statement "Create context statement"
   [connection context-string simple-statement]
-  (let [vf (value-factory connection)
+  (let [vf (u/value-factory connection)
         context-uri (.createIRI vf context-string)]
-    (log/debug "Value factory instance " (type value-factory))
+    (log/debug "Value factory instance " (type vf))
     (.createStatement vf (.getSubject simple-statement)
                       (.getPredicate simple-statement)
                       (.getObject simple-statement)
@@ -31,7 +31,7 @@
                                (partial context-statement connection context-string)
                                (fn [x] (do x)))
          inserter (RDFInserter. connection)
-         value-factory (value-factory connection)]
+         value-factory (u/value-factory connection)]
      (proxy [AbstractRDFHandler] []
        (startRDF [] (do
                       (log/trace "do startRDF")

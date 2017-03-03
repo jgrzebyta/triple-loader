@@ -1,5 +1,6 @@
 (ns rdf4j.sparql-processor-test
   (:require [rdf4j.sparql.processor :as sp]
+            [rdf4j.utils :as u]
             [clojure.test :as t]
             [clojure.tools.logging :as log])
   (:import [org.eclipse.rdf4j.model.impl SimpleValueFactory]))

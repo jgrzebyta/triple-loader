@@ -1,8 +1,11 @@
 (ns rdf4j.sparql.processor
   (:require [clojure.tools.logging :as log]
             [rdf4j.repository :as r]
+            [rdf4j.utils :as u]
             [rdf4j.sparql :as sp :exclude [-main]]
-            [rdf4j.loader :as l :exclude [-main]]))
+            [rdf4j.loader :as l :exclude [-main]])
+  (:import [java.util Collection]))
+
 
 
 (defmacro with-sparql
@@ -26,7 +29,7 @@
              sparql-processed# (sp/load-sparql ~query)]
          (if (some? ~data-seq) (l/load-multidata repo# ~data-seq) (log/warn "data not loaded"))
          (r/with-open-repository [cn# repo#]
-           (let [~result-seq (r/iter-seq
+           (let [~result-seq (u/iter-seq
                               (sp/process-sparql-query cn# sparql-processed#
                                                        :writer-factory-name :none ~@binding-seq))]
              ~@body)))

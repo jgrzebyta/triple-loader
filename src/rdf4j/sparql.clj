@@ -10,6 +10,7 @@
         [rdf4j.writer :as w]
         [rdf4j.loader :exclude [-main]]
         [rdf4j.version :exclude [-main] :as v])
+  (:require [rdf4j.utils :as u])
   (:import [java.io FileReader StringWriter]
            [org.eclipse.rdf4j.query MalformedQueryException]
            [org.eclipse.rdf4j.rio Rio RDFFormat RDFWriter ParserConfig RDFParseException RDFHandler]
@@ -80,7 +81,7 @@
   [^RepositoryConnection connection sparql-string & {:keys [writer-factory-name binding]}]
   (log/trace (format "SPRQL query: \n%s" sparql-string))
   (try
-    (let [vf (value-factory connection)
+    (let [vf (u/value-factory connection)
           ^Query query (.prepareQuery connection sparql-string)
           writer-factory (cond
                            (some? writer-factory-name) (w/get-factory-by-name writer-factory-name)
