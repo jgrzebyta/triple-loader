@@ -27,7 +27,7 @@
 (defn current [& _] "16")
 
 (task-options!
- version {:minor 'one :patch 'current :pre-release 'snapshot :include true}
+ version {:minor 'one :patch 'current :include true}
  pom {:project (get-env :project) }
  aot {:namespace '#{rdf4j.utils rdf4j.loader rdf4j.sparql rdf4j.dump rdf4j.sparql.processor}})
 

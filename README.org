@@ -11,7 +11,9 @@
 
 * 1. What is that?
 
-=triple-loader= provides command line tools for managing Eclipse RDF4J/Sesame repository. Moreover since version 0.1.15 this project provides external Clojure API. From version *0.1.15* onward both snapshots and releases will be published only on [[https://clojars.org/adalab/triple-loader][Clojars]].
+=triple-loader= provides command line tools for managing Eclipse RDF4J/Sesame repository. Moreover since version 0.1.15 this project provides external Clojure API. From version *0.1.15* onward both snapshots and releases - standard jars - will be published only on [[https://clojars.org/adalab/triple-loader][Clojars]]. Stand-alone (uber) jars will be still published in GitHub.
+
+Jars deployed to Clojars require dedicated *RDF4J* binaries which might be received by compiling my =develop= branch of https://github.com/jgrzebyta/rdf4j. This problem will be solved after merging [[https://github.com/eclipse/rdf4j/pull/758][my PR]] to the main code.
 
 * 2. List of commands
 ** rdf4j.loader
@@ -115,7 +117,7 @@ Macro
   Evaluates body in context of processed SPARQL request on given data.
   The query result is exposed to the body with variable defined by key :result and
   is a sequence of BindingSets or Statements for tuple or graph queries respectively. 
-  Possible keys are: :query or :sparql (required), :result (required), :data (optional) and :binding (optional).
+  Possible keys are: :query or :sparql (required), :result (required), :data (optional), :binding (optional) and :repository (optional).
 
 rdf4j.sparql.processor/with-sparql is defined in src/rdf4j/sparql/processor.clj.
 
