@@ -6,7 +6,12 @@
             [rdf4j.loader :as l :exclude [-main]])
   (:import [java.util Collection]))
 
-
+(defn- make-repository-bind
+  "Prepares repository fragment for macro with-sparql"
+  [& [repository]]
+  (if-let [repo repository]
+      `~repo
+      `(r/make-repository-with-lucene)))
 
 (defmacro with-sparql
   " args => [key value ...]
@@ -19,18 +24,21 @@
   [args & body]
   (let [args-map (apply hash-map args) ;; converts vector of arguments into map
         query (or (:query args-map) (:sparql args-map))
-        data-seq (seq (:data args-map))
+        in-data (:data args-map)
+        data-seq (gensym "data_")
         result-seq (:result args-map)
         binding (:binding args-map)
-        binding-seq (if binding `(:binding ~binding))]
-    (log/debug (format "Arguments: %s [%s]" args-map (type args-map)))
+        binding-seq (if binding `(:binding ~binding))
+        repository (make-repository-bind (:repository args-map))]
     `(do
-       (let [repo# (r/make-repository-with-lucene)
+       (let [repo# ~repository
+             ~data-seq ~in-data
              sparql-processed# (sp/load-sparql ~query)]
-         (if (some? ~data-seq) (l/load-multidata repo# ~data-seq) (log/warn "data not loaded"))
+         (if ~data-seq (l/load-multidata repo# ~data-seq) (log/warn "data not loaded"))
          (r/with-open-repository [cn# repo#]
            (let [~result-seq (u/iter-seq
                               (sp/process-sparql-query cn# sparql-processed#
                                                        :writer-factory-name :none ~@binding-seq))]
              ~@body)))
        (r/delete-context))))
+
