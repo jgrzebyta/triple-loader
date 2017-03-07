@@ -9,7 +9,7 @@
   (:import [java.io StringWriter]))
 
 
-(def +datasets+ '("./tests/resources/22-rdf-syntax-ns.ttl" "./tests/resources/rdf-schema.rdf" "./tests/beet.rdf"))
+(def +datasets+ '("./tests/resources/22-rdf-syntax-ns.ttl" "./tests/resources/rdf-schema.rdf" "./tests/resources/beet.rdf"))
 
 
 (deftest test-load-multidata "load multiple data."

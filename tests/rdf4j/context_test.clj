@@ -18,7 +18,7 @@
 (t/deftest context-loading
   (t/testing "load data into named graph using default API"
     (let [rdf-h ref/counter-commiter
-          file-obj (jio/file "tests/beet.rdf")
+          file-obj (jio/file "tests/resources/beet.rdf")
           repos (repo/make-mem-repository)]
       (l/load-data repos file-obj :rdf-handler rdf-h :context-uri *context-string*)
       (repo/with-open-repository [con repos]
@@ -37,9 +37,9 @@
           ))))
   (t/testing "load data into named graph using multiloader API"
     (let [rdf-h ref/counter-commiter
-          file-obj (jio/file "tests/beet.rdf")
+          file-obj (jio/file "tests/resources/beet.rdf")
           repos (repo/make-mem-repository)]
-      (l/load-multidata repos ["tests/beet.rdf"] :rdf-handler rdf-h :context-uri *context-string*)
+      (l/load-multidata repos ["tests/resources/beet.rdf"] :rdf-handler rdf-h :context-uri *context-string*)
       (repo/with-open-repository [con repos]
         (let [all-triples-total (repo/get-statements con nil nil nil false (repo/context-array))                
               all-triples-no-cont (repo/get-statements con nil nil nil false (repo/context-array nil))          
@@ -58,7 +58,7 @@
 (t/deftest simple-context-loading
   (t/testing "Load data into named graph using low level API"
     (let [pars (Rio/createParser RDFFormat/RDFXML)
-          file-obj (jio/file "tests/beet.rdf")]
+          file-obj (jio/file "tests/resources/beet.rdf")]
       (repo/with-open-repository [^RepositoryConnection con (repo/make-mem-repository)]
         (.setRDFHandler pars (ref/counter-commiter con *context-string*))
         (with-open [fr (jio/reader file-obj)]

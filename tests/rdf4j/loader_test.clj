@@ -28,7 +28,7 @@
           (is (.isOpen c))))))
 
 (deftest open-file
-  (with-open [fr (jio/reader "tests/beet.rdf")]
+  (with-open [fr (jio/reader "tests/resources/beet.rdf")]
     (println "reader?" (class fr))
     (testing "Is Reader instantiated"
       (is (instance? java.io.BufferedReader fr)))
@@ -52,7 +52,7 @@
 (deftest load-mock-repo
   (let [repo (make-mem-repository)
         pars (Rio/createParser RDFFormat/RDFXML)
-        file-obj (jio/file "tests/beet.rdf")]
+        file-obj (jio/file "tests/resources/beet.rdf")]
     (testing "Loading data to repository"
       (.initialize repo)
       (with-open [conn (.getConnection repo)
@@ -82,7 +82,7 @@
 (deftest load-data-test
   (let [repo (make-repository-with-lucene nil)]
     (try 
-      (load-data repo "tests/beet.rdf")
+      (load-data repo "tests/resources/beet.rdf")
       (test-repository repo 68)
       (finally
         (.shutDown repo)
