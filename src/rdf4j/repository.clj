@@ -29,13 +29,14 @@
 
 (defn make-repository "Create repository for given store. By default it is MemeoryStore"
   [& [^Sail store]]
-  (SailRepository. (if store store (DedupingInferencer. (MemoryStore.)))))
+  (SailRepository. (DedupingInferencer. (if store store (MemoryStore.)))))
 
 (defn make-repository-with-lucene
   "Similar to make-repository but adds support for Lucene index. 
   NB: See delete-context."
   [& [^Sail store]]
-  (let [tmpDir (u/temp-dir)
+  (let [^Path tmpDir (or (when store (when-let [st (.getPath (.getDataDir store))] (.resolve st ".lucene-index")))
+                         (u/temp-dir))
         defStore (DedupingInferencer. (if store store (MemoryStore. (.toFile tmpDir))))
         spin (SpinSail. defStore)
         lucene-spin (doto
@@ -43,7 +44,7 @@
                       (.setDataDir (.toFile tmpDir)))]
     (swap! context assoc :path (.toFile tmpDir) :active true)   ;; keep tmpDir in global variable 
     (log/debug "Storage path: " (.toAbsolutePath tmpDir))
-    (make-repository lucene-spin)))
+    (SailRepository. lucene-spin)))
 
 (defn make-mem-repository
   "Backward compatibility"

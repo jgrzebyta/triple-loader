@@ -1,6 +1,8 @@
 (set-env! :source-paths #{"src"}
           :resource-paths #{"resources"}
           :project 'adalab/triple-loader
+          :description "Triple-loader provides command line and clojure script writing tools for managing RDF data."
+          :url "http://www.adalab-project.org/"
           :dependencies '[[org.clojure/clojure "1.8.0"]
                           [org.clojure/tools.cli "0.3.5"]
                           [org.clojure/tools.logging "0.3.1"]
@@ -24,18 +26,22 @@
 ;; this line prevents confusing the deployer with dependencies` pom.xml files
 (alter-var-root #'boot.pod/standard-jar-exclusions (constantly (conj boot.pod/standard-jar-exclusions #"/pom\.xml$")))
 
-(defn current [& _] "16")
 
 (task-options!
- version {:minor 'one :patch 'current :include true}
+ version {:minor 'two :patch 'zero :include true}
  pom {:project (get-env :project) }
- aot {:namespace '#{rdf4j.utils rdf4j.loader rdf4j.sparql rdf4j.dump rdf4j.sparql.processor}})
+ aot {:all true})
+
+(deftask develop
+  "Build SNAPSHOT version of jar"
+  []
+  (version :develop true :pre-release 'snapshot)
+  identity)
 
 
 (deftask testing "Attach tests/ directory to classpath." []
   (set-env! :source-paths #(conj % "tests"))
   identity)
-
 
 (deftask run-test "Run unit tests"
   [t test-name NAME str "Test to execute. Run all tests if not given."]
@@ -60,7 +66,6 @@
 (deftask build
   "Build without dependencies" []
   (comp
-   (version)
    (jar)
    (pom)
    (aot)
@@ -68,11 +73,11 @@
    (target)))
 
 (deftask build-standalone
-  "Build standalone version" []
+  "Build standalone version"
+  []
   (comp
-   (version)
    (pom)
    (aot)
    (uber)
-   (jar :file (format "%s-standalone.jar" (name (get-env :project))))
+   (jar :file (format "%s-standalone.jar" (get-env :project)))
    (target)))
