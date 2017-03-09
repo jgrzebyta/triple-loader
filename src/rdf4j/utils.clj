@@ -1,8 +1,9 @@
 (ns rdf4j.utils
   (:require [clojure.tools.logging :as log]
             [clj-pid.core :as pid]
+            [clojure.string :refer [blank?]]
             [clojure.string :as str :exclude [reverse replace]])
-  (:import [java.nio.file Files Path]
+  (:import [java.nio.file Files Path Paths]
            [java.nio.file.attribute FileAttribute]
            [org.eclipse.rdf4j.repository Repository RepositoryConnection]
            [org.eclipse.rdf4j.model.impl SimpleValueFactory]))
@@ -36,3 +37,24 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
         rand (rand-string 9)
         prefix (str/join nil (list "rdf4j-" ns "-" rand "." pid))]
     (Files/createTempDirectory prefix (make-array FileAttribute 0))))
+
+(defmulti normalise-path
+  "Proceeds path string normalisation. Additionally replace '~' character by Java's 'user.home' system property content.
+  If string is blank (ref. clojure.string/blank?) than returns nil."
+  (fn [path] (type path)))
+
+(defmethod normalise-path String [path]
+  (if-not (blank? path)
+    (normalise-path (Paths/get path (make-array String 0)))
+    nil))
+
+(defmethod normalise-path Path [path]
+  (let [path-as-string (.toString path)]
+    (.normalize (Paths/get (.replaceFirst path-as-string "^~" (System/getProperty "user.home"))
+                           (make-array String 0)))))
+
+(defn ^Path create-dir
+  "Create directory"
+  [^String path]
+  (let [^Path normalised (normalise-path path)]
+    (Files/createDirectory normalised (make-array FileAttribute 0))))

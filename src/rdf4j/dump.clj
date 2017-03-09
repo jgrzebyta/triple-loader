@@ -5,7 +5,7 @@
         [clojure.java.io :as io]
         [clojure.string :refer [blank?]]
         [rdf4j.version :refer [get-version]])
-  (:require [rdf4j.loader :exclude [-main] :as l]
+  (:require [rdf4j.utils :as u]
             [rdf4j.repository :as r])
   (:import [java.nio.file Paths Path]
            [java.io File StringWriter OutputStreamWriter]
@@ -17,7 +17,7 @@
 
 (defn- file-to-path [file-string]
   (if-not (blank? file-string)
-    (l/normalise-path file-string)
+    (u/normalise-path file-string)
     nil))
 
 

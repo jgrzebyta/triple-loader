@@ -9,7 +9,7 @@
         [rdf4j.version :refer [get-version]])
   (:require [rdf4j.repository :as r]
             [rdf4j.utils :as u])
-  (:import [java.nio.file Paths Path]
+  (:import [java.nio.file Path]
            [java.io File StringWriter]
            [org.eclipse.rdf4j IsolationLevel IsolationLevels]
            [org.eclipse.rdf4j.model Resource]
@@ -29,21 +29,6 @@
     (doto
         (ParserConfig.)
       (.set BasicParserSettings/PRESERVE_BNODE_IDS true)))
-
-(defmulti normalise-path
-  "Proceeds path string normalisation. Additionally replace '~' character by Java's 'user.home' system property content.
-  If string is blank (ref. clojure.string/blank?) than returns nil."
-  (fn [path] (type path)))
-
-(defmethod normalise-path String [path]
-  (if-not (blank? path)
-    (normalise-path (Paths/get path (make-array String 0)))
-    nil))
-
-(defmethod normalise-path Path [path]
-  (let [path-as-string (.toString path)]
-    (.normalize (Paths/get (.replaceFirst path-as-string "^~" (System/getProperty "user.home"))
-                           (make-array String 0)))))
 
 
 (defn init-connection "Initialise Connection." [^RepositoryConnection connection]
@@ -83,7 +68,7 @@
 (defmulti load-data "Load formated file into repository."
   (fn [repository file & {:keys [rdf-handler context-uri] }] (type file)))
 
-(defmethod load-data String [repository file & {:keys [rdf-handler context-uri]}] (load-data repository (normalise-path file) :rdf-handler rdf-handler :context-uri context-uri))
+(defmethod load-data String [repository file & {:keys [rdf-handler context-uri]}] (load-data repository (u/normalise-path file) :rdf-handler rdf-handler :context-uri context-uri))
 
 (defmethod load-data Path [repository file & {:keys [rdf-handler context-uri]}] (load-data repository (.toFile file) :rdf-handler rdf-handler :context-uri context-uri))
 
@@ -140,7 +125,7 @@
        (when itm
          (do
            (log/info (format "Load dataset: %s into context: %s" itm context-uri))
-           (load-data repository (normalise-path itm) :rdf-handler rdf-handler :context-uri context-uri)
+           (load-data repository (u/normalise-path itm) :rdf-handler rdf-handler :context-uri context-uri)
            (recur (rest itms))))))))
 
 
