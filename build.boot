@@ -66,7 +66,6 @@
 (deftask build
   "Build without dependencies" []
   (comp
-   (jar)
    (pom)
    (aot)
    (jar)

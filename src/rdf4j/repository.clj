@@ -35,7 +35,7 @@
   "Similar to make-repository but adds support for Lucene index. 
   NB: See delete-context."
   [& [^Sail store]]
-  (let [^Path tmpDir (or (when store (when-let [st (.getPath (.getDataDir store))] (.resolve st ".lucene-index")))
+  (let [^Path tmpDir (or (when store (when-let [st (.toPath (.getDataDir store))] (.resolve st ".lucene-index")))
                          (u/temp-dir))
         defStore (DedupingInferencer. (if store store (MemoryStore. (.toFile tmpDir))))
         spin (SpinSail. defStore)
