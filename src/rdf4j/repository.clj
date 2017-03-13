@@ -135,7 +135,8 @@ Code was adapted from kr-sesame: sesame-context-array."
 
   That method should be called manually somewhere at the end of code.
   " []
-  (try
-    (when-let [dir (:path @context)]
-      (FileUtils/deleteDirectory dir)) ;; commons-io supports deleting directory with contents)
-    (finally (swap! context deactive))))
+  (when (:active @context) ;; process repository deletion only when context is active
+    (try
+      (when-let [dir (:path @context)]
+        (FileUtils/deleteDirectory dir)) ;; commons-io supports deleting directory with contents)
+      (finally (swap! context deactive)))))

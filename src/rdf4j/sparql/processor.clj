@@ -6,6 +6,7 @@
             [rdf4j.loader :as l :exclude [-main]])
   (:import [java.util Collection]))
 
+
 (defn- make-repository-bind
   "Prepares repository fragment for macro with-sparql"
   [& [repository]]
@@ -34,7 +35,7 @@
        (let [repo# ~repository
              ~data-seq ~in-data
              sparql-processed# (sp/load-sparql ~query)]
-         (if ~data-seq (l/load-multidata repo# ~data-seq) (log/warn "data not loaded"))
+         (when ~data-seq (l/load-multidata repo# ~data-seq))
          (r/with-open-repository [cn# repo#]
            (let [~result-seq (u/iter-seq
                               (sp/process-sparql-query cn# sparql-processed#
