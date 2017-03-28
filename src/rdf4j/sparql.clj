@@ -32,7 +32,7 @@
   (let [[opts args banner] (cli args
                                 ["--help" "-h" "Print this screen" :default false :flag true]
                                 ["--file FILE" "-f" "Data file path" :assoc-fn #'multioption->seq]
-                                ["--query" "-q" "SPARQL query. Either as path to file or as string."]
+                                ["--query" "-q" "SPARQL query. Either path to file or a string."]
                                 ["--format" "-t" "Format of SPARQL query resut. Option '-t :list' gives full list of supported formats. By default writers formats are sparql/tsv and trig for tuple query and graph query respectively."]
                                 ["--version" "-V" "Display program version" :default false :flag true])]
     (cond
