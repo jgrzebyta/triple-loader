@@ -35,7 +35,7 @@
   "Similar to make-repository but adds support for Lucene index. 
   NB: See delete-context."
   [& [^Sail store]]
-  (let [^Path tmpDir (or (when store (when-let [st (.toPath (.getDataDir store))] (.resolve st ".lucene-index")))
+  (let [^Path tmpDir (or (when store (.toPath (.getDataDir store)))
                          (u/temp-dir))
         defStore (DedupingInferencer. (if store store (MemoryStore. (.toFile tmpDir))))
         spin (SpinSail. defStore)
@@ -135,7 +135,8 @@ Code was adapted from kr-sesame: sesame-context-array."
 
   That method should be called manually somewhere at the end of code.
   " []
-  (try
-    (when-let [dir (:path @context)]
-      (FileUtils/deleteDirectory dir)) ;; commons-io supports deleting directory with contents)
-    (finally (swap! context deactive))))
+  (when (:active @context) ;; process repository deletion only when context is active
+    (try
+      (when-let [dir (:path @context)]
+        (FileUtils/deleteDirectory dir)) ;; commons-io supports deleting directory with contents)
+      (finally (swap! context deactive)))))
