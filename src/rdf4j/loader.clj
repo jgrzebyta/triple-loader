@@ -129,13 +129,6 @@
            (recur (rest itms))))))))
 
 
-(defn multioption->seq "Function handles multioptions for command line arguments"
-  [previous key val]
-  (assoc previous key
-         (if-let [oldval (get previous key)]
-           (merge oldval val)
-           (list val))))
-
 
 
 (defn -main [& args]
@@ -143,7 +136,7 @@
                                ["--help" "-h" "Print this screen" :default false :flag true]
                                ["--server URL" "-s" "Sesame SPARQL endpoint URL" :default "http://localhost:8080/rdf4j-server"]
                                ["--repositiry NAME" "-r" "Repository id" :default "test"]
-                               ["--file FILE" "-f" "Data file path" :assoc-fn #'multioption->seq]
+                               ["--file FILE" "-f" "Data file path" :assoc-fn #'u/multioption->seq]
                                ["--context IRI" "-c" "Context (graph name) of the dataset. Ignored if file format is context aware, e.g. TriG" :default nil]
                                ["--version" "-V" "Display program version" :defult false :flag true])]
 

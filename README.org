@@ -53,6 +53,7 @@ java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.sparql [options]
     - --query STRING -q :: Path to file with query or the query itself.
     - --formaT -t :: Format of SPARQL query resut. Option '-t :list' gives full list of supported formats. 
                      By default writers formats are =sparql/tsv= and =trig= for =tuple query= and =graph query= respectively.
+    - --repository -r :: Local repository settings. Possible options: =simple=, =lucene=, =native=.
     - --version, -v :: Print version number.
     - --help, -h :: Help.
 *** Example
