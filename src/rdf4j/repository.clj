@@ -27,7 +27,8 @@
 
 
 
-(defn make-repository "Create repository for given store. By default it is MemeoryStore"
+(defn make-repository
+"Create repository for given store. By default it is MemeoryStore"
   [& [^Sail store]]
   (SailRepository. (DedupingInferencer. (if store store (MemoryStore.)))))
 
