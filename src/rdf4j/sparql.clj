@@ -1,7 +1,6 @@
 (ns rdf4j.sparql
   (:gen-class)
   (:use [clojure.tools.cli :refer [cli]]
-        [rdf4j.repository]
         [rdf4j.reifiers]
         [rdf4j.writer :as w]
         [rdf4j.loader :exclude [-main]]
@@ -10,6 +9,7 @@
             [clojure.pprint :as pp]
             [clojure.java.io :as io]
             [rdf4j.utils :as u]
+            [rdf4j.repository :as r]
             [clojure.string :as st :exclude [reverse replace]])
   (:import [java.io FileReader StringWriter]
            [org.eclipse.rdf4j.sail.memory MemoryStore]
@@ -60,14 +60,14 @@ List of options:
                   dataset (:f opts)
                   writer-factory-name (:t opts)]
               (let [wrt (StringWriter. 100)]
-                (pprint dataset wrt)
+                (pp/pprint dataset wrt)
                 (log/trace "Request: " (.toString wrt)))
               (when-not (empty? dataset)
                   (load-multidata repository dataset))
-              (with-open-repository [cx repository]
+              (r/with-open-repository [cx repository]
                 (process-sparql-query cx sparql :writer-factory-name writer-factory-name))
               (.shutDown repository)
-              (delete-context)))))
+              (r/delete-context)))))
 
 (defn sparql-type "Returns a type of given SPARQL query. There are three type of queries: :tuple, :graph and :boolean"
   [^String sparql]
@@ -154,11 +154,14 @@ List of options:
   (if-let [store (some #(when (.contains % "native") %) option)]
     (NativeStore. (if-let [path (second (st/split store #"="))]
                     (io/file path)
-                    (u/temp-dir "sparql")))
+                    (.toFile (u/temp-dir "sparql"))))
     (MemoryStore.)))
 
-(defn prepare-repository [option]
+(defn prepare-repository
+  "Prepare store and repository based on given arguments."
+  [option]
   (let [store (prepare-store option)]
     (cond
       (some #(.contains % "simple") option) (r/make-repository store)
-      (some #(.contains % "lucene") option) (r/make-repository-with-lucene store))))
+      (some #(.contains % "lucene") option) (r/make-repository-with-lucene store)
+      :default (r/make-repository store))))

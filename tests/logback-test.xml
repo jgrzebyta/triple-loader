@@ -11,6 +11,7 @@
 	<logger name="rdf4j.sparql" level="warn"/>
 
 	<logger name="rdf4j.sparql-processor-test" level="warn" />
+	<logger name="rdf4j.sparql-test" level="debug" />
 	
 	<root>
 		<level value="warn" />
