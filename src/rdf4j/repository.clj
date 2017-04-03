@@ -27,7 +27,8 @@
 
 
 
-(defn make-repository "Create repository for given store. By default it is MemeoryStore"
+(defn make-repository
+"Create repository for given store. By default it is MemeoryStore"
   [& [^Sail store]]
   (SailRepository. (DedupingInferencer. (if store store (MemoryStore.)))))
 
@@ -35,7 +36,9 @@
   "Similar to make-repository but adds support for Lucene index. 
   NB: See delete-context."
   [& [^Sail store]]
-  (let [^Path tmpDir (or (when store (.toPath (.getDataDir store)))
+  (let [^Path tmpDir (or (when store (if-let [data-dir (.getDataDir store)]
+                                       (.toPath data-dir)
+                                       (u/temp-dir "lucene-index")))
                          (u/temp-dir))
         defStore (DedupingInferencer. (if store store (MemoryStore. (.toFile tmpDir))))
         spin (SpinSail. defStore)

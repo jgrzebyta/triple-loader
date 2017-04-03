@@ -13,6 +13,11 @@
   (:import [org.eclipse.rdf4j.rio RDFFormat]
            [clojure.lang ArraySeq]
            [java.io StringWriter ByteArrayOutputStream]
+           [org.eclipse.rdf4j.repository.sail SailRepository]
+           [org.eclipse.rdf4j.sail.memory MemoryStore]
+           [org.eclipse.rdf4j.sail.nativerdf NativeStore]
+           [org.eclipse.rdf4j.sail.inferencer.fc DedupingInferencer]
+           [org.eclipse.rdf4j.lucene.spin LuceneSpinSail]
            [org.eclipse.rdf4j.query.resultio.text.csv SPARQLResultsCSVWriter]))
 
 
@@ -22,8 +27,8 @@
               (to-array)
               (ArraySeq/create))
         options [["-h" "--help" "Print this screen" :default false]
-                 ["-f" "--file FILE" "Data file path" :assoc-fn multioption->seq ]
-                 ["-t" "--file-type TYPE" "Data file type. One of: turtle, n3, nq, rdfxml, rdfa" :assoc-fn multioption->seq ]
+                 ["-f" "--file FILE" "Data file path" :assoc-fn u/multioption->seq ]
+                 ["-t" "--file-type TYPE" "Data file type. One of: turtle, n3, nq, rdfxml, rdfa" :assoc-fn u/multioption->seq ]
                  ["-q" "--query SPARQL" "SPARQL query. Either as path to file or as string."]
                  ["-V" "--version" "Display program version" :default false]]
         parse-out (parse-opts args options)]
@@ -37,16 +42,12 @@
              (count (-> parse-out (get :options) (get :file-type)))) "Data file and file type arrays has different size"))
     ))
 
-
-
-
 (deftest test-load-data 
   (let [repo (make-repository-with-lucene)]
     (load-data repo "tests/resources/beet.rdf")
   (testing "Count number of triples in repository"
     (test-repository repo 68))
   (delete-context)))
-
 
 (deftest test-sparql-query
   (let [repo (make-repository-with-lucene)
@@ -129,7 +130,7 @@ where {
 
 
 (deftest test-eclipse-rdf4j-220
-  (testing "test for issue eclipse/rdf4j#220"
+  (testing "test for eclipse/rdf4j#220"
     (let [repo (make-repository-with-lucene)
           sparql220 (load-sparql "tests/resources/issue220.sparql")]
       (log/debug (format "\n======\n%s\n" sparql220))
@@ -140,3 +141,49 @@ where {
           (is (> (count response) 0))
           (log/info (format "Response size: %d" (count response))))))
     (delete-context)))
+
+(deftest test-repository-factory
+  (testing "empty options"
+    (let [repo (prepare-repository '())]
+      (log/debug "repository: " repo)
+      (is (instance? SailRepository repo))
+      (is (instance? MemoryStore (-> repo
+                                     (.getSail)
+                                     (.getBaseSail))))
+      ))
+  (testing "test SailRepository + MemoryStore repository initialisation"
+    (let [args (list "simple")
+          repo (prepare-repository args)]
+      (is (instance? SailRepository repo))
+      (is (instance? MemoryStore (-> repo
+                                     (.getSail)
+                                     (.getBaseSail))))))
+  (testing "test SailRepository + NativeStore with path"
+    (let [args (list "simple" "native=/tmp/rdf4j-repository")
+          repo (prepare-repository args)]
+      (is (instance? SailRepository repo))
+      (when-let [store (-> repo
+                         (.getSail)
+                         (.getBaseSail))]
+        (is (instance? NativeStore store))
+        (log/debug (format "storage: %s" store))
+        (is (= "/tmp/rdf4j-repository" (-> store
+                                           (.getDataDir)
+                                           (.getAbsolutePath)))))))
+  (testing "test SailRepository + NativeStore"
+    (let [args (list "simple" "native")
+          repo (prepare-repository args)]
+      (is (instance? SailRepository repo))
+      (when-let [store (-> repo
+                         (.getSail)
+                         (.getBaseSail))]
+        (is (instance? NativeStore store))
+        (log/debug (format "storage: %s" store))
+        (is (.contains (-> store
+                           (.getDataDir)
+                           (.getAbsolutePath)) "/tmp")))))
+  (testing "lucene index + memory"
+    (let [args (list "lucene")
+          repo (prepare-repository args)]
+      (is (instance? LuceneSpinSail (.getSail repo)))
+      )))

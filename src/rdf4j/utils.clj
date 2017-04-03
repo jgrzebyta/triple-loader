@@ -58,3 +58,23 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
   [^String path]
   (let [^Path normalised (normalise-path path)]
     (Files/createDirectory normalised (make-array FileAttribute 0))))
+
+(defn multioption->seq "Function handles multioptions for command line arguments"
+  [previous key val]
+  (assoc previous key
+         (if-let [oldval (get previous key)]
+           (merge oldval val)
+           (list val))))
+
+(defn re-splitted->seq
+  "Function handles options separated by regular expression."
+  [re previous key val]
+  (let [val-vect (str/split val re)]
+    (assoc previous key
+           (if-let [oldval (get previous key)]
+             (apply list (concat oldval val-vect))
+             (apply list val-vect)))))
+
+(defn comma->seq
+  [previous key val]
+    (apply re-splitted->seq #"," [previous key val]))
