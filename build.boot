@@ -28,7 +28,7 @@
 
 
 (task-options!
- version {:minor 'two :patch 'zero :include true}
+ version {:minor 'two :patch 'one :include true}
  pom {:project (get-env :project) }
  aot {:all true})
 
