@@ -150,14 +150,15 @@ where {
       (is (instance? MemoryStore (-> repo
                                      (.getSail)
                                      (.getBaseSail))))
-      ))
+      (delete-context)))
   (testing "test SailRepository + MemoryStore repository initialisation"
     (let [args (list "simple")
           repo (prepare-repository args)]
       (is (instance? SailRepository repo))
       (is (instance? MemoryStore (-> repo
                                      (.getSail)
-                                     (.getBaseSail))))))
+                                     (.getBaseSail))))
+      (delete-context)))
   (testing "test SailRepository + NativeStore with path"
     (let [args (list "simple" "native=/tmp/rdf4j-repository")
           repo (prepare-repository args)]
@@ -169,7 +170,8 @@ where {
         (log/debug (format "storage: %s" store))
         (is (= "/tmp/rdf4j-repository" (-> store
                                            (.getDataDir)
-                                           (.getAbsolutePath)))))))
+                                           (.getAbsolutePath)))))
+      (delete-context)))
   (testing "test SailRepository + NativeStore"
     (let [args (list "simple" "native")
           repo (prepare-repository args)]
@@ -181,9 +183,10 @@ where {
         (log/debug (format "storage: %s" store))
         (is (.contains (-> store
                            (.getDataDir)
-                           (.getAbsolutePath)) "/tmp")))))
+                           (.getAbsolutePath)) "/tmp")))
+      (delete-context)))
   (testing "lucene index + memory"
     (let [args (list "lucene")
           repo (prepare-repository args)]
       (is (instance? LuceneSpinSail (.getSail repo)))
-      )))
+      (delete-context))))

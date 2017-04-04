@@ -34,7 +34,8 @@
                 (format "no. triples witout context is %d but should be 0" (count all-triples-no-cont)))
           (t/is (< 0 (count all-triples))
               (format "no. triples in context '%s' is %d but should be greater than 0" *context-string* (count all-triples)))
-          ))))
+          ))
+      (repo/delete-context)))
   (t/testing "load data into named graph using multiloader API"
     (let [rdf-h ref/counter-commiter
           file-obj (jio/file "tests/resources/beet.rdf")
@@ -53,7 +54,8 @@
                 (format "no. triples witout context is %d but should be 0" (count all-triples-no-cont)))
           (t/is (< 0 (count all-triples))
               (format "no. triples in context '%s' is %d but should be greater than 0" *context-string* (count all-triples)))
-          )))))
+          ))
+      (repo/delete-context))))
 
 (t/deftest simple-context-loading
   (t/testing "Load data into named graph using low level API"
@@ -76,8 +78,8 @@
           (t/is (= 0 (count all-triples-no-cont))
               (format "no. triples witout context is %d but should be 0" (count all-triples-no-cont)))
           (t/is (< 0 (count all-triples))
-              (format "no. triples in context '%s' is %d but should be greater than 0" *context-string* (count all-triples)))
-          )
-        ))))
+              (format "no. triples in context '%s' is %d but should be greater than 0" *context-string* (count all-triples))))
+        )
+      (repo/delete-context))))
 
 

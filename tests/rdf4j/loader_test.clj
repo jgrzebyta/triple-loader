@@ -67,7 +67,8 @@
       )
     (testing "Does more tests ... "
       (test-repository repo 68))
-    (.shutDown repo)))
+    (.shutDown repo)
+    (delete-context)))
 
 (deftest test-delete-context
   (testing "Delete tmp repository"

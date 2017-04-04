@@ -43,7 +43,7 @@ List of options:
 "
   (let [[opts args banner] (cli args
                                 ["--help" "-h" "Print this screen" :default false :flag true]
-                                ["--file FILE" "-f" "Data file path" :assoc-fn #'multioption->seq]
+                                ["--file FILE" "-f" "Data file path" :assoc-fn #'u/multioption->seq]
                                 ["--query" "-q" "SPARQL query. Either as path to file or as string."]
                                 ["--format" "-t" "Format of SPARQL query resut."]
                                 ["--repository" "-r" "Local repository settings." :assoc-fn #'u/comma->seq]

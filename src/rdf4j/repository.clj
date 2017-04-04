@@ -25,21 +25,32 @@
 
 (def context (atom (RepositoryContext. nil false nil))) ;; create context variable
 
+(defn- get-tmp-dir
+  "Gets or creates temporary directory based on given sail or using alternative fn respectively.
 
+If sail has not null dataDir just returns it. If sail contains null dataDir than creates it, set as dataDir and returns.
+If sail is null just generates dataDir and returns. 
+"
+  [^Sail sail alternative-fn & args]
+    (or (when sail (if-let [data-dir (.getDataDir sail)]
+                     (.toPath data-dir)
+                     (when-let [^Path path (apply alternative-fn args)]
+                       (.setDataDir sail (.toFile path))
+                       path)))
+        (apply alternative-fn args)))
 
 (defn make-repository
-"Create repository for given store. By default it is MemeoryStore"
+"Create repository for given store. By default it is MemoryStore"
   [& [^Sail store]]
-  (SailRepository. (DedupingInferencer. (if store store (MemoryStore.)))))
+  (let [^Path tmp-dir (get-tmp-dir store u/temp-dir)]
+    (swap! context assoc :path (.toFile tmp-dir) :active true)
+    (SailRepository. (DedupingInferencer. (if store store (MemoryStore. (.toFile tmp-dir)))))))
 
 (defn make-repository-with-lucene
   "Similar to make-repository but adds support for Lucene index. 
   NB: See delete-context."
   [& [^Sail store]]
-  (let [^Path tmpDir (or (when store (if-let [data-dir (.getDataDir store)]
-                                       (.toPath data-dir)
-                                       (u/temp-dir "lucene-index")))
-                         (u/temp-dir))
+  (let [^Path tmpDir (get-tmp-dir store u/temp-dir "lucene")
         defStore (DedupingInferencer. (if store store (MemoryStore. (.toFile tmpDir))))
         spin (SpinSail. defStore)
         lucene-spin (doto
