@@ -13,10 +13,11 @@
   (:import [org.eclipse.rdf4j.rio RDFFormat]
            [clojure.lang ArraySeq]
            [java.io StringWriter ByteArrayOutputStream]
+           [org.eclipse.rdf4j.sail.spin SpinSail]
            [org.eclipse.rdf4j.repository.sail SailRepository]
            [org.eclipse.rdf4j.sail.memory MemoryStore]
            [org.eclipse.rdf4j.sail.nativerdf NativeStore]
-           [org.eclipse.rdf4j.sail.inferencer.fc DedupingInferencer]
+           [org.eclipse.rdf4j.sail.inferencer.fc DedupingInferencer ForwardChainingRDFSInferencer]
            [org.eclipse.rdf4j.lucene.spin LuceneSpinSail]
            [org.eclipse.rdf4j.query.resultio.text.csv SPARQLResultsCSVWriter]))
 
@@ -190,3 +191,27 @@ where {
           repo (prepare-repository args)]
       (is (instance? LuceneSpinSail (.getSail repo)))
       (delete-context))))
+
+(deftest test-magic-properties
+  (let [repo (make-repository-with-lucene)]
+    (with-open-repository [cnx repo]
+      (testing "spif:split"
+        (let [sparql "prefix spif: <http://spinrdf.org/spif#>
+                      select ?x where {
+                      ?x spif:split ('Very|sour|berry' '\\\\|')
+                     } 
+                     "
+              sparql-proc (load-sparql sparql)
+              resp (u/iter-seq (process-sparql-query cnx sparql-proc :writer-factory-name :none))]
+          (is (= 3 (count resp)))))
+      (testing "apf:strSplit"
+        (let [sparql "prefix apf: <http://jena.hpl.hp.com/ARQ/property#>
+                      select ?text where {
+                      ?text apf:strSplit (\"Very|sour|berry\" \"\\\\|\")
+                      }
+                     "
+              sparql-proc (load-sparql sparql)
+              resp (u/iter-seq (process-sparql-query cnx sparql-proc :writer-factory-name :none))]
+          (is (= 3 (count resp)))
+          )))
+    (delete-context)))

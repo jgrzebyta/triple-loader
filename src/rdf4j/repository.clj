@@ -13,7 +13,7 @@
            [org.eclipse.rdf4j.sail Sail]
            [org.eclipse.rdf4j.sail.spin SpinSail]
            [org.eclipse.rdf4j.sail.evaluation TupleFunctionEvaluationMode]
-           [org.eclipse.rdf4j.sail.inferencer.fc DedupingInferencer]
+           [org.eclipse.rdf4j.sail.inferencer.fc DedupingInferencer ForwardChainingRDFSInferencer]
            [org.eclipse.rdf4j.repository.sail SailRepository]
            [org.eclipse.rdf4j.sail.memory MemoryStore]
            [org.eclipse.rdf4j.sail.lucene LuceneSail]
@@ -51,7 +51,7 @@ If sail is null just generates dataDir and returns.
   NB: See delete-context."
   [& [^Sail store]]
   (let [^Path tmpDir (get-tmp-dir store u/temp-dir "lucene")
-        defStore (DedupingInferencer. (if store store (MemoryStore. (.toFile tmpDir))))
+        defStore (ForwardChainingRDFSInferencer. (DedupingInferencer. (if store store (MemoryStore. (.toFile tmpDir)))))
         spin (SpinSail. defStore)
         lucene-spin (doto
                         (LuceneSpinSail. spin)
