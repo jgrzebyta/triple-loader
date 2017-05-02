@@ -4,7 +4,7 @@
         [rdf4j.reifiers]
         [rdf4j.writer :as w]
         [rdf4j.loader :exclude [-main]]
-        [rdf4j.version :exclude [-main] :as v])
+        [rdf4j.version :refer [version]])
   (:require [clojure.tools.logging :as log]
             [clojure.pprint :as pp]
             [clojure.java.io :as io]
@@ -51,7 +51,7 @@ List of options:
     (cond
       (:h opts) (do (println banner)
                     (System/exit 0))
-      (:V opts) (do (println "Version: " (v/get-version))
+      (:V opts) (do (println "Version: " (version))
                     (System/exit 0))
       (= ":list" (:t opts)) (do (w/help)
                                 (System/exit 0))

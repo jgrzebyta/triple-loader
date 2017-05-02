@@ -28,15 +28,14 @@
 
 
 (task-options!
- version {:minor 'two :patch 'one :include true}
- pom {:project (get-env :project) }
+ version {:minor 'two :patch 'one :include true :generate 'rdf4j.version }
+ pom {:project (get-env :project) :version (get-version)}
  aot {:all true})
 
 (deftask develop
   "Build SNAPSHOT version of jar"
   []
-  (version :develop true :pre-release 'snapshot)
-  identity)
+  (version :develop true :pre-release 'snapshot))
 
 
 (deftask testing "Attach tests/ directory to classpath." []
@@ -78,5 +77,7 @@
    (pom)
    (aot)
    (uber)
-   (jar :file (format "%s-standalone.jar" (get-env :project)))
+   (jar :file (format "%s-%s-standalone.jar"
+                      (str (name (get-env :project)))
+                      (get-version)))
    (target)))

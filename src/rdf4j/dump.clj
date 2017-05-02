@@ -4,7 +4,7 @@
         [clojure.tools.logging :as log]
         [clojure.java.io :as io]
         [clojure.string :refer [blank?]]
-        [rdf4j.version :refer [get-version]])
+        [rdf4j.version :refer [version]])
   (:require [rdf4j.utils :as u]
             [rdf4j.repository :as r])
   (:import [java.nio.file Paths Path]
@@ -73,5 +73,5 @@
                                 ["--version" "-V" "Display program version" :defult false :flag true])]
     (cond
       (:h opts) (println banner)
-      (:V opts) (println "Version: " (get-version))
+      (:V opts) (println "Version: " version)
       :else (do-dump opts))))

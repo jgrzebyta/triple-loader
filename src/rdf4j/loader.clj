@@ -6,7 +6,7 @@
         [clojure.string :refer [blank?]]
         [clojure.pprint :as pp]
         [rdf4j.reifiers :as ref]
-        [rdf4j.version :refer [get-version]])
+        [rdf4j.version :refer [version]])
   (:require [rdf4j.repository :as r]
             [rdf4j.utils :as u])
   (:import [java.nio.file Path]
@@ -142,5 +142,5 @@
 
     (cond
       (:h opts) (println banner)
-      (:V opts) (println "Version: " (get-version))
+      (:V opts) (println "Version: " version)
       :else (do-loading opts))))
