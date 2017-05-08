@@ -25,14 +25,15 @@
                      (get [] (.get (Rio/getWriterFormatForMIMEType "application/trig")))))
 
 
-(defn- make-io-writer "Prepares Java IO Writer for file or OutputStreamWriter for STDOUT"
-  [file-path]
+(defn make-io-writer "Prepares Java IO Writer for file or OutputStreamWriter for STDOUT"
+  [^Path file-path]
   {:pre [(or (instance? Path file-path) (nil? file-path))]} ;; Accepts only either instance of Path or nil
   (if (some? file-path)
     (io/writer (.toFile file-path))
     (io/writer (OutputStreamWriter. System/out))))
 
-(defn- make-rdf-writer "Creates RDFWriter based on file name or TriGWriter by default." [io-writer out-file]
+(defn make-rdf-writer "Creates `RDFWriter` based on file name or TriGWriter by default."
+  [io-writer ^Path out-file]
   {:pre [(or (instance? Path out-file) (nil? out-file))]} ;; accepts only either instace of Path or nil
   (log/debug (format "io-writer type: %s \tout-file: %s" (type io-writer) out-file))
   (let [writer-format (if (some? out-file)
@@ -42,6 +43,22 @@
     (log/debug (format "writer format: %s\t io-wrtiter: %s" (type writer-format) (type io-writer)))
     (Rio/createWriter writer-format io-writer)))
 
+(defmacro with-rdf-writer
+"Wraps low level java writer together with `RDFWriter`.
+
+The particular instance of `RDFWriter` depends on the `out-file` extension or it is `TriGWriter` by default.
+If out-file is nil than exeryting is written to the standard output.
+"
+  [binds & body]
+  (let [[rdf-writer-var out-file] binds
+        normalised-path-var (gensym "norm_")]
+    `(let [~normalised-path-var (u/normalise-path ~out-file)]
+       (with-open [io-wr# (make-io-writer ~normalised-path-var)]
+         (let [~rdf-writer-var (make-rdf-writer io-wr# ~normalised-path-var)]
+           ~@body
+           )
+         ))
+    ))
 
 (defn- do-dump [opts]
   (let [path (file-to-path (:f opts))]
