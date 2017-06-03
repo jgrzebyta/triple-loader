@@ -8,7 +8,7 @@
            [org.apache.commons.io FileUtils]
            [org.eclipse.rdf4j.common.iteration CloseableIteration]
            [org.eclipse.rdf4j.model.impl SimpleValueFactory]
-           [org.eclipse.rdf4j.model Resource IRI Value]
+           [org.eclipse.rdf4j.model Resource IRI Value Namespace]
            [org.eclipse.rdf4j.repository RepositoryConnection Repository]
            [org.eclipse.rdf4j.sail Sail]
            [org.eclipse.rdf4j.sail.spin SpinSail]
@@ -139,6 +139,13 @@ Code was adapted from kr-sesame: sesame-context-array."
 (defn get-all-statements [r]
   (get-statements r nil nil nil false (context-array)))
 
+
+(defmulti get-all-namespaces "Return a sequence of all instances of `Namespace` in the repository or repository connection" (fn [r] (type r)))
+
+(defmethod get-all-namespaces RepositoryConnection [r] (doall (u/iter-seq (.getNamespaces r))))
+
+(defmethod get-all-namespaces Repository [r] (with-open-repository [cn r]
+                                               (get-all-namespaces cn)))
 
 (defn- deactive [ctx] (assoc ctx :active false))
 
