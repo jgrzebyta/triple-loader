@@ -63,12 +63,14 @@
       )))
 
 (deftask build
-  "Build without dependencies" []
+  "Build jar without dependencies and not compiled" []
   (comp
    (pom)
-   (aot)
+   (aot) ;; perform compilation
+   (sift :add-resource ["src/"]) ;; add suurce files as well
    (jar)
-   (target)))
+   (target)
+   (install)))
 
 (deftask build-standalone
   "Build standalone version"
