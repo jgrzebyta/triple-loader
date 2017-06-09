@@ -49,12 +49,13 @@ If sail is null just generates dataDir and returns.
 (defn make-repository-with-lucene
   "Similar to make-repository but adds support for Lucene index. 
   NB: See delete-context."
-  [& [^Sail store]]
+  [& [^Sail store ^Properties parameters]]
   (let [^Path tmpDir (get-tmp-dir store u/temp-dir "lucene")
         defStore (ForwardChainingRDFSInferencer. (DedupingInferencer. (if store store (MemoryStore. (.toFile tmpDir)))))
         spin (SpinSail. defStore)
         lucene-spin (doto
                         (LuceneSpinSail. spin)
+                      (.addAbsentParameters parameters)
                       (.setDataDir (.toFile tmpDir)))]
     (swap! context assoc :path (.toFile tmpDir) :active true)   ;; keep tmpDir in global variable 
     (log/debug "Storage path: " (.toAbsolutePath tmpDir))
