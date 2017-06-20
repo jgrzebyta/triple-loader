@@ -11,7 +11,8 @@
             [rdf4j.utils :as u]
             [rdf4j.repository :as r]
             [clojure.string :as st :exclude [reverse replace]])
-  (:import [java.io FileReader StringWriter]
+  (:import [java.util Properties]
+           [java.io FileReader StringWriter]
            [org.eclipse.rdf4j.sail.memory MemoryStore]
            [org.eclipse.rdf4j.sail.nativerdf NativeStore]
            [org.eclipse.rdf4j.query MalformedQueryException]
@@ -44,9 +45,10 @@ List of options:
   (let [[opts args banner] (cli args
                                 ["--help" "-h" "Print this screen" :default false :flag true]
                                 ["--file FILE" "-f" "Data file path" :assoc-fn #'u/multioption->seq]
-                                ["--query" "-q" "SPARQL query. Either as path to file or as string."]
-                                ["--format" "-t" "Format of SPARQL query resut."]
-                                ["--repository" "-r" "Local repository settings." :assoc-fn #'u/comma->seq]
+                                ["--query QUERY" "-q" "SPARQL query. Either as path to file or as string."]
+                                ["--format FORMAT" "-t" "Format of SPARQL query resut."]
+                                ["--repository SETTINGS" "-r" "Local repository settings." :assoc-fn #'u/comma->seq]
+                                ["--bind PROPERTIES" "-b" "Accepts set of properties as SPARQL bindings. Given values are parsed to literal." :default ""]
                                 ["--version" "-V" "Display program version" :default false :flag true])]
     (cond
       (:h opts) (do (println banner)
@@ -58,14 +60,17 @@ List of options:
       :else (let [repository (prepare-repository (:r opts))
                   sparql (load-sparql (:q opts))
                   dataset (:f opts)
-                  writer-factory-name (:t opts)]
+                  writer-factory-name (:t opts)
+                  binding (u/map->binding (doto
+                                              (Properties.)
+                                            (.load (u/string->stream (:b opts)))))]
               (let [wrt (StringWriter. 100)]
                 (pp/pprint dataset wrt)
                 (log/trace "Request: " (.toString wrt)))
               (when-not (empty? dataset)
                   (load-multidata repository dataset))
               (r/with-open-repository [cx repository]
-                (process-sparql-query cx sparql :writer-factory-name writer-factory-name))
+                (process-sparql-query cx sparql :writer-factory-name writer-factory-name :binding binding))
               (.shutDown repository)
               (r/delete-context)))))
 

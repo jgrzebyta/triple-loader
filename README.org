@@ -18,11 +18,9 @@ Jars deployed to Clojars require dedicated *RDF4J* binaries which might be recei
 * 2. List of commands
 ** rdf4j.loader
 Loads data into triple store.
-+This is implementation of method described in [article]-- (http://www.rivuli-development.com/further-reading/sesame-cookbook/loading-large-file-in-sesame-native/) published in Rivuli's *The Sesame Coocbook*+. This is not valid any more because currently (version 2.2) =HTTPRepositoryConnection= loads data into remote repository in chunks (sized 200,000). 
-
 
 #+begin_src shell
-java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.loader [options]
+java -cp triple-loader-standalone.jar rdf4j.loader [options]
 #+end_src
 
 *** Options
@@ -37,15 +35,14 @@ java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.loader [options]
 Populate triple store at =http://localhost:8090/rdf4j-server/test= with data from two files.
 
 #+begin_src shell
-java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.loader -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl
+java -cp triple-loader-standalone.jar rdf4j.loader -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl
 #+end_src
-
 
 ** rdf4.sparql
 Executes SPARQL /query/ on data provided by /file/.  
 
 #+begin_src shell
-java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.sparql [options]
+java -cp triple-loader-standalone.jar rdf4j.sparql [options]
 #+end_src
 
 *** Options
@@ -55,34 +52,44 @@ java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.sparql [options]
                      By default writers formats are =sparql/tsv= and =trig= for =tuple query= and =graph query= respectively.
     - --repository -r :: Local repository settings. Possible options: =simple=, =lucene=, =native=.
     - --version, -v :: Print version number.
+    - --bind, -b :: Accepts set of properties as SPARQL bindings. Given values are parsed to literal.
     - --help, -h :: Help.
 *** Example
 
 Process SPARQL request =select * where {?s ?p ?o} limit 10= on data located in two files.
 
 #+begin_src shell
-java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.sparql -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl -q "select * where {?s ?p ?o} limit 10"
+java -cp triple-loader-standalone.jar rdf4j.sparql -f ~/database/data1.ttl -f ~/database/data2.ttl -q "select * where {?s ?p ?o} limit 10"
 #+end_src
 
 
 Process SPARQL request from file =~/database/process.sparql= on data located in two files.
 
 #+begin_src shell
-java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.sparql -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl -q ~/database/process.sparql
+java -cp triple-loader-standalone.jar rdf4j.sparql -f ~/database/data1.ttl -f ~/database/data2.ttl -q ~/database/process.sparql
 #+end_src
 
 Process SPARQL request from file =~/database/process.sparql= on data located in two files and print results in =sprarql/json= format.
 
 #+begin_src shell
-java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.sparql -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl -q ~/database/process.sparql -t sparql/json
+java -cp triple-loader-standalone.jar rdf4j.sparql -f ~/database/data1.ttl -f ~/database/data2.ttl -q ~/database/process.sparql -t sparql/json
 #+end_src
+
+
+Process SPARQL request with binding
+#+begin_src shell
+java -cp triple-loader-standalone.jar rdf4j.sparql -f tests/resources/beet.rdf -t sparql/csv -q "select ?s ?country where {?s <file:/tmp2/beet-1.csvCountries> ?country}" -b "country=Poland"
+#+end_src
+
+
+
 
 
 ** rdf4j.dump
 Creates remote repository dump file in *TriG* format. [[#rdf4jloader][rdf4j.loader]] function is suitable for restoring triple. 
 
 #+begin_src shell
-java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.dump [options]
+java -cp triple-loader-standalone.jar rdf4j.dump [options]
 #+end_src
 
 *** Options
@@ -96,14 +103,14 @@ java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.dump [options]
 Dump =http://localhpost:8090/rdf4j-server/test= repository to standard output.
 
 #+begin_src shell
-java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.dump -s http://localhpost:8090/rdf4j-server -r test
+java -cp triple-loader-standalone.jar rdf4j.dump -s http://localhpost:8090/rdf4j-server -r test
 #+end_src
 
 
 Dump =http://localhpost:8090/rdf4j-server/test= repository to =/tmp/test-repo.trig= file.
 
 #+begin_src shell
-java -cp triple-loader-0.1.10-SNAPSHOT-standalone.jar rdf4j.dump -s http://localhpost:8090/rdf4j-server -r test -f /tmp/test-repo.trig
+java -cp triple-loader-standalone.jar rdf4j.dump -s http://localhpost:8090/rdf4j-server -r test -f /tmp/test-repo.trig
 #+end_src
 
 * 3. Usage as API provider

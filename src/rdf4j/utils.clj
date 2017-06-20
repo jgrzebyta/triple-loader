@@ -3,7 +3,9 @@
             [clj-pid.core :as pid]
             [clojure.string :refer [blank?]]
             [clojure.string :as str :exclude [reverse replace]])
-  (:import [java.nio.file Files Path Paths]
+  (:import [java.util Map]
+           [java.io ByteArrayInputStream BufferedInputStream]
+           [java.nio.file Files Path Paths]
            [java.nio.file.attribute FileAttribute]
            [org.eclipse.rdf4j.repository Repository RepositoryConnection]
            [org.eclipse.rdf4j.model.impl SimpleValueFactory]))
@@ -77,4 +79,13 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
 
 (defn comma->seq
   [previous key val]
-    (apply re-splitted->seq #"," [previous key val]))
+  (apply re-splitted->seq #"," [previous key val]))
+
+(defn string->stream [^String s]
+  (if (some? s)
+    (BufferedInputStream. (ByteArrayInputStream. (.getBytes s)) 2048)
+    nil))
+
+(defn map->binding [^Map m]
+  {:pre [(instance? Map m)]}
+  (reduce (fn [m [k v]] (assoc m (keyword k) v)) {} m))
