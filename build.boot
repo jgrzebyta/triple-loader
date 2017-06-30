@@ -28,7 +28,7 @@
 
 
 (task-options!
- version {:minor 'two :patch 'zero :include true :generate 'rdf4j.version}
+ version {:minor 'two :patch 'zero :include true}
  pom {:project (get-env :project) }
  aot {:all true})
 
