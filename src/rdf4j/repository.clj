@@ -42,23 +42,25 @@ If sail is null just generates dataDir and returns.
 (defn make-repository
 "Create repository for given store. By default it is MemoryStore"
   [& [^Sail store]]
-  (let [^Path tmp-dir (get-tmp-dir store u/temp-dir)]
-    (swap! context assoc :path (.toFile tmp-dir) :active true)
-    (SailRepository. (DedupingInferencer. (if store store (MemoryStore. (.toFile tmp-dir)))))))
+    (SailRepository. (DedupingInferencer. (if store store (MemoryStore.)))))
 
 (defn make-repository-with-lucene
   "Similar to make-repository but adds support for Lucene index. 
   NB: See delete-context."
   [& [^Sail store ^Properties parameters]]
   (let [^Path tmpDir (get-tmp-dir store u/temp-dir "lucene")
-        defStore (ForwardChainingRDFSInferencer. (DedupingInferencer. (if store store (MemoryStore. (.toFile tmpDir)))))
+        local-store (if store store (MemoryStore.))
+        defStore (ForwardChainingRDFSInferencer. (DedupingInferencer. local-store))
         spin (SpinSail. defStore)
-        lucene-spin (doto
-                        (LuceneSpinSail. spin)
-                      (.addAbsentParameters parameters)
-                      (.setDataDir (.toFile tmpDir)))]
-    (swap! context assoc :path (.toFile tmpDir) :active true)   ;; keep tmpDir in global variable 
+        lucene-spin (when-let [ls (LuceneSpinSail. spin)]
+                      (when (some? parameters) (.addAbsentParameters ls parameters))
+                      (.setDataDir ls (.toFile tmpDir))
+                      ls)]
     (log/debug "Storage path: " (.toAbsolutePath tmpDir))
+    (log/debug "defStore basesail: " (type defStore))
+    (log/debug "spin sail: " (type spin))
+    (log/debug "lucene spin: " lucene-spin)
+    (swap! context assoc :path (.toFile tmpDir) :active true)   ;; keep tmpDir in global variable 
     (SailRepository. lucene-spin)))
 
 (defn make-mem-repository

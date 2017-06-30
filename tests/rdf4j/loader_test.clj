@@ -12,7 +12,6 @@
            [org.eclipse.rdf4j.repository RepositoryResult RepositoryConnection]
            [org.eclipse.rdf4j.repository.http HTTPRepository]
            [org.eclipse.rdf4j.repository.sail SailRepository]
-           [org.eclipse.rdf4j.sail.memory MemoryStore]
            [org.eclipse.rdf4j.sail.lucene LuceneSail]))
 
 
@@ -82,7 +81,7 @@
 
 (deftest load-data-test
   (let [repo (make-repository-with-lucene nil)]
-    (try 
+    (try
       (load-data repo "tests/resources/beet.rdf")
       (test-repository repo 68)
       (finally
