@@ -113,7 +113,11 @@
           (log/debug "finish ...")))
       (catch Exception e
         (log/debugf "Stack trace: \n%s" (with-out-str (cst/print-stack-trace e)))
-        (throw (ex-info (format "Erorr '%s' occured when loaded file '%s'" (.getMessage e) (.getCanonicalPath file)) {:error e :file file :message (.getMessage e)} ))))))
+        (throw (ex-info (format "Erorr '%s' occured when loaded file '%s'" (.getMessage e) (.getCanonicalPath file))
+                        {:error e
+                         :file (.getAbsolutePath file)
+                         :message (format "Erorr '%s' occured when loaded file '%s'" (.getMessage e) (.getCanonicalPath file))}
+                        e))))))
 
 (defn load-multidata "Load multiple data files into repository"
   [repository data-col & { :keys [rdf-handler context-uri]}]
