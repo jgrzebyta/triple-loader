@@ -5,7 +5,7 @@
           :url "http://www.adalab-project.org/"
           :dependencies '[[org.clojure/clojure "1.8.0"]
                           [org.clojure/tools.cli "0.3.5"]
-                          [org.clojure/tools.logging "0.3.1"]
+                          [org.clojure/tools.logging "0.4.0"]
                           [clj-pid/clj-pid "0.1.2"]
                           [commons-io/commons-io "2.5"]
                           [org.eclipse.rdf4j/rdf4j-repository-http "2.3-SNAPSHOT" :exclusions [commons-io org.slf4j/slf4j-api]]

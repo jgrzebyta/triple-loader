@@ -115,20 +115,14 @@
 
 (defn load-multidata "Load multiple data files into repository"
   [repository data-col & { :keys [rdf-handler context-uri]}]
-   (assert (some? repository) "Repository is null")
-   (assert (not (empty? data-col)) "Data collection is empty")
-   (let [wrt (StringWriter.)]
-     (pp/pprint data-col wrt)
-     (log/debug (format "Data collection [%s]: %s" (type data-col) (.toString wrt))))
-   (loop [itms data-col]
-     (let [itm (first itms)]
-       (when itm
-         (do
-           (log/info (format "Load dataset: %s into context: %s" itm context-uri))
-           (load-data repository (u/normalise-path itm) :rdf-handler rdf-handler :context-uri context-uri)
-           (recur (rest itms)))))))
-
-
+  (assert (some? repository) "Repository is null")
+  (assert (not (empty? data-col)) "Data collection is empty")
+  (let [wrt (StringWriter.)]
+    (pp/pprint data-col wrt)
+    (log/debug (format "Data collection [%s]: %s" (type data-col) (.toString wrt))))
+  (doall (pmap (fn [itm]
+                 (log/infof "Load dataset: %s into context: %s" itm context-uri)
+                 (load-data repository (u/normalise-path itm) :rdf-handler rdf-handler :context-uri context-uri)) data-col)))
 
 
 (defn -main [& args]
