@@ -106,3 +106,13 @@
       (.shutDown repo)
       (delete-context))
     ))
+
+(deftest test-errored-file
+  (testing "for issue #33"
+    (let [file "tests/resources/beet-error.trig"
+          repo (make-repository)]
+      (try
+        (is (thrown? Exception (load-data repo file)))
+        (finally
+          (.shutDown repo)
+          (delete-context))))))
