@@ -8,7 +8,8 @@
         [rdf4j.reifiers :as ref]
         [rdf4j.version :refer [version]])
   (:require [rdf4j.repository :as r]
-            [rdf4j.utils :as u])
+            [rdf4j.utils :as u]
+            [clojure.stacktrace :as cst])
   (:import [java.nio.file Path]
            [java.io File StringWriter]
            [org.eclipse.rdf4j IsolationLevel IsolationLevels]
@@ -37,14 +38,14 @@
     (log/debug "Repository: " (if (instance? HTTPRepository repository)
                                 (.getRepositoryURL repository)
                                 (.toString repository)))
-  (try
-    (.setParserConfig connection (make-parser-config))
-    (catch RepositoryException e (do
-                                   (log/error (format "Error message: %s" (.getMessage e)))
-                                   (throw e)))
-    (catch Throwable t (do
-                         (log/error "Error: " (.getMessage t))
-                         (System/exit -1))))))
+    (try
+      (.setParserConfig connection (make-parser-config))
+      (catch RepositoryException e (do
+                                     (log/error (format "Error message: %s" (.getMessage e)))
+                                     (throw e)))
+      (catch Error t (do
+                       (log/error "Error: " (.getMessage t))
+                       (System/exit -1))))))
 
 (defn- do-loading [opts]
   ;; validate options
@@ -81,20 +82,20 @@
                        (.exists file)
                        (.canRead file)))
     (log/trace (format "data type: %s" parser-format))
-    (r/with-open-repository [cnx repository]
-      (init-connection cnx)
-      (let [rdf-handler-object (if (some? rdf-handler)
-                                 (if (fn? rdf-handler)
-                                   (apply rdf-handler [cnx context-uri])
-                                   (apply (resolve rdf-handler) [cnx context-uri])) nil)]
-        ; Set up handler only if the handler was given
-        (when (some? rdf-handler-object)
-          (log/debug "Set up rdf handler: " rdf-handler-object)
-          (.setRDFHandler parser rdf-handler-object))
-        
-        (log/debug (format "RDF handler: %s" rdf-handler-object))
-        ;; run parsing
-        (try
+    (try
+      (r/with-open-repository [cnx repository]
+        (init-connection cnx)
+        (let [rdf-handler-object (if (some? rdf-handler)
+                                   (if (fn? rdf-handler)
+                                     (apply rdf-handler [cnx context-uri])
+                                     (apply (resolve rdf-handler) [cnx context-uri])) nil)]
+                                        ; Set up handler only if the handler was given
+          (when (some? rdf-handler-object)
+            (log/debug "Set up rdf handler: " rdf-handler-object)
+            (.setRDFHandler parser rdf-handler-object))
+          
+          (log/debug (format "RDF handler: %s" rdf-handler-object))
+          ;; run parsing
           (.begin cnx) ;; begin transaction
           (log/trace "Isolation level: " (.getIsolationLevel cnx)) ;; this features returns null for SailRepositoryConnection
           (log/debug "is repository active: " (.isActive cnx))
@@ -108,27 +109,22 @@
               (.add cnx file (.toString (.toURI file)) parser-format (into-array Resource (if (some? context-uri)
                                                                                             [(.createIRI (u/value-factory cnx) context-uri)]
                                                                                             nil) ))))
-          (finally (do
-                     (log/debug "finish...")
-                     (.commit cnx))))
-        ))))
+          (.commit cnx)
+          (log/debug "finish ...")))
+      (catch Exception e
+        (log/debugf "Stack trace: \n%s" (with-out-str (cst/print-stack-trace e)))
+        (throw (ex-info (format "Erorr '%s' occured when loaded file '%s'" (.getMessage e) (.getCanonicalPath file)) {:error e :file file :message (.getMessage e)} ))))))
 
 (defn load-multidata "Load multiple data files into repository"
   [repository data-col & { :keys [rdf-handler context-uri]}]
-   (assert (some? repository) "Repository is null")
-   (assert (not (empty? data-col)) "Data collection is empty")
-   (let [wrt (StringWriter.)]
-     (pp/pprint data-col wrt)
-     (log/debug (format "Data collection [%s]: %s" (type data-col) (.toString wrt))))
-   (loop [itms data-col]
-     (let [itm (first itms)]
-       (when itm
-         (do
-           (log/info (format "Load dataset: %s into context: %s" itm context-uri))
-           (load-data repository (u/normalise-path itm) :rdf-handler rdf-handler :context-uri context-uri)
-           (recur (rest itms)))))))
-
-
+  (assert (some? repository) "Repository is null")
+  (assert (not (empty? data-col)) "Data collection is empty")
+  (let [wrt (StringWriter.)]
+    (pp/pprint data-col wrt)
+    (log/debug (format "Data collection [%s]: %s" (type data-col) (.toString wrt))))
+  (doall (pmap (fn [itm]
+                 (log/infof "Load dataset: %s into context: %s" itm context-uri)
+                 (load-data repository (u/normalise-path itm) :rdf-handler rdf-handler :context-uri context-uri)) data-col)))
 
 
 (defn -main [& args]

@@ -13,6 +13,7 @@
 	<logger name="rdf4j.sparql-processor-test" level="warn" />
 	<logger name="rdf4j.sparql-test" level="debug" />
 
+	<logger name="rdf4j.loader" level="debug"/>
 	<logger name="rdf4j.loader-test" level="debug" />
 	<logger name="rdf4j.repository" level="debug"/>
 	

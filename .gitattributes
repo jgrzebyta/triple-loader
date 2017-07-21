@@ -1,2 +1,3 @@
 *	text eol=auto
+*.boot	text eol=lf
 *.clj	text eol=lf
