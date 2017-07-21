@@ -75,7 +75,21 @@ If sail is null just generates dataDir and returns.
   Opens connetion CONNECTION-VARIABLE to RDF repository.
   
   Where initseq is (CONNECTION-VARIABLE REPOSITORY). For example (cnx :memory)
-  If REPOSITORY has value ':memory' then memory repository is created."
+  If REPOSITORY has value ':memory' then memory repository is created.
+
+  The `body` expression is wrapped inside (try ... catch ...):
+
+        (try
+          ~@body
+          (catch Exception e
+                   (.rollback connection)
+                   (throw e)))
+
+  The `body` should contain 
+        (.commit connection)
+  at the very end.
+
+"
   [initseq & body]
   (let [[connection-var repo-init] initseq]
     `(let [^org.eclipse.rdf4j.repository.Repository repository# ~repo-init]
@@ -83,16 +97,16 @@ If sail is null just generates dataDir and returns.
        (try (when-not (.isInitialized repository#)
               (log/debug "Initialize repository")
               (.initialize repository#))
+            (catch Exception e# (log/errorf "Initialise error [%s]: %s"
+                                            (.getName (.getClass e#))
+                                            (.getMessage e#))
+                   (throw e#)))
             (with-open [~connection-var (.getConnection repository#)]
               (try
                 ~@body
                 (catch Exception e#
                   (.rollback ~connection-var)
-                  (throw e#))))
-            (catch Exception e# (log/error (format "Initialise error [%s]: %s"
-                                                   (.getName (.getClass e#))
-                                                   (.getMessage e#)))
-                   (throw e#))))))
+                  (throw e#)))))))
 
 
 (defn context-array
