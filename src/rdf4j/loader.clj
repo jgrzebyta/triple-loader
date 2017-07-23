@@ -12,6 +12,7 @@
             [clojure.stacktrace :as cst])
   (:import [java.nio.file Path]
            [java.io File StringWriter]
+           [clojure.lang ExceptionInfo]
            [org.eclipse.rdf4j IsolationLevel IsolationLevels]
            [org.eclipse.rdf4j.model Resource]
            [org.eclipse.rdf4j.repository.http HTTPRepository HTTPRepositoryConnection]
@@ -61,6 +62,9 @@
                        context-string (nil? context-string)))
     (try
       (load-multidata repository (:f opts) :rdf-handler ref/counter-commiter :context-uri context-string)
+      (catch ExceptionInfo e (let [f (get (ex-data e) :file)]
+                               (log/errorf "Error during loading file '%s'" f)
+                               (System/exit -1)))
       (finally (.shutDown repository)))
     (log/info (format "Loaded %d statements" (ref/countStatements)))))
 
