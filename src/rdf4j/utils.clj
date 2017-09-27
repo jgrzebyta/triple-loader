@@ -8,7 +8,9 @@
            [java.nio.file Files Path Paths]
            [java.nio.file.attribute FileAttribute]
            [org.eclipse.rdf4j.repository Repository RepositoryConnection]
-           [org.eclipse.rdf4j.model.impl SimpleValueFactory]))
+           [org.eclipse.rdf4j.model.impl SimpleValueFactory]
+           [org.eclipse.rdf4j.model.util URIUtil]
+           [org.eclipse.rdf4j.model Value]))
 
 ;;; Utils methods
 
@@ -89,3 +91,15 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
 (defn map->binding [^Map m]
   {:pre [(instance? Map m)]}
   (reduce (fn [m [k v]] (assoc m (keyword k) v)) {} m))
+
+
+(defn ^Value any-to-value
+  "Convert anything into `Value`.
+  
+   The argument value is checked in the following order:
+      - if `v` is valid IRI than create result using `(.createIRI value-factory v)`
+      - otherwise create `Literal`."
+  [v]
+  (let [v-string (String/valueOf v)
+        vf (value-factory)]
+    (if (URIUtil/isValidURIReference v-string) (.createIRI vf v-string) (.createLiteral vf v))))
