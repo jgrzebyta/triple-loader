@@ -8,9 +8,10 @@
            [java.nio.file Files Path Paths]
            [java.nio.file.attribute FileAttribute]
            [org.eclipse.rdf4j.repository Repository RepositoryConnection]
-           [org.eclipse.rdf4j.model.impl SimpleValueFactory]
+           [org.eclipse.rdf4j.model.impl SimpleValueFactory LinkedHashModel]
            [org.eclipse.rdf4j.model.util URIUtil]
-           [org.eclipse.rdf4j.model Value]))
+           [org.eclipse.rdf4j.model Value Model]
+           [org.eclipse.rdf4j.common.iteration Iterations Iteration]))
 
 ;;; Utils methods
 
@@ -103,3 +104,9 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
   (let [v-string (String/valueOf v)
         vf (value-factory)]
     (if (URIUtil/isValidURIReference v-string) (.createIRI vf v-string) (.createLiteral vf v))))
+
+
+(defn ^Model loaded-model [^Iteration statements-iterations]
+  (-> (Iterations/asSet statements-iterations)
+      (LinkedHashModel.)))
+
