@@ -1,5 +1,6 @@
 (ns rdf4j.triples-source.wrappers
-  (:require [rdf4j.repository :as r])
+  (:require [rdf4j.repository :as r]
+            [rdf4j.utils :as u])
   (:import [org.eclipse.rdf4j.repository RepositoryConnection]
            [org.eclipse.rdf4j.model Model Resource IRI Value]))
 
@@ -10,7 +11,8 @@
    wraps either `Model` or `ReppositoryConnection`. The user is `root-source` agnostic - does not have
    to know the API. 
 
-   `get-triples` methods are defined with arguments pattern `s p o [ns]`: subject - predicate - object - name space (optional)."
+   `get-triples` methods are defined with arguments pattern `s p o [ns]`: subject - predicate - object - name space (optional).
+   Returns instance of `Model`." 
   
   (get-triples [this s p o] [this s p o ns]))
 
@@ -20,7 +22,7 @@
   (get-triples [this s p o ns]
     (apply plain-method [root-source s p o ns]))
   (get-triples [this s p o]
-    (apply plain-method [root-source s p o (r/context-array)])))
+    (u/loaded-model (apply plain-method [root-source s p o (r/context-array)]))))
 
 
 (defmulti triples-wrapper-factory "Creates a wrapper for different triples sources.

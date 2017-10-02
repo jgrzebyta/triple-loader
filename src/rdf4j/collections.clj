@@ -1,12 +1,16 @@
 (ns rdf4j.collections
   (:require [clojure.tools.logging :as log]
             [rdf4j.utils :as u]
-            [rdf4j.repository :as r])
+            [rdf4j.repository :as r]
+            [rdf4j.triples-source.wrappers :as w]
+            [rdf4j.collections.utils :as cu])
   (:import [org.eclipse.rdf4j.repository RepositoryConnection]
            [org.eclipse.rdf4j.model Resource Model ValueFactory IRI]
            [org.eclipse.rdf4j.model.impl LinkedHashModelFactory SimpleNamespace]
-           [org.eclipse.rdf4j.model.vocabulary RDF RDFS]))
+           [org.eclipse.rdf4j.model.vocabulary RDF RDFS]
+           [org.eclipse.rdf4j.model.util Models]))
 
+(declare sumo-contains)
 
 (defn- seq-list [root-node model in-seq]
   (let [^ValueFactory vf (u/value-factory)]
@@ -24,11 +28,11 @@
     (.add model root-node RDF/TYPE rdf-type (r/context-array 0))
     (loop [it 1 items in-seq]
       (when-let [i (first items)]
-        (.add model root-node (rdf-item it) (u/any-to-value i))
+        (.add model root-node RDF/LI (u/any-to-value i))
         (recur (+ 1 it) (rest items))))))
 
 
-(defn ^Model seq-to-rdf
+(defn ^Model seq->rdf
   "Converts a sequence into instance of `RDF/LIST` or one of `RDFS/CONTAINER`.
    
    The result graph is wrapped in triple: `root-node` -- <http://www.adampease.org/OP/SUMO.owl#contains> -- <BNode> .
@@ -47,23 +51,8 @@
             (= rdf-type RDF/SEQ)) (seq-collection rdf-type b-root model in-seq))
       model))
 
-(defmulti rdf-to-seq "Create a sequnce from RDF collections structures" (fn [rdf-statements root-resource] (type rdf-statements)))
-
-(defmethod rdf-to-seq Model [rdf-model root-resource]
+(defn rdf->seq [rdf-source root-resource]
   )
-
-
-(defmethod rdf-to-seq RepositoryConnection [rdf-repository root-resource]
-  )
-
-
-
-(defn rdf-item
-  "Create instances of `rdfs:ContainerMembershipProperty` (e.g. rdf:_1, rdf:_2) for collections `RDFS/CONTAINER`."
-  [i]
-  {:pre [(integer? i)] }
-  (let [vf (u/value-factory)]
-    (.createIRI vf RDF/NAMESPACE (str "_" i))))
 
 ;; Declare SUMO namespace
 
