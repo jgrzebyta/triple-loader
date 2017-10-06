@@ -14,7 +14,7 @@
            [java.io File StringWriter]
            [clojure.lang ExceptionInfo]
            [org.eclipse.rdf4j IsolationLevel IsolationLevels]
-           [org.eclipse.rdf4j.model Resource]
+           [org.eclipse.rdf4j.model Resource Model]
            [org.eclipse.rdf4j.repository.http HTTPRepository HTTPRepositoryConnection]
            [org.eclipse.rdf4j.repository RepositoryConnection RepositoryException]
            [org.eclipse.rdf4j.rio Rio RDFFormat ParserConfig RDFParseException]
@@ -70,10 +70,21 @@
 
 
 
-(defmulti load-data "Load formated file into repository."
+(defmulti load-data
+  "[repository file] 
+
+   Loads formated `file` (or model) into `repository`. Selects method based on type of `file`.
+   Currently supported types are: String (file path), Model, Path and File.
+"
   (fn [repository file & {:keys [rdf-handler context-uri] }] (type file)))
 
 (defmethod load-data String [repository file & {:keys [rdf-handler context-uri]}] (load-data repository (u/normalise-path file) :rdf-handler rdf-handler :context-uri context-uri))
+
+(defmethod load-data Model [repository model & {:keys [rdf-handler context-uri]}]
+  (r/with-open-repository [cnx repository]
+    (init-connection cnx)
+    (.add cnx model (r/context-array context-uri))
+    (.commit cnx)))
 
 (defmethod load-data Path [repository file & {:keys [rdf-handler context-uri]}] (load-data repository (.toFile file) :rdf-handler rdf-handler :context-uri context-uri))
 
@@ -132,7 +143,8 @@
     (log/debug (format "Data collection [%s]: %s" (type data-col) (.toString wrt))))
   (doall (pmap (fn [itm]
                  (log/infof "Load dataset: %s into context: %s" itm context-uri)
-                 (load-data repository (u/normalise-path itm) :rdf-handler rdf-handler :context-uri context-uri)) data-col)))
+                 (load-data repository (if (u/normalise-path-supportsp itm)
+                                         (u/normalise-path itm) itm) :rdf-handler rdf-handler :context-uri context-uri)) data-col)))
 
 
 (defn -main [& args]

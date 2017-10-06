@@ -10,8 +10,7 @@
            [org.eclipse.rdf4j.repository Repository RepositoryConnection]
            [org.eclipse.rdf4j.model.impl SimpleValueFactory LinkedHashModel]
            [org.eclipse.rdf4j.model.util URIUtil]
-           [org.eclipse.rdf4j.model Value Model]
-           [org.eclipse.rdf4j.common.iteration Iterations Iteration]))
+           [org.eclipse.rdf4j.model Value]))
 
 ;;; Utils methods
 
@@ -57,6 +56,12 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
   (let [path-as-string (.toString path)]
     (.normalize (Paths/get (.replaceFirst path-as-string "^~" (System/getProperty "user.home"))
                            (make-array String 0)))))
+
+(defn normalise-path-supportsp
+  "Check if type of `data` is suppoerted by `normalise-path`."
+  [data]
+  (contains? (methods normalise-path) (type data)))
+
 
 (defn ^Path create-dir
   "Create directory"
@@ -104,9 +109,3 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
   (let [v-string (String/valueOf v)
         vf (value-factory)]
     (if (URIUtil/isValidURIReference v-string) (.createIRI vf v-string) (.createLiteral vf v))))
-
-
-(defn ^Model loaded-model [^Iteration statements-iterations]
-  (-> (Iterations/asSet statements-iterations)
-      (LinkedHashModel.)))
-
