@@ -9,11 +9,17 @@
                           [clj-pid/clj-pid "0.1.2"]
                           [commons-io/commons-io "2.5"]
                           [org.eclipse.rdf4j/rdf4j-repository-http "2.3-SNAPSHOT" :exclusions [commons-io org.slf4j/slf4j-api]]
-                          [org.eclipse.rdf4j/rdf4j-runtime "2.3-SNAPSHOT" :exclusions [org.slf4j/slf4j-api]]
+                          [org.eclipse.rdf4j/rdf4j-sail-memory "2.3-SNAPSHOT" :exclusions [org.slf4j/slf4j-api]]
+                          [org.eclipse.rdf4j/rdf4j-sail-nativerdf "2.3-SNAPSHOT" :exclusions [org.slf4j/slf4j-api]]
+                          [org.eclipse.rdf4j/rdf4j-queryresultio-text "2.3-SNAPSHOT"]
                           [org.eclipse.rdf4j/rdf4j-repository-sail "2.3-SNAPSHOT" :scope "test" :exclusions [org.slf4j/slf4j-api]]
                           [org.eclipse.rdf4j/rdf4j-lucene-spin "2.3-SNAPSHOT"]
                           [org.eclipse.rdf4j/rdf4j-rio-trig "2.3-SNAPSHOT"]
+                          [org.eclipse.rdf4j/rdf4j-rio-trix "2.3-SNAPSHOT"]
+                          [org.eclipse.rdf4j/rdf4j-rio-rdfxml "2.3-SNAPSHOT"]
+                          [org.eclipse.rdf4j/rdf4j-rio-rdfjson "2.3-SNAPSHOT"]
                           [ch.qos.logback/logback-classic "1.2.3"]
+                          [org.slf4j/jcl-over-slf4j "1.7.9"]
                           [degree9/boot-semver "1.4.4" :scope "test"]])
 
 (require '[degree9.boot-semver :refer :all]
