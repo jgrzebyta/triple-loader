@@ -35,7 +35,7 @@
   (get-triples [this s p o]
     (u/loaded-model (apply plain-method [root-source s p o (r/context-array)])))
   (get-all-triples [this]
-    (r/get-all-statements root-source))
+    (get-triples this nil nil nil))
 
   ProxySourceFactory
   (as-repository [this]

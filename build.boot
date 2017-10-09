@@ -59,7 +59,8 @@
        '[rdf4j.mock-test]
        '[rdf4j.sparql-test]
        '[rdf4j.sparql-processor-test]
-       '[rdf4j.collection-test])
+       '[rdf4j.collection-test]
+       '[rdf4j.generic-source-test])
   (if (nil? (:test-name *opts*))
     (do
       (println "Run all tests")
