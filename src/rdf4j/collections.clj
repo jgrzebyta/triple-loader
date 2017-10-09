@@ -52,7 +52,9 @@
       model))
 
 (defn rdf->seq [rdf-source root-resource]
-  )
+  (let [generic-source (w/triples-wrapper-factory rdf-source)
+        collection-type (cu/collection-type (.get-triples generic-source root-resource nil nil))]
+    ))
 
 ;; Declare SUMO namespace
 
