@@ -1,0 +1,7 @@
+# Graph type of rdf:List
+@prefix : <http://www.eexample.org/data#> .
+
+
+:resources_1 a :Resource ;
+:value1 "mock value" ;
+:data ( "val1" "val2" "val3" ) .
