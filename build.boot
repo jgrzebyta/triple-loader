@@ -13,6 +13,7 @@
                           [org.eclipse.rdf4j/rdf4j-sail-nativerdf "2.3-SNAPSHOT" :exclusions [org.slf4j/slf4j-api]]
                           [org.eclipse.rdf4j/rdf4j-queryresultio-text "2.3-SNAPSHOT"]
                           [org.eclipse.rdf4j/rdf4j-repository-sail "2.3-SNAPSHOT" :scope "test" :exclusions [org.slf4j/slf4j-api]]
+                          [org.eclipse.rdf4j/rdf4j-repository-contextaware "2.3-SNAPSHOT"]
                           [org.eclipse.rdf4j/rdf4j-lucene-spin "2.3-SNAPSHOT"]
                           [org.eclipse.rdf4j/rdf4j-rio-trig "2.3-SNAPSHOT"]
                           [org.eclipse.rdf4j/rdf4j-rio-trix "2.3-SNAPSHOT"]
