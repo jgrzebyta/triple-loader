@@ -5,15 +5,22 @@
           :url "http://www.adalab-project.org/"
           :dependencies '[[org.clojure/clojure "1.8.0"]
                           [org.clojure/tools.cli "0.3.5"]
-                          [org.clojure/tools.logging "0.3.1"]
+                          [org.clojure/tools.logging "0.4.0"]
                           [clj-pid/clj-pid "0.1.2"]
                           [commons-io/commons-io "2.5"]
                           [org.eclipse.rdf4j/rdf4j-repository-http "2.3-SNAPSHOT" :exclusions [commons-io org.slf4j/slf4j-api]]
-                          [org.eclipse.rdf4j/rdf4j-runtime "2.3-SNAPSHOT" :exclusions [org.slf4j/slf4j-api]]
+                          [org.eclipse.rdf4j/rdf4j-sail-memory "2.3-SNAPSHOT" :exclusions [org.slf4j/slf4j-api]]
+                          [org.eclipse.rdf4j/rdf4j-sail-nativerdf "2.3-SNAPSHOT" :exclusions [org.slf4j/slf4j-api]]
+                          [org.eclipse.rdf4j/rdf4j-queryresultio-text "2.3-SNAPSHOT"]
                           [org.eclipse.rdf4j/rdf4j-repository-sail "2.3-SNAPSHOT" :scope "test" :exclusions [org.slf4j/slf4j-api]]
+                          [org.eclipse.rdf4j/rdf4j-repository-contextaware "2.3-SNAPSHOT"]
                           [org.eclipse.rdf4j/rdf4j-lucene-spin "2.3-SNAPSHOT"]
                           [org.eclipse.rdf4j/rdf4j-rio-trig "2.3-SNAPSHOT"]
+                          [org.eclipse.rdf4j/rdf4j-rio-trix "2.3-SNAPSHOT"]
+                          [org.eclipse.rdf4j/rdf4j-rio-rdfxml "2.3-SNAPSHOT"]
+                          [org.eclipse.rdf4j/rdf4j-rio-rdfjson "2.3-SNAPSHOT"]
                           [ch.qos.logback/logback-classic "1.2.3"]
+                          [org.slf4j/jcl-over-slf4j "1.7.9"]
                           [degree9/boot-semver "1.4.4" :scope "test"]])
 
 (require '[degree9.boot-semver :refer :all]
@@ -28,7 +35,7 @@
 
 
 (task-options!
- version {:minor 'two :patch 'zero :include true}
+ version {:minor 'two :patch 'one :include false}
  pom {:project (get-env :project) }
  aot {:all true})
 
@@ -52,7 +59,9 @@
        '[rdf4j.multiload-test]
        '[rdf4j.mock-test]
        '[rdf4j.sparql-test]
-       '[rdf4j.sparql-processor-test])
+       '[rdf4j.sparql-processor-test]
+       '[rdf4j.collection-test]
+       '[rdf4j.generic-source-test])
   (if (nil? (:test-name *opts*))
     (do
       (println "Run all tests")

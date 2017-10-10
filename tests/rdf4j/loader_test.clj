@@ -7,12 +7,12 @@
         [clojure.java.io :as jio])
   (:require [rdf4j.utils :as u])
   (:import [java.io File]
+           [clojure.lang ExceptionInfo]
            [org.eclipse.rdf4j.model Resource Statement]
            [org.eclipse.rdf4j.rio Rio RDFFormat ParserConfig RDFParseException]
            [org.eclipse.rdf4j.repository RepositoryResult RepositoryConnection]
            [org.eclipse.rdf4j.repository.http HTTPRepository]
            [org.eclipse.rdf4j.repository.sail SailRepository]
-           [org.eclipse.rdf4j.sail.memory MemoryStore]
            [org.eclipse.rdf4j.sail.lucene LuceneSail]))
 
 
@@ -82,7 +82,7 @@
 
 (deftest load-data-test
   (let [repo (make-repository-with-lucene nil)]
-    (try 
+    (try
       (load-data repo "tests/resources/beet.rdf")
       (test-repository repo 68)
       (finally
@@ -107,3 +107,24 @@
       (.shutDown repo)
       (delete-context))
     ))
+
+(deftest test-errored-file
+  (testing "simple test for issue #33"
+    (let [file "tests/resources/beet-error.trig"
+          repo (make-repository)]
+      (try
+        (is (thrown? Exception (load-data repo file)))
+        (finally
+          (.shutDown repo)
+          (delete-context)))))
+  (testing "deep test for issue #33"
+    (let [file "tests/resources/beet-error.trig"
+          repo (make-repository)]
+      (try
+        (load-data repo file)
+        (catch Exception e
+          (is (instance? ExceptionInfo e))
+          (is (string? (get (ex-data e) :file) )))
+        (finally
+          (.shutDown repo)
+          (delete-context))))))

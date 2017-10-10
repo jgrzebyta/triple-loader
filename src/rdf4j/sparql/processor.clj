@@ -16,11 +16,17 @@
 
 (defmacro with-sparql
   " args => [key value ...]
-
   Evaluates body in context of processed SPARQL request on given data.
-  The query result is exposed to the body with variable defined by key :result and
+  
+  The query (`:query`) result is exposed to the body with variable defined by key `:result` and
   is a sequence of BindingSets or Statements for tuple or graph queries respectively. 
-  Possible keys are: :query or :sparql (required), :result (required), :data (optional), :binding (optional) and :repository (optional)."
+  
+  All possible keys are: 
+     - :query or :sparql (required) :: SPARQL query as string
+     - :result (required) :: Declares variable for holding sparql query results
+     - :data (optional) :: A collection of data loaded into repository
+     - :binding (optional) :: A map with bindings
+     - :repository (optional). :: User's repository. Alternatively creates one using `(r/make-repository-with-lucene)`"
   {:added "0.1.15"}
   [args & body]
   (let [args-map (apply hash-map args) ;; converts vector of arguments into map
@@ -41,6 +47,5 @@
                                                      :writer-factory-name :none ~@binding-seq))]
            ~@body))
        ~@(when-let [del repo-end]
-           del))
-    ))
+           del))))
 

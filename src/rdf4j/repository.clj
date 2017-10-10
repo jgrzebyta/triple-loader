@@ -42,23 +42,25 @@ If sail is null just generates dataDir and returns.
 (defn make-repository
 "Create repository for given store. By default it is MemoryStore"
   [& [^Sail store]]
-  (let [^Path tmp-dir (get-tmp-dir store u/temp-dir)]
-    (swap! context assoc :path (.toFile tmp-dir) :active true)
-    (SailRepository. (DedupingInferencer. (if store store (MemoryStore. (.toFile tmp-dir)))))))
+    (SailRepository. (DedupingInferencer. (if store store (MemoryStore.)))))
 
 (defn make-repository-with-lucene
   "Similar to make-repository but adds support for Lucene index. 
   NB: See delete-context."
   [& [^Sail store ^Properties parameters]]
   (let [^Path tmpDir (get-tmp-dir store u/temp-dir "lucene")
-        defStore (ForwardChainingRDFSInferencer. (DedupingInferencer. (if store store (MemoryStore. (.toFile tmpDir)))))
+        local-store (if store store (MemoryStore.))
+        defStore (ForwardChainingRDFSInferencer. (DedupingInferencer. local-store))
         spin (SpinSail. defStore)
-        lucene-spin (doto
-                        (LuceneSpinSail. spin)
-                      (.addAbsentParameters parameters)
-                      (.setDataDir (.toFile tmpDir)))]
-    (swap! context assoc :path (.toFile tmpDir) :active true)   ;; keep tmpDir in global variable 
+        lucene-spin (when-let [ls (LuceneSpinSail. spin)]
+                      (when (some? parameters) (.addAbsentParameters ls parameters))
+                      (.setDataDir ls (.toFile tmpDir))
+                      ls)]
     (log/debug "Storage path: " (.toAbsolutePath tmpDir))
+    (log/debug "defStore basesail: " (type defStore))
+    (log/debug "spin sail: " (type spin))
+    (log/debug "lucene spin: " lucene-spin)
+    (swap! context assoc :path (.toFile tmpDir) :active true)   ;; keep tmpDir in global variable 
     (SailRepository. lucene-spin)))
 
 (defn make-mem-repository
@@ -73,7 +75,21 @@ If sail is null just generates dataDir and returns.
   Opens connetion CONNECTION-VARIABLE to RDF repository.
   
   Where initseq is (CONNECTION-VARIABLE REPOSITORY). For example (cnx :memory)
-  If REPOSITORY has value ':memory' then memory repository is created."
+  If REPOSITORY has value ':memory' then memory repository is created.
+
+  The `body` expression is wrapped inside (try ... catch ...):
+
+        (try
+          ~@body
+          (catch Exception e
+                   (.rollback connection)
+                   (throw e)))
+
+  The `body` should contain 
+        (.commit connection)
+  at the very end.
+
+"
   [initseq & body]
   (let [[connection-var repo-init] initseq]
     `(let [^org.eclipse.rdf4j.repository.Repository repository# ~repo-init]
@@ -81,16 +97,16 @@ If sail is null just generates dataDir and returns.
        (try (when-not (.isInitialized repository#)
               (log/debug "Initialize repository")
               (.initialize repository#))
+            (catch Exception e# (log/errorf "Initialise error [%s]: %s"
+                                            (.getName (.getClass e#))
+                                            (.getMessage e#))
+                   (throw e#)))
             (with-open [~connection-var (.getConnection repository#)]
               (try
                 ~@body
                 (catch Exception e#
                   (.rollback ~connection-var)
-                  (throw e#))))
-            (catch Exception e# (log/error (format "Initialise error [%s]: %s"
-                                                   (.getName (.getClass e#))
-                                                   (.getMessage e#)))
-                   (throw e#))))))
+                  (throw e#)))))))
 
 
 (defn context-array

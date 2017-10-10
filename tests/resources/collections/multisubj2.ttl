@@ -1,0 +1,9 @@
+
+@prefix : <http://example.org/> .
+
+
+:item1 :somePredicate1 :someValue .
+:item1 :somePredicate1 "value1" .
+:item1 :somePredicate2 "Value2" .
+
+_:node1 :somePredicate5 "value50" .
