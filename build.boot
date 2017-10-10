@@ -26,11 +26,7 @@
 
 (require '[degree9.boot-semver :refer :all]
          '[adzerk.boot-test :refer :all :as at]
-         '[clojure.test :as test]
-         '[clojure.pprint :as pp]
-         '[boot.util :as util]
-         '[clojure.java.io :as io]
-         '[clojure.string :as str])
+         '[boot.util :as util])
 
 ;; this line prevents confusing the deployer with dependencies` pom.xml files
 (alter-var-root #'boot.pod/standard-jar-exclusions (constantly (conj boot.pod/standard-jar-exclusions #"/pom\.xml$")))
@@ -51,25 +47,26 @@
 (deftask run-test "Run unit tests"
   [t test-name NAME str "Test to execute. Run all tests if not given."]
   *opts*
-   (testing)
-   (if (nil? (:test-name *opts*))
-     (do
-       (println "Run all tests")
-       (at/test))
-     (do
-       (println (format "Run test: %s" (:test-name *opts*)))
-       (at/test :filters #{ '(re-find (re-pattern (:test-name *opts*)) (str %))})
-       )))
+  (testing)
+  (let [test-name (:test-name *opts*)
+        pattern (re-pattern test-name)
+        to-eval `(at/test :filters #{ '(re-find ~pattern (str ~'%)) } )]
+    (if (nil? test-name)
+      (do
+        (println "Run all tests")
+        (at/test))
+      (do
+        (println (format "Run test: %s" test-name))
+        (eval to-eval)
+        ))))
 
 (deftask build
   "Build jar without dependencies and not compiled" []
   (comp
    (pom)
-   (aot) ;; perform compilation
-   (sift :add-resource ["src/"]) ;; add suurce files as well
-   (jar)
-   (target)
-   (install)))
+   (sift :add-resource ["src/"]) ;; add source files as well
+   (build-jar)
+   (target)))
 
 (deftask build-standalone
   "Build standalone version"
