@@ -33,7 +33,11 @@
 
 (task-options!
  version {:minor 'two :patch 'one :include false}
- pom {:project (get-env :project) }
+ pom {:project (get-env :project)
+      :scm { :url "https://github.com/jgrzebyta/triple-loader"
+            :connection "scm:git:ssh://github.com/jgrzebyta/triple-loader.git"
+            :developerConnection "scm:git:ssh://git@github.com/jgrzebyta/triple-loader.git"
+            :tag "HEAD"}}
  aot {:all true})
 
 (deftask develop
