@@ -52,17 +52,14 @@
   [t test-name NAME str "Test to execute. Run all tests if not given."]
   *opts*
   (testing)
-  (let [test-name (:test-name *opts*)
-        pattern (re-pattern test-name)
-        to-eval `(at/test :filters #{ '(re-find ~pattern (str ~'%)) } )]
-    (if (nil? test-name)
-      (do
-        (println "Run all tests")
-        (at/test))
-      (do
-        (println (format "Run test: %s" test-name))
-        (eval to-eval)
-        ))))
+  (if-let [test-name (:test-name *opts*)]
+    (let [pattern (re-pattern test-name)
+          to-eval `(at/test :filters #{ '(re-find ~pattern (str ~'%)) } )]
+      (println (format "Run test: %s" test-name))
+      (eval to-eval))
+    (do
+      (println "Run all tests")
+      (at/test))))
 
 (deftask build
   "Build jar without dependencies and not compiled" []

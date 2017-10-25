@@ -39,15 +39,15 @@
 
   ProxySourceFactory
   (as-repository [this]
-    (case (type root-source)
-      Repository root-source
-      Model (let [repository (r/make-repository)]
-              (l/load-data repository root-source)
-              repository)))
+    (case
+      (instance? Repository root-source) root-source
+      (instance? Model root-source) (let [repository (r/make-repository)]
+                                      (l/load-data repository root-source)
+                                      repository)))
   (as-model [this]
-    (case (type root-source)
-      Repository (u/loaded-model (r/get-all-statements root-source))
-      Model root-source)))
+    (case
+      (instance? Repository root-source) (u/loaded-model (r/get-all-statements root-source))
+      (instance? Model root-source) root-source)))
 
 
 (defmulti triples-wrapper-factory "Creates a wrapper for different triples sources.
