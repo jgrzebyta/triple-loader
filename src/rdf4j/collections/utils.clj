@@ -3,7 +3,7 @@
             [rdf4j.loader :as l])
   (:import [java.io File]
            [java.util Collection]
-           [org.eclipse.rdf4j.model Model]
+           [org.eclipse.rdf4j.model Model Resource Value IRI]
            [org.eclipse.rdf4j.model.impl LinkedHashModel]
            [org.eclipse.rdf4j.model.vocabulary RDF RDFS]
            [org.eclipse.rdf4j.model.util Models]))
@@ -21,7 +21,6 @@
     :else (throw (ex-info "Collection type unknown" {:rdf-type (-> model
                                                                    (.filter nil RDF/TYPE nil)
                                                                    (Models/objectStrings))}))))
-
 
 (defn single-subjectp
   "Predicate to check if `model` contains single subject."
@@ -48,3 +47,12 @@
     (l/load-data repo statements-file)
     (-> (r/get-all-statements repo)
          (LinkedHashModel.))))
+
+(defn filter
+  "`Model/filter` method wrapper with hinted types."
+  ([^Model m ^Resource s ^IRI p ^Value o] (filter m s p o (r/context-array)))
+  ([^Model m ^Resource s ^IRI p ^Value o ^"[Lorg.eclipse.rdf4j.model.Resource;" ns] (.filter m s p o ns)))
+
+(defn get-subject-IRIs
+  ([^Model m ^IRI p ^Value o] (get-subject-IRIs m p o (r/context-array)))
+  ([^Model m ^IRI p ^Value o ^"[Lorg.eclipse.rdf4j.model.Resource;" ns] (filter m nil p o ns)))
