@@ -48,9 +48,9 @@
     (-> (r/get-all-statements repo)
          (LinkedHashModel.))))
 
-(defn filter
+(defn rdf-filter
   "`Model/filter` method wrapper with hinted types."
-  ([^Model m ^Resource s ^IRI p ^Value o] (filter m s p o (r/context-array)))
+  ([^Model m ^Resource s ^IRI p ^Value o] (rdf-filter m s p o (r/context-array)))
   ([^Model m ^Resource s ^IRI p ^Value o ^"[Lorg.eclipse.rdf4j.model.Resource;" ns] (.filter m s p o ns)))
 
 (defn get-subject-IRIs
