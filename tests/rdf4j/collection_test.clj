@@ -80,7 +80,7 @@
           (t/is (= collection-type RDFS/CONTAINER)))))))
 
 
-(t/deftest rdf->coll-test
+(t/deftest rdf-coll-test
   (let [vf (u/value-factory)
         data-source (->
                      (io/file "tests/resources/collections/type-list.ttl")
@@ -92,6 +92,10 @@
             to-test (c/rdf->seq data-source collection-root [])]
         (t/is (not (empty? to-test)))
         (t/is (= 3 (count to-test)))
+        (t/is (vector? to-test))
+        (t/are [p x] (not (p x))
+          set? to-test
+          list? to-test)
         (log/debug (with-out-str (pp/pprint to-test))))
       )
     (t/testing "hetero rdf->seq"
@@ -101,5 +105,9 @@
             to-test (c/rdf->seq data-source collection-root #{})]
         (t/is (not (empty? to-test)))
         (t/is (= 2 (count to-test)))
+        (t/is (set? to-test))
+        (t/are [p x] (not (p x))
+          vector? to-test
+          list? to-test)
         (log/debug (with-out-str (pp/pprint to-test))))
       )))
