@@ -2,11 +2,13 @@
   (:require [rdf4j.loader :as l]
             [rdf4j.repository :as r]
             [rdf4j.utils :as u]
+            [rdf4j.collections :as c]
             [rdf4j.collections.utils :as cu]
             [rdf4j.triples-source.wrappers :as w]
             [clojure.java.io :as io]
             [clojure.test :as t]
-            [clojure.tools.logging :as log])
+            [clojure.tools.logging :as log]
+            [clojure.pprint :as pp])
   (:import [org.eclipse.rdf4j.model Model]
            [org.eclipse.rdf4j.model.vocabulary RDF RDFS]
            [org.eclipse.rdf4j.model.util Models]))
@@ -77,3 +79,27 @@
           (log/debugf "Collection type: %s" collection-type)
           (t/is (= collection-type RDFS/CONTAINER)))))))
 
+
+(t/deftest rdf->coll-test
+  (let [vf (u/value-factory)
+        data-source (->
+                     (io/file "tests/resources/collections/type-list.ttl")
+                     (cu/loaded-model))]
+    (t/testing "simple rdf->seq"
+      (let [collection-root (-> (cu/rdf-filter data-source nil (.createIRI vf "http://www.eexample.org/data#" "data") nil)
+                                (Models/object)
+                                (.get))
+            to-test (c/rdf->seq data-source collection-root [])]
+        (t/is (not (empty? to-test)))
+        (t/is (= 3 (count to-test)))
+        (log/debug (with-out-str (pp/pprint to-test))))
+      )
+    (t/testing "hetero rdf->seq"
+      (let [collection-root (-> (cu/rdf-filter data-source nil (.createIRI vf "http://www.eexample.org/data#" "data1") nil)
+                                (Models/object)
+                                (.get))
+            to-test (c/rdf->seq data-source collection-root #{})]
+        (t/is (not (empty? to-test)))
+        (t/is (= 2 (count to-test)))
+        (log/debug (with-out-str (pp/pprint to-test))))
+      )))

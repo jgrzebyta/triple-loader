@@ -4,4 +4,5 @@
 
 :resources_1 a :Resource ;
 :value1 "mock value" ;
-:data ( "val1" "val2" "val3" ) .
+:data ( "val1" "val2" "val3" ) ;
+:data1 ( "var1" :val2 ) .

@@ -4,13 +4,14 @@
             [rdf4j.repository :as r]
             [rdf4j.triples-source.wrappers :as w]
             [rdf4j.collections.utils :as cu])
-  (:import [org.eclipse.rdf4j.repository RepositoryConnection]
+  (:import [java.util NoSuchElementException]
+           [org.eclipse.rdf4j.repository RepositoryConnection]
            [org.eclipse.rdf4j.model Resource Model ValueFactory IRI]
            [org.eclipse.rdf4j.model.impl LinkedHashModelFactory SimpleNamespace]
            [org.eclipse.rdf4j.model.vocabulary RDF RDFS]
            [org.eclipse.rdf4j.model.util Models]))
 
-(declare sumo-contains)
+(declare sumo-contains get-rest get-first)
 
 (defn- seq-list [root-node model in-seq]
   (let [^ValueFactory vf (u/value-factory)]
@@ -51,10 +52,23 @@
             (= rdf-type RDF/SEQ)) (seq-collection rdf-type b-root model in-seq))
       model))
 
-(defn rdf->seq [rdf-source root-resource]
-  (let [generic-source (w/triples-wrapper-factory rdf-source)
-        collection-type (cu/collection-type (.get-triples generic-source root-resource nil nil))]
-    ))
+(defn rdf->seq
+  "Converts RDF collection with root `root-resource` within `source-model` to Clojure collection. 
+
+  `coll` variable is used as a starting collection which is populated."
+  [source-model root-resource coll]
+  (loop [current-root root-resource
+         out-coll coll]
+    (let [tmp-out-coll (if-let [first (try
+                                        (get-first source-model current-root)
+                                        (catch NoSuchElementException e nil))]
+                         (conj out-coll first))
+          rest (try
+                 (get-rest source-model current-root)
+                 (catch NoSuchElementException e RDF/NIL))]
+      (if (= rest RDF/NIL)
+        tmp-out-coll
+        (recur rest tmp-out-coll)))))
 
 ;; Declare SUMO namespace
 
@@ -65,3 +79,18 @@
 (def sumo-ns (SimpleNamespace. sumo-prefix sumo-namespace))
 
 (def sumo-contains (.createIRI (u/value-factory) sumo-namespace "contains"))
+
+(defn- get-first
+  [^Model m ^IRI root]
+  (->
+   (cu/rdf-filter m root RDF/FIRST nil)
+   (Models/object)
+   (.get)))
+
+(defn- get-rest
+  "Returns object from triple: `root` `RDF/REST` object."
+  [^Model m ^IRI root]
+  (->
+   (cu/rdf-filter m root RDF/REST nil)
+   (Models/object)
+   (.get)))
