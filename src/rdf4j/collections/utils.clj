@@ -55,4 +55,4 @@
 
 (defn get-subject-IRIs
   ([^Model m ^IRI p ^Value o] (get-subject-IRIs m p o (r/context-array)))
-  ([^Model m ^IRI p ^Value o ^"[Lorg.eclipse.rdf4j.model.Resource;" ns] (filter m nil p o ns)))
+  ([^Model m ^IRI p ^Value o ^"[Lorg.eclipse.rdf4j.model.Resource;" ns] (rdf-filter m nil p o ns)))
