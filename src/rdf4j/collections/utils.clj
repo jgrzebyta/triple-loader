@@ -56,3 +56,10 @@
 (defn get-subject-IRIs
   ([^Model m ^IRI p ^Value o] (get-subject-IRIs m p o (r/context-array)))
   ([^Model m ^IRI p ^Value o ^"[Lorg.eclipse.rdf4j.model.Resource;" ns] (rdf-filter m nil p o ns)))
+
+(defn rdf-filter-object
+  "Process Java's equivalent of: `m.filter(s p null null)` -> `Models/object` -> `.orElse null`."
+  [^Model m ^Resource s ^IRI p]
+  (-> (rdf-filter m s p nil)
+      Models/object
+      (.orElse nil)))
