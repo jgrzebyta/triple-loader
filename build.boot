@@ -22,7 +22,11 @@
                           [ch.qos.logback/logback-classic "1.2.3"]
                           [org.slf4j/jcl-over-slf4j "1.7.9"]
                           [degree9/boot-semver "1.7.0" :scope "test"]
-                          [adzerk/boot-test "1.2.0" :scope "test"]])
+                          [adzerk/boot-test "1.2.0" :scope "test"]]
+          :repositories { "sonatype-public" { :url "https://oss.sonatype.org/content/groups/public/" }
+                         "central" { :url "http://repo1.maven.org/maven2/"}
+                         "clojars" { :url "https://clojars.org/repo/" }
+                         })
 
 (require '[degree9.boot-semver :refer :all]
          '[adzerk.boot-test :refer :all :as at]
