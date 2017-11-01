@@ -24,11 +24,14 @@ install:
   - curl -fLSso ${boot_path} https://github.com/boot-clj/boot-bin/releases/download/latest/boot.sh
   - chmod 755 ${boot_path}
 
-script:
-  - boot run-test
+before_script:
+  - boot develop run-test
 
+script:
+  - boot develop build
+  
 before_deploy:
-  - boot build-standalone
+  - boot version build-standalone
   - ls -la target/
   - rvm install 2.2.0
   - rvm use 2.2.0
@@ -43,5 +46,5 @@ deploy:
   file: "./target/triple-loader-*.jar"
   overwrite: true
   on:
-    repo: jgrzebyta/sesame-loader
+    repo: jgrzebyta/triple-loader
     tags: true
