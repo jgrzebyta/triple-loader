@@ -10,7 +10,7 @@
            [org.eclipse.rdf4j.repository Repository RepositoryConnection]
            [org.eclipse.rdf4j.model.impl SimpleValueFactory LinkedHashModel]
            [org.eclipse.rdf4j.model.util URIUtil]
-           [org.eclipse.rdf4j.model Value]))
+           [org.eclipse.rdf4j.model Value Resource]))
 
 ;;; Utils methods
 
@@ -27,6 +27,28 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
 (defmethod value-factory Repository [x] (.getValueFactory x))
 (defmethod value-factory RepositoryConnection [x] (.getValueFactory x))
 (defmethod value-factory :default [& _] (SimpleValueFactory/getInstance))
+
+(defn ^{ :added "0.2.2" :static true }
+  context-array
+"Create array of Resource. 
+
+  Code was adapted from kr-sesame: sesame-context-array.
+  "
+  ([] (make-array Resource 0))
+  ([_] (let [out (make-array Resource 1)]
+           (aset out 0 nil)
+           out))
+  ([kb a] (let [vf (value-factory kb)
+                out (make-array Resource 1)]
+              (aset out 0 (.createIRI vf a))
+              out))
+  ([kb a & rest] (let [vf (value-factory kb)
+                       out (make-array Resource (inc (count rest)))]
+                   (map (fn [i val]
+                          (aset out i (.createIRI vf val)))
+                        (range)
+                        (cons a rest))
+                   out)))
 
 
 (defn rand-string [^Integer length]
