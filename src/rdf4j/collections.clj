@@ -3,7 +3,7 @@
             [rdf4j.utils :as u]
             [rdf4j.repository :as r]
             [rdf4j.triples-source.wrappers :as w]
-            [rdf4j.collections.utils :as cu])
+            [rdf4j.models :as m])
   (:import [java.util NoSuchElementException]
            [org.eclipse.rdf4j.repository RepositoryConnection]
            [org.eclipse.rdf4j.model Resource Model ValueFactory IRI]
@@ -83,7 +83,7 @@
 (defn- get-first
   [^Model m ^IRI root]
   (->
-   (cu/rdf-filter m root RDF/FIRST nil)
+   (m/rdf-filter m root RDF/FIRST nil)
    (Models/object)
    (.get)))
 
@@ -91,6 +91,6 @@
   "Returns object from triple: `root` `RDF/REST` object."
   [^Model m ^IRI root]
   (->
-   (cu/rdf-filter m root RDF/REST nil)
+   (m/rdf-filter m root RDF/REST nil)
    (Models/object)
    (.get)))

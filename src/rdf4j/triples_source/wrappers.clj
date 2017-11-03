@@ -1,7 +1,7 @@
 (ns rdf4j.triples-source.wrappers
   (:require [rdf4j.repository :as r]
             [rdf4j.loader :as l]
-            [rdf4j.collections.utils :as u])
+            [rdf4j.models :as m])
   (:import [org.eclipse.rdf4j.repository RepositoryConnection Repository]
            [org.eclipse.rdf4j.model Model Resource IRI Value]))
 
@@ -33,7 +33,7 @@
   (get-triples [this s p o ns]
     (apply plain-method [root-source s p o ns]))
   (get-triples [this s p o]
-    (u/loaded-model (apply plain-method [root-source s p o (r/context-array)])))
+    (m/loaded-model (apply plain-method [root-source s p o (r/context-array)])))
   (get-all-triples [this]
     (get-triples this nil nil nil))
 
@@ -46,7 +46,7 @@
                                       repository)))
   (as-model [this]
     (case
-      (instance? Repository root-source) (u/loaded-model (r/get-all-statements root-source))
+      (instance? Repository root-source) (m/loaded-model (r/get-all-statements root-source))
       (instance? Model root-source) root-source)))
 
 

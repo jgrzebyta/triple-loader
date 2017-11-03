@@ -1,7 +1,7 @@
 (ns rdf4j.generic-source-test
   (:require [rdf4j.loader :as l]
             [rdf4j.repository :as r]
-            [rdf4j.collections.utils :as cu]
+            [rdf4j.models :as m]
             [rdf4j.triples-source.wrappers :as w]
             [clojure.test :as t]
             [clojure.java.io :as io]
@@ -14,7 +14,7 @@
   (t/testing "Test list"
     (let [model (->
                  (io/file "tests/resources/collections/type-list.ttl")
-                 (cu/loaded-model))
+                 (m/loaded-model))
           source (w/triples-wrapper-factory model)
           triples (.get-all-triples source)]
       (t/is (not (empty? triples)))
