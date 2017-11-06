@@ -1,8 +1,7 @@
 (ns rdf4j.utils
   (:require [clojure.tools.logging :as log]
             [clj-pid.core :as pid]
-            [clojure.string :refer [blank?]]
-            [clojure.string :as str :exclude [reverse replace]])
+            [clojure.string :as str :exclude [reverse]])
   (:import [java.util Map]
            [java.io ByteArrayInputStream BufferedInputStream]
            [java.nio.file Files Path Paths]
@@ -10,7 +9,8 @@
            [org.eclipse.rdf4j.repository Repository RepositoryConnection]
            [org.eclipse.rdf4j.model.impl SimpleValueFactory LinkedHashModel]
            [org.eclipse.rdf4j.model.util URIUtil]
-           [org.eclipse.rdf4j.model Value Resource]))
+           [org.eclipse.rdf4j.model Value Resource ValueFactory]
+           [org.eclipse.rdf4j.common.xml XMLUtil]))
 
 ;;; Utils methods
 
@@ -22,7 +22,7 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
         (cons (.next i) (iter-seq i)))))
 
 
-(defmulti value-factory "Returns instance of value-factory for given optional object. The object might be either RepositoryConnection or Repository" (fn [& [x]] (type x)))
+(defmulti ^ValueFactory value-factory "Returns instance of value-factory for given optional object. The object might be either RepositoryConnection or Repository" (fn [& [x]] (type x)))
 
 (defmethod value-factory Repository [x] (.getValueFactory x))
 (defmethod value-factory RepositoryConnection [x] (.getValueFactory x))
@@ -70,7 +70,7 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
   (fn [path] (type path)))
 
 (defmethod normalise-path String [path]
-  (if-not (blank? path)
+  (if-not (str/blank? path)
     (normalise-path (Paths/get path (make-array String 0)))
     nil))
 
@@ -131,3 +131,19 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
   (let [v-string (String/valueOf v)
         vf (value-factory)]
     (if (URIUtil/isValidURIReference v-string) (.createIRI vf v-string) (.createLiteral vf v))))
+
+
+(defn string->id
+  "Converts free string into id.
+
+   This method does following actions:
+     - converts any white characters into single underscore
+     - converts pattern `\\s*[,;-_]?\\s+` into single underscore
+     - converts all upper-case letters into lower-case
+     - process `XMLUtil/escapeText`
+  "
+  [s]
+  (->
+   (str/lower-case s)
+   (str/replace #"\s*[-_,;]?\s+" "_")
+   (XMLUtil/escapeText)))
