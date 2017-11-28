@@ -1,19 +1,22 @@
 (ns rdf4j.collection-test
-  (:require [rdf4j.loader :as l]
-            [rdf4j.repository :as r]
-            [rdf4j.utils :as u]
-            [rdf4j.collections :as c]
-            [rdf4j.models :as m]
-            [rdf4j.collections.utils :as cu]
-            [rdf4j.triples-source.wrappers :as w]
-            [clojure.java.io :as io]
+  (:require [clojure.java.io :as io]
+            [clojure.pprint :as pp]
             [clojure.test :as t]
             [clojure.tools.logging :as log]
-            [clojure.pprint :as pp])
+            [rdf4j.collections :as c]
+            [rdf4j.collections.utils :as cu]
+            [rdf4j.loader :as l]
+            [rdf4j.models :as m]
+            [rdf4j.protocols :as p]
+            [rdf4j.repository :as r]
+            [rdf4j.triples-source.wrappers :as w]
+            [rdf4j.utils :as u])
   (:import [org.eclipse.rdf4j.model Model]
-           [org.eclipse.rdf4j.model.vocabulary RDF RDFS]
-           [org.eclipse.rdf4j.model.util Models]))
+           [org.eclipse.rdf4j.model.util Models]
+           [org.eclipse.rdf4j.model.vocabulary RDF RDFS XMLSchema]
+           [rdf4j.protocols ModelHolder]))
 
+(def ^{:static true} vf (u/value-factory))
 
 (t/deftest loaded-model
   (t/testing "load data into model."
@@ -51,7 +54,6 @@
 
 
 (t/deftest collection-type-test
-  (let [vf (u/value-factory)]
     (t/testing "Collection type test for rdf:List"
       (let [model (->
                    (io/file "tests/resources/collections/type-list.ttl")
@@ -78,12 +80,11 @@
         (let [submodel (.filter model collection-root nil nil (r/context-array))
               collection-type (cu/collection-type submodel)]
           (log/debugf "Collection type: %s" collection-type)
-          (t/is (= collection-type RDFS/CONTAINER)))))))
+          (t/is (= collection-type RDFS/CONTAINER))))))
 
 
 (t/deftest rdf-coll-test
-  (let [vf (u/value-factory)
-        data-source (->
+  (let [data-source (->
                      (io/file "tests/resources/collections/type-list.ttl")
                      (m/loaded-model))]
     (t/testing "simple rdf->seq"
@@ -97,8 +98,7 @@
         (t/are [p x] (not (p x))
           set? to-test
           list? to-test)
-        (log/debug (with-out-str (pp/pprint to-test))))
-      )
+        (log/debug (with-out-str (pp/pprint to-test)))))
     (t/testing "hetero rdf->seq"
       (let [collection-root (-> (m/rdf-filter data-source nil (.createIRI vf "http://www.eexample.org/data#" "data1") nil)
                                 (Models/object)
@@ -110,5 +110,20 @@
         (t/are [p x] (not (p x))
           vector? to-test
           list? to-test)
-        (log/debug (with-out-str (pp/pprint to-test))))
-      )))
+        (log/debug (with-out-str (pp/pprint to-test)))))))
+
+(t/deftest rdf-protocols
+  (let [md (->
+            (io/file "tests/resources/beet.trig")
+            m/loaded-model)]
+    (t/testing "test protocols"
+      (let [root (-> (m/rdf-filter md
+                                   nil
+                                   (.createIRI vf "file:/tmp2/" "beet-1.csvCountries")
+                                   (.createLiteral vf "UnitedKingdom" XMLSchema/STRING))
+                     Models/subjectIRI
+                     .get)
+            submodel (m/rdf-filter md root nil nil)
+            gs (ModelHolder. root submodel)]
+        (t/is (some? gs))
+        (log/debugf "Instance: %5s\n" (binding [*print-dup* false] (println-str gs)))))))
