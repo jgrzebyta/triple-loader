@@ -1,28 +1,32 @@
 (ns rdf4j.collection-test
-  (:require [rdf4j.loader :as l]
-            [rdf4j.repository :as r]
-            [rdf4j.utils :as u]
-            [rdf4j.collections :as c]
-            [rdf4j.collections.utils :as cu]
-            [rdf4j.triples-source.wrappers :as w]
-            [clojure.java.io :as io]
+  (:require [clojure.java.io :as io]
+            [clojure.pprint :as pp]
             [clojure.test :as t]
             [clojure.tools.logging :as log]
-            [clojure.pprint :as pp])
+            [rdf4j.collections :as c]
+            [rdf4j.collections.utils :as cu]
+            [rdf4j.loader :as l]
+            [rdf4j.models :as m]
+            [rdf4j.protocols :as p]
+            [rdf4j.repository :as r]
+            [rdf4j.triples-source.wrappers :as w]
+            [rdf4j.utils :as u])
   (:import [org.eclipse.rdf4j.model Model]
-           [org.eclipse.rdf4j.model.vocabulary RDF RDFS]
-           [org.eclipse.rdf4j.model.util Models]))
+           [org.eclipse.rdf4j.model.util Models]
+           [org.eclipse.rdf4j.model.vocabulary RDF RDFS XMLSchema]
+           [rdf4j.protocols ModelHolder]))
 
+(def ^{:static true} vf (u/value-factory))
 
 (t/deftest loaded-model
   (t/testing "load data into model."
     (let [file-obj (io/file "tests/resources/collections/multisubj.ttl")
           repository (r/make-repository)]
       (l/load-data repository file-obj)
-      (let [^Model model (cu/loaded-model (r/get-all-statements repository))]
+      (let [^Model model (m/loaded-model (r/get-all-statements repository))]
         (t/is (not (.isEmpty model)))
         (log/debugf "Number of statements: %d" (.size model))
-        (t/is (not (cu/single-subjectp model)))))))
+        (t/is (not (m/single-subjectp model)))))))
 
 
 (t/deftest single-subject-test
@@ -30,19 +34,19 @@
     (let [file-obj (io/file "tests/resources/collections/multisubj2.ttl" )
           repository (r/make-repository)]
       (l/load-data repository file-obj)
-      (let [^Model model (cu/loaded-model (r/get-all-statements repository))]
-        (t/is (not (cu/single-subjectp model)))))
+      (let [^Model model (m/loaded-model (r/get-all-statements repository))]
+        (t/is (not (m/single-subjectp model)))))
     
     (let [file-obj (io/file "tests/resources/collections/multisubj3.ttl" )
           repository (r/make-repository)]
       (l/load-data repository file-obj)
-      (let [^Model model (cu/loaded-model (r/get-all-statements repository))]
-        (t/is (cu/single-subjectp model))))))
+      (let [^Model model (m/loaded-model (r/get-all-statements repository))]
+        (t/is (m/single-subjectp model))))))
 
 (t/deftest loaded-model-test
   (t/testing "Test Model loading"
     (let [file-obj (io/file "tests/resources/collections/type-list.ttl" )
-          model (cu/loaded-model file-obj)]
+          model (m/loaded-model file-obj)]
       (t/is (instance? Model model))
       (t/is (not (.isEmpty model)))
       (log/debugf "model instance: %s" (.toString model))
@@ -50,11 +54,10 @@
 
 
 (t/deftest collection-type-test
-  (let [vf (u/value-factory)]
     (t/testing "Collection type test for rdf:List"
       (let [model (->
                    (io/file "tests/resources/collections/type-list.ttl")
-                   (cu/loaded-model))]
+                   (m/loaded-model))]
         (t/is (not (.isEmpty model)))
         (let [collection-root (-> (.filter model nil (.createIRI vf "http://www.eexample.org/data#" "data") nil (r/context-array))
                                   (Models/object)
@@ -69,7 +72,7 @@
     (t/testing "Collection type test for rdfs:Container"
       (let [model (->
                    (io/file "tests/resources/collections/type-container.ttl")
-                   (cu/loaded-model))
+                   (m/loaded-model))
             collection-root (-> (.filter model nil (.createIRI vf "http://www.eexample.org/data#" "data") nil (r/context-array))
                                 (Models/object)
                                 (.get))]
@@ -77,16 +80,15 @@
         (let [submodel (.filter model collection-root nil nil (r/context-array))
               collection-type (cu/collection-type submodel)]
           (log/debugf "Collection type: %s" collection-type)
-          (t/is (= collection-type RDFS/CONTAINER)))))))
+          (t/is (= collection-type RDFS/CONTAINER))))))
 
 
 (t/deftest rdf-coll-test
-  (let [vf (u/value-factory)
-        data-source (->
+  (let [data-source (->
                      (io/file "tests/resources/collections/type-list.ttl")
-                     (cu/loaded-model))]
+                     (m/loaded-model))]
     (t/testing "simple rdf->seq"
-      (let [collection-root (-> (cu/rdf-filter data-source nil (.createIRI vf "http://www.eexample.org/data#" "data") nil)
+      (let [collection-root (-> (m/rdf-filter data-source nil (.createIRI vf "http://www.eexample.org/data#" "data") nil)
                                 (Models/object)
                                 (.get))
             to-test (c/rdf->seq data-source collection-root [])]
@@ -96,10 +98,9 @@
         (t/are [p x] (not (p x))
           set? to-test
           list? to-test)
-        (log/debug (with-out-str (pp/pprint to-test))))
-      )
+        (log/debug (with-out-str (pp/pprint to-test)))))
     (t/testing "hetero rdf->seq"
-      (let [collection-root (-> (cu/rdf-filter data-source nil (.createIRI vf "http://www.eexample.org/data#" "data1") nil)
+      (let [collection-root (-> (m/rdf-filter data-source nil (.createIRI vf "http://www.eexample.org/data#" "data1") nil)
                                 (Models/object)
                                 (.get))
             to-test (c/rdf->seq data-source collection-root #{})]
@@ -109,5 +110,20 @@
         (t/are [p x] (not (p x))
           vector? to-test
           list? to-test)
-        (log/debug (with-out-str (pp/pprint to-test))))
-      )))
+        (log/debug (with-out-str (pp/pprint to-test)))))))
+
+(t/deftest rdf-protocols
+  (let [md (->
+            (io/file "tests/resources/beet.trig")
+            m/loaded-model)]
+    (t/testing "test protocols"
+      (let [root (-> (m/rdf-filter md
+                                   nil
+                                   (.createIRI vf "file:/tmp2/" "beet-1.csvCountries")
+                                   (.createLiteral vf "UnitedKingdom" XMLSchema/STRING))
+                     Models/subjectIRI
+                     .get)
+            submodel (m/rdf-filter md root nil nil)
+            gs (ModelHolder. root submodel)]
+        (t/is (some? gs))
+        (log/debugf "Instance: %5s\n" (binding [*print-dup* false] (println-str gs)))))))

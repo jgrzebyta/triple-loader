@@ -1,7 +1,8 @@
 (ns rdf4j.triples-source.wrappers
   (:require [rdf4j.repository :as r]
             [rdf4j.loader :as l]
-            [rdf4j.collections.utils :as u])
+            [rdf4j.models :as m]
+            [clojure.tools.logging :as log])
   (:import [org.eclipse.rdf4j.repository RepositoryConnection Repository]
            [org.eclipse.rdf4j.model Model Resource IRI Value]))
 
@@ -28,12 +29,12 @@
   (as-model [this]))
 
 
-(deftype GenericTriplesSource [root-source plain-method]
+(deftype GenericTriplesSource [root-source plain-method ^{:volatile-mutable true} buffered-source]
   GenericTriplesSourceProtocol
   (get-triples [this s p o ns]
     (apply plain-method [root-source s p o ns]))
   (get-triples [this s p o]
-    (u/loaded-model (apply plain-method [root-source s p o (r/context-array)])))
+    (m/loaded-model (apply plain-method [root-source s p o (r/context-array)])))
   (get-all-triples [this]
     (get-triples this nil nil nil))
 
@@ -41,12 +42,16 @@
   (as-repository [this]
     (case
       (instance? Repository root-source) root-source
-      (instance? Model root-source) (let [repository (r/make-repository)]
-                                      (l/load-data repository root-source)
-                                      repository)))
+      (instance? Model root-source) (if (some? buffered-source)
+                                      buffered-source
+                                      (let [repository (r/make-repository)]
+                                        (log/trace "construct repository")
+                                        (l/load-data repository root-source)
+                                        (set! buffered-source repository)
+                                        repository))))
   (as-model [this]
     (case
-      (instance? Repository root-source) (u/loaded-model (r/get-all-statements root-source))
+      (instance? Repository root-source) (m/loaded-model (r/get-all-statements root-source))
       (instance? Model root-source) root-source)))
 
 
@@ -56,11 +61,11 @@
 
 ;; The anonymous functions put as second argument of the creator are the plain-methods.
 (defmethod triples-wrapper-factory Model [source-model]
-  (GenericTriplesSource. source-model #(.filter %1 %2 %3 %4 %5)))
+  (GenericTriplesSource. source-model #(.filter %1 %2 %3 %4 %5) nil))
 
 (defmethod triples-wrapper-factory RepositoryConnection [source-connection]
   (GenericTriplesSource. source-connection #(r/with-open-repository [cn %1]
-                                              (.getStatements cn %2 %3 %4 %5))))
+                                              (.getStatements cn %2 %3 %4 %5)) nil))
 
 
 (defmethod l/load-data GenericTriplesSource [repository data-source]

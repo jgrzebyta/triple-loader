@@ -109,10 +109,13 @@ If sail is null just generates dataDir and returns.
                   (throw e#)))))))
 
 
-(defn context-array
+(defn ^{ :deprecated true } context-array
 "Create array of Resource. 
 
-Code was adapted from kr-sesame: sesame-context-array."
+  Code was adapted from kr-sesame: sesame-context-array.
+
+  DEPRECATED: Use `rdf4j.utils/context-array` instead.
+  "
   ([] (make-array Resource 0))
   ([_] (let [out (make-array Resource 1)]
            (aset out 0 nil)
