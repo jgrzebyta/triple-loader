@@ -130,7 +130,12 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
   [v]
   (let [v-string (String/valueOf v)
         vf (value-factory)]
-    (if (URIUtil/isValidURIReference v-string) (.createIRI vf v-string) (.createLiteral vf v))))
+    (cond
+      (instance? Value v) v
+      (URIUtil/isValidURIReference v-string) (.createIRI vf v-string)
+      :else (try (.createLiteral vf v)
+                 (catch Exception e
+                   (throw (ex-info "Wrong argument type:" {:type (type v)})))))))
 
 
 (defn string->id

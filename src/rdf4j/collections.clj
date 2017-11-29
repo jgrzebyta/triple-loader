@@ -13,24 +13,24 @@
 
 (declare sumo-contains get-rest get-first)
 
+(def ^:static vf (u/value-factory))
+
 (defn- seq-list [root-node model in-seq]
-  (let [^ValueFactory vf (u/value-factory)]
-    (.add model root-node RDF/TYPE RDF/LIST (u/context-array 0)) ;; add root bnode
-    (loop [p-node root-node items in-seq]
-      (when-let [i (first items)]
-        (let [ch-node (.createBNode vf)
-              i-node (u/any-to-value i)]
-          (.add model p-node RDF/FIRST i-node (u/context-array 0))
-          (.add model p-node RDF/REST ch-node)
-          (recur ch-node (rest items)))))))
+  (.add model root-node RDF/TYPE RDF/LIST (u/context-array)) ;; add root bnode
+  (loop [p-node root-node items in-seq]
+    (when-let [i (first items)]
+      (let [ch-node (.createBNode vf)
+            i-node (u/any-to-value i)]
+        (.add model p-node RDF/FIRST i-node (u/context-array))
+        (.add model p-node RDF/REST ch-node (u/context-array))
+        (recur ch-node (rest items))))))
 
 (defn- seq-collection [rdf-type root-node model in-seq]
-  (let [^ValueFactory vf (u/value-factory)]
-    (.add model root-node RDF/TYPE rdf-type (u/context-array 0))
-    (loop [it 1 items in-seq]
-      (when-let [i (first items)]
-        (.add model root-node RDF/LI (u/any-to-value i))
-        (recur (+ 1 it) (rest items))))))
+  (.add model root-node RDF/TYPE rdf-type (u/context-array))
+  (loop [it 1 items in-seq]
+    (when-let [i (first items)]
+      (.add model root-node RDF/LI (u/any-to-value i))
+      (recur (+ 1 it) (rest items)))))
 
 
 (defn ^ModelHolder seq->rdf
@@ -45,7 +45,6 @@
   { :pre [ (seq? in-seq)] }
   (let [model (-> (LinkedHashModelFactory.)
                   (.createEmptyModel))
-        ^ValueFactory vf (u/value-factory)
         b-root (.createBNode vf)]
       (cond
         (= rdf-type RDF/LIST) (seq-list b-root model in-seq)
