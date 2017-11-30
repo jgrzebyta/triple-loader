@@ -19,7 +19,8 @@
   (.add model root-node RDF/TYPE RDF/LIST (u/context-array)) ;; add root bnode
   (loop [p-node root-node items in-seq]
     (when-let [i (first items)]
-      (let [ch-node (.createBNode vf)
+      (let [rest-size (count (rest items))
+            ch-node (if (> rest-size 0) (.createBNode vf) RDF/NIL)
             i-node (u/any-to-value i)]
         (.add model p-node RDF/FIRST i-node (u/context-array))
         (.add model p-node RDF/REST ch-node (u/context-array))
