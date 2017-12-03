@@ -11,9 +11,10 @@
             [rdf4j.repository :as r]
             [rdf4j.triples-source.wrappers :as w]
             [rdf4j.utils :as u])
-  (:import [org.eclipse.rdf4j.model Model]
+  (:import [org.eclipse.rdf4j.model Model BNode]
            [org.eclipse.rdf4j.model.util Models]
            [org.eclipse.rdf4j.model.vocabulary RDF RDFS XMLSchema]
+           [org.eclipse.rdf4j.rio RDFFormat]
            [rdf4j.protocols ModelHolder]))
 
 (def ^{:static true} vf (u/value-factory))
@@ -110,7 +111,25 @@
         (t/are [p x] (not (p x))
           vector? to-test
           list? to-test)
-        (log/debug (with-out-str (pp/pprint to-test)))))))
+        (log/debug (with-out-str (pp/pprint to-test)))))
+    (t/testing "nested rdf"
+      (let [collection-root (-> (m/rdf-filter data-source nil (.createIRI vf "http://www.eexample.org/data#" "data2") nil)
+                                Models/object
+                                .get)
+            to-test (c/rdf->seq data-source collection-root [])]
+        (let [pair1 (first to-test)
+              triples (m/rdf-filter data-source pair1 nil nil)]
+          #_(log/debugf "first pair: %s"  (c/rdf->seq data-source (first to-test) []))
+          #_(log/debugf "\n%s\n" (m/print-model triples RDFFormat/NTRIPLES)))
+        (let [i (first to-test)
+              pair (c/rdf->seq data-source i [])]
+          (t/is (= (-> pair
+                       first
+                       .getLabel) "var1"))
+          (t/is (= (-> pair
+                       second
+                       .getLabel) "1.56")))
+        (t/is (not (empty? to-test)))))))
 
 (t/deftest rdf-protocols
   (let [md (->

@@ -1,8 +1,9 @@
 # Graph type of rdf:List
 @prefix : <http://www.eexample.org/data#> .
-
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 :resources_1 a :Resource ;
 :value1 "mock value" ;
 :data ( "val1" "val2" "val3" ) ;
-:data1 ( "var1" :val2 ) .
+:data1 ( "var1" :val2 ) ;
+:data2 ( ("var1"^^xsd:string "1.56"^^xsd:double) ("var2"^^xsd:string "0.5"^^xsd:double) ("var3" "9.5"^^xsd:float)) .

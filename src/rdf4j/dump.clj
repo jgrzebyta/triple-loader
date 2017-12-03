@@ -25,7 +25,8 @@
                      (get [] (.get (Rio/getWriterFormatForMIMEType "application/trig")))))
 
 
-(defn make-io-writer "Prepares Java IO Writer for file or OutputStreamWriter for STDOUT"
+(defn make-io-writer
+  "Prepares Java IO Writer for file (java Path) or STDOUT."
   [^Path file-path]
   {:pre [(or (instance? Path file-path) (nil? file-path))]} ;; Accepts only either instance of Path or nil
   (if (some? file-path)
@@ -44,11 +45,13 @@
     (Rio/createWriter writer-format io-writer)))
 
 (defmacro with-rdf-writer
-"Wraps low level java writer together with `RDFWriter`.
+  "binding => rdf-writer out-file.
 
-The particular instance of `RDFWriter` depends on the `out-file` extension or it is `TriGWriter` by default.
-If out-file is nil than exeryting is written to the standard output.
-"
+  Wraps low level java writer together with `RDFWriter`.
+
+  The particular instance of `RDFWriter` depends on the `out-file` extension or it is `TriGWriter` by default.
+  If out-file is nil than exeryting is written to the standard output.
+  "
   [binds & body]
   (let [[rdf-writer-var out-file] binds
         normalised-path-var (gensym "norm_")]

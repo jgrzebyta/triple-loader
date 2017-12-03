@@ -18,7 +18,7 @@
           source (w/triples-wrapper-factory model)
           triples (.get-all-triples source)]
       (t/is (not (empty? triples)))
-      (t/is (= (count triples) 14))
+      (t/is (= (count triples) 33))
       (log/infof "Number of triples: %d" (count triples))
       (log/infof "All types: %s" (instance? GenericTriplesSource source)))))
 
