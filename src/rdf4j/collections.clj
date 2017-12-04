@@ -16,7 +16,6 @@
 (def ^:static vf (u/value-factory))
 
 (defn- seq-list [root-node model in-seq]
-  (.add model root-node RDF/TYPE RDF/LIST (u/context-array)) ;; add root bnode
   (loop [p-node root-node items in-seq]
     (when-let [i (first items)]
       (let [rest-size (count (rest items))

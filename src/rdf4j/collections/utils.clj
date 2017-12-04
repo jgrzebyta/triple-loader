@@ -8,10 +8,9 @@
 (defn ^{:added "0.2.2"} collection-type [^Model model]
   (cond
     ;; detect if model contains rdf:first and rdf:rest or is type of rdf:List
-    (or (and
-         (.contains model nil RDF/FIRST nil (u/context-array))
-         (.contains model nil RDF/REST nil (u/context-array)))
-        (.contains model nil RDF/TYPE RDF/LIST (u/context-array))) RDF/LIST
+    (and
+     (.contains model nil RDF/FIRST nil (u/context-array))
+     (.contains model nil RDF/REST nil (u/context-array))) RDF/LIST
     (or (.contains model nil RDF/TYPE RDF/ALT (u/context-array))
         (.contains model nil RDF/TYPE RDF/BAG (u/context-array))
         (.contains model nil RDF/TYPE RDF/SEQ (u/context-array))) RDFS/CONTAINER

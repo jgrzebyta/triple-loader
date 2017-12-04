@@ -1,11 +1,13 @@
 (ns rdf4j.models
-  (:require [rdf4j.repository :as r]
-            [rdf4j.loader :as l])
-  (:import [java.io File]
+  (:require [rdf4j.loader :as l]
+            [rdf4j.repository :as r])
+  (:import [java.io File StringWriter]
            [java.util Collection]
            [org.eclipse.rdf4j.model Model Resource Value IRI]
            [org.eclipse.rdf4j.model.impl LinkedHashModel]
-           [org.eclipse.rdf4j.model.util Models]))
+           [org.eclipse.rdf4j.model.util Models]
+           [org.eclipse.rdf4j.rio Rio RDFFormat WriterConfig]
+           [org.eclipse.rdf4j.rio.helpers BasicWriterSettings]))
 
 (defn ^{:added "0.2.2"} single-subjectp
   "Predicate to check if `model` contains single subject."
@@ -50,3 +52,17 @@
   (-> (rdf-filter m s p nil)
       Models/object
       (.orElse nil)))
+
+(defn ^{:added "0.2.2"}
+  print-model
+  "Print a model"
+  ([^Model m ^RDFFormat format]
+   (let [config (doto (WriterConfig.)
+                  (.set BasicWriterSettings/PRETTY_PRINT true)
+                  (.set BasicWriterSettings/XSD_STRING_TO_PLAIN_LITERAL false)
+                  (.set BasicWriterSettings/INLINE_BLANK_NODES true))]
+     (print-model m format config)))
+  ([^Model m ^RDFFormat format ^WriterConfig wrt-conf]
+   (let [string-writer (StringWriter.)]
+     (Rio/write m string-writer format wrt-conf)
+     (.toString string-writer))))
