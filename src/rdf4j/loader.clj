@@ -80,11 +80,13 @@
 
 (defmethod load-data String [repository file & {:keys [rdf-handler context-uri]}] (load-data repository (u/normalise-path file) :rdf-handler rdf-handler :context-uri context-uri))
 
-(defmethod load-data Model [repository model & {:keys [rdf-handler context-uri]}]
+(defmethod load-data Iterable [repository model & {:keys [rdf-handler context-uri]}]
   (r/with-open-repository [cnx repository]
     (init-connection cnx)
-    (.add cnx model (r/context-array context-uri))
-    (.commit cnx)))
+    (try
+      (.begin cnx)
+      (.add cnx model (r/context-array context-uri))
+      (finally (.commit cnx)))))
 
 (defmethod load-data Path [repository file & {:keys [rdf-handler context-uri]}] (load-data repository (.toFile file) :rdf-handler rdf-handler :context-uri context-uri))
 
