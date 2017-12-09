@@ -72,23 +72,10 @@ If sail is null just generates dataDir and returns.
 (defmacro with-open-repository
   "initseq => [seq-var :memory] | [seq-var (HTTPRepository. server-url repository-id)] 
   
-  Opens connetion CONNECTION-VARIABLE to RDF repository.
+  Pesents opened connetion to RDF repository through CONNECTION-VARIABLE. Not transaction aware.
   
   Where initseq is (CONNECTION-VARIABLE REPOSITORY). For example (cnx :memory)
-  If REPOSITORY has value ':memory' then memory repository is created.
-
-  The `body` expression is wrapped inside (try ... catch ...):
-
-        (try
-          ~@body
-          (catch Exception e
-                   (.rollback connection)
-                   (throw e)))
-
-  The `body` should contain 
-        (.commit connection)
-  at the very end.
-
+  If REPOSITORY has value ':memory' then memory repository is created.  
 "
   [initseq & body]
   (let [[connection-var repo-init] initseq]
@@ -102,11 +89,31 @@ If sail is null just generates dataDir and returns.
                                             (.getMessage e#))
                    (throw e#)))
             (with-open [~connection-var (.getConnection repository#)]
-              (try
-                ~@body
-                (catch Exception e#
-                  (.rollback ~connection-var)
-                  (throw e#)))))))
+              ~@body))))
+
+
+(defmacro with-open-repository*
+  "Transaction aware version of with-open-repository.
+
+  It is requivalent of:
+
+     (with-open-repository [cnx]
+       (try
+          (.begin cnx)
+          ~@body
+          (catch Exception e
+                   (.rollback connection)
+                   (throw e))
+       (finally .commit cnx)))"
+  [initseq & body]
+  (let [[rep-connection sail-repo] initseq]
+    `(with-open-repository [rep-connection sail-repo]
+       (try
+         (.begin ~rep-connection)
+         ~@body
+         (catch Exception e
+           (.rollback ~rep-connection))
+         (finally (.commit ~rep-connection))))))
 
 
 (defn ^{ :deprecated true } context-array
