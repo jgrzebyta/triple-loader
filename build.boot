@@ -3,11 +3,10 @@
           :project 'adalab/triple-loader
           :description "Triple-loader provides command line and clojure script writing tools for managing RDF data."
           :url "http://www.adalab-project.org/"
-          :dependencies '[[org.clojure/clojure "1.8.0"]
-                          [org.clojure/tools.cli "0.3.5"]
+          :dependencies '[[org.clojure/tools.cli "0.3.5"]
                           [org.clojure/tools.logging "0.4.0"]
                           [clj-pid/clj-pid "0.1.2"]
-                          [commons-io/commons-io "2.5"]
+                          [commons-io/commons-io "2.6"]
                           [org.eclipse.rdf4j/rdf4j-repository-http "2.3-SNAPSHOT" :exclusions [commons-io org.slf4j/slf4j-api]]
                           [org.eclipse.rdf4j/rdf4j-sail-memory "2.3-SNAPSHOT" :exclusions [org.slf4j/slf4j-api]]
                           [org.eclipse.rdf4j/rdf4j-sail-nativerdf "2.3-SNAPSHOT" :exclusions [org.slf4j/slf4j-api]]
