@@ -1,18 +1,19 @@
 (ns rdf4j.dump
   (:gen-class)
-  (:use [clojure.tools.cli :refer [cli]]
-        [clojure.tools.logging :as log]
-        [clojure.java.io :as io]
+  (:use [clojure.java.io :as io]
         [clojure.string :refer [blank?]]
+        [clojure.tools.cli :refer [cli]]
+        [clojure.tools.logging :as log]
         [rdf4j.version :refer [version]])
-  (:require [rdf4j.utils :as u]
-            [rdf4j.repository :as r])
-  (:import [java.nio.file Paths Path]
-           [java.io File StringWriter OutputStreamWriter]
+  (:require [rdf4j.core.rio :refer [default-pp-writer-config]]
+            [rdf4j.repository :as r]
+            [rdf4j.utils :as u])
+  (:import [java.io File StringWriter OutputStreamWriter]
+           [java.nio.file Paths Path]
+           [java.util.function Supplier]
            [org.eclipse.rdf4j.repository.contextaware ContextAwareRepository]
            [org.eclipse.rdf4j.repository.http HTTPRepository]
            [org.eclipse.rdf4j.rio Rio RDFFormat]
-           [java.util.function Supplier]
            [org.eclipse.rdf4j.rio.trig TriGWriter]))
 
 (defn- file-to-path [file-string]
@@ -77,6 +78,7 @@
           (r/with-open-repository [cnx repository]
             (try
               (.begin cnx)
+              (.setWriterConfig rdf-writer default-pp-writer-config)
               (.export cnx rdf-writer (r/context-array))
               (finally (log/debug "Finish...")
                        (.commit cnx))))
