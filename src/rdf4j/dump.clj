@@ -60,8 +60,7 @@
          (let [~rdf-writer-var (make-rdf-writer io-wr# ~normalised-path-var)]
            ~@body
            )
-         ))
-    ))
+         ))))
 
 (defn- do-dump [opts]
   (let [path (file-to-path (:f opts))]

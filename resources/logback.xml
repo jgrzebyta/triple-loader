@@ -7,9 +7,9 @@
 	  </encoder>
 	  <target>System.err</target>
 	</appender>
-	
 
-	<!-- <logger name="rdf4j.dump" level="debug"/> -->
+
+	<!-- <logger name="rdf4j.convert" level="debug"/> -->
 	<!-- <logger name="triple.repository" level="debug"/> -->
 	<!-- <logger name="rdf4j.loader" level="info"/> -->
 	<!-- <Logger name="sparql-test" level="debug"/> -->
