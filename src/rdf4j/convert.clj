@@ -40,10 +40,10 @@
 
 
 (defn- make-stdout-rdf-writer [^RDFFormat rdf-format]
-  (let [io-wr (d/make-io-writer nil)]
-    (log/debugf "IO writer: %s" io-wr)
+  (let [io-os (d/make-default-output-stream nil)]
+    (log/debugf "IO writer: %s" io-os)
     (doto
-        (Rio/createWriter rdf-format io-wr)
+        (Rio/createWriter rdf-format io-os)
       (.setWriterConfig default-pp-writer-config))))
 
 (defn- ^Model read-file-rdf-model
@@ -51,8 +51,8 @@
   [^Path file ^RDFFormat rdf-format]
   (let [basename (-> file
                      u/normalise-path
-                     .toUri
-                     .toString)]
+                     u/any-to-value
+                     .stringValue)]
     (Rio/parse (io/reader (.toFile file)) basename rdf-format default-parser-config (u/value-factory) (ParseErrorLogger.) (u/context-array))))
 
 (defn -main [& args]

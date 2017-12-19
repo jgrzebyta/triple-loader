@@ -121,22 +121,25 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
   (reduce (fn [m [k v]] (assoc m (keyword k) v)) {} m))
 
 
-(defn ^Value any-to-value
-  "Convert anything into `Value`.
+(defmulti any-to-value
+  "Converts anything into `Value`.
   
    The argument value is checked in the following order:
       - if `v` is valid IRI than create result using `(.createIRI value-factory v)`
       - otherwise create `Literal`."
-  [v]
-  (let [v-string (String/valueOf v)
-        vf (value-factory)]
-    (cond
-      (instance? Value v) v
-      (URIUtil/isValidURIReference v-string) (.createIRI vf v-string)
-      :else (try (.createLiteral vf v)
-                 (catch Exception e
-                   (throw (ex-info "Wrong argument type:" {:type (type v)})))))))
+  (fn [x] (type x)))
 
+(defmethod any-to-value Value [v] (identity v))
+
+(defmethod any-to-value Path [v] (any-to-value (.toUri v)))
+
+(defmethod any-to-value :default [v] (let [v-string (String/valueOf v)
+                                           vf (value-factory)]
+                                       (if (URIUtil/isValidURIReference v-string)
+                                         (.createIRI vf v-string)
+                                         (try (.createLiteral vf v)
+                                              (catch Exception e
+                                                (throw (ex-info "Unsupported argument type:" {:type (type v)})))))))
 
 (defn string->id
   "Converts free string into id.
@@ -152,3 +155,10 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
    (str/lower-case s)
    (str/replace #"\s*[-_,;]?\s+" "_")
    (XMLUtil/escapeText)))
+
+(defn make-baseuri
+  "Creates baseuri from file path."
+  [^Path x]
+  (-> x
+      normalise-path
+      any-to-value))
