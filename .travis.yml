@@ -32,7 +32,7 @@ git:
   depth: 3
 
 script:
-  - boot develop run-test
+  - boot develop run-test 1>&2
   
 before_deploy:
   - boot version build-standalone
