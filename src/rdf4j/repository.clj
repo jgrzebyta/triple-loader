@@ -183,8 +183,10 @@ If sail is null just generates dataDir and returns.
 
   That method should be called manually somewhere at the end of code.
   " []
+  (log/debugf "is context active: %s" (:active @context))
   (when (:active @context) ;; process repository deletion only when context is active
     (try
       (when-let [dir (:path @context)]
+        (log/debugf "delete files at: %s" dir)
         (FileUtils/deleteDirectory dir)) ;; commons-io supports deleting directory with contents)
       (finally (swap! context deactive)))))

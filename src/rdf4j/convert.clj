@@ -19,7 +19,7 @@
 
 (def ^:private cli-options
   [["-h" "--help" "Print this screen"]
-   ["-v" "--version" "Display version"]
+   ["-V" "--version" "Display version"]
    ["-i" "--input FORMAT" "Input format. Available formats: ntriples, n3, turtle, rdfjson, rdfxml, trig, trix, nquads, jsonld, binary" :parse-fn map-formats]
    ["-o" "--output FORMAT" "Output format. Available formats: ntriples, n3, turtle, rdfjson, rdfxml, trig, trix, nquads, jsonld, binary" :parse-fn map-formats]])
 
