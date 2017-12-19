@@ -24,11 +24,15 @@ install:
   - curl -fLSso ${boot_path} https://github.com/boot-clj/boot-bin/releases/download/latest/boot.sh
   - chmod 755 ${boot_path}
 
-before_script:
-  - boot develop run-test
+branches:
+  only:
+    - master
+
+git:
+  depth: 3
 
 script:
-  - boot develop build
+  - boot develop run-test
   
 before_deploy:
   - boot version build-standalone
