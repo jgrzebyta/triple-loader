@@ -143,7 +143,7 @@
   (let [wrt (StringWriter.)]
     (pp/pprint data-col wrt)
     (log/debug (format "Data collection [%s]: %s" (type data-col) (.toString wrt))))
-  (doall (pmap (fn [itm]
+  (doall (map (fn [itm]
                  (log/infof "Load dataset: %s into context: %s" itm context-uri)
                  (load-data repository (if (u/normalise-path-supportsp itm)
                                          (u/normalise-path itm) itm) :rdf-handler rdf-handler :context-uri context-uri)) data-col)))
