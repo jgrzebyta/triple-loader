@@ -161,7 +161,6 @@
       (.shutDown repo)
       (r/delete-context)))
 
-
 (defn -main
   "Does SPARQL request
 
@@ -178,4 +177,4 @@ List of options:
     (if (:msg validated)
       (println (st/join \newline (:msg validated)))
       (run validated))
-    (log/debug "finish")))
+    (shutdown-agents)))
