@@ -3,7 +3,8 @@
           :project 'adalab/triple-loader
           :description "Triple-loader provides command line and clojure script writing tools for managing RDF data."
           :url "http://www.adalab-project.org/"
-          :dependencies '[[org.clojure/tools.cli "0.3.5"]
+          :dependencies '[[org.clojure/clojure "1.9.0"]
+                          [org.clojure/tools.cli "0.3.5"]
                           [org.clojure/tools.logging "0.4.0"]
                           [clj-pid/clj-pid "0.1.2"]
                           [commons-io/commons-io "2.6"]
@@ -18,6 +19,11 @@
                           [org.eclipse.rdf4j/rdf4j-rio-trix "2.3-SNAPSHOT"]
                           [org.eclipse.rdf4j/rdf4j-rio-rdfxml "2.3-SNAPSHOT"]
                           [org.eclipse.rdf4j/rdf4j-rio-rdfjson "2.3-SNAPSHOT"]
+                          [org.eclipse.rdf4j/rdf4j-rio-binary "2.3-SNAPSHOT"]
+                          [org.eclipse.rdf4j/rdf4j-rio-ntriples "2.3-SNAPSHOT"]
+                          [org.eclipse.rdf4j/rdf4j-rio-nquads "2.3-SNAPSHOT"]
+                          [org.eclipse.rdf4j/rdf4j-rio-n3 "2.3-SNAPSHOT"]
+                          [org.eclipse.rdf4j/rdf4j-rio-jsonld "2.3-SNAPSHOT"]
                           [ch.qos.logback/logback-classic "1.2.3"]
                           [org.slf4j/jcl-over-slf4j "1.7.9"]
                           [degree9/boot-semver "1.7.0" :scope "test"]
