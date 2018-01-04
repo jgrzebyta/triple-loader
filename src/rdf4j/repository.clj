@@ -25,7 +25,7 @@
 
 (def context (atom (RepositoryContext. nil false nil))) ;; create context variable
 
-(defn- get-tmp-dir
+(defn- ^:deprecated get-tmp-dir
   "Gets or creates temporary directory based on given sail or using alternative fn respectively.
 
 If sail has not null dataDir just returns it. If sail contains null dataDir than creates it, set as dataDir and returns.
@@ -38,6 +38,19 @@ If sail is null just generates dataDir and returns.
                        (.setDataDir sail (.toFile path))
                        path)))
         (apply alternative-fn args)))
+
+(defn make-sail-datadir
+  "Gets or creates data directory.
+  
+  If sail has set dataDir than just returns it. If sail contains no dataDir than creates it by `(apply alternative-fn args)`, set as dataDir and returns."
+  [^Sail sail alternative-fn & args]
+    (or (when sail (if-let [data-dir (.getDataDir sail)]
+                     (.toPath data-dir)
+                     (when-let [^Path path (apply alternative-fn args)]
+                       (.setDataDir sail (.toFile path))
+                       path)))
+        (apply alternative-fn args)))
+
 
 (defn make-repository
 "Create repository for given store. By default it is MemoryStore"

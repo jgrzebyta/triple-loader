@@ -3,7 +3,7 @@
             [rdf4j.loader :as l]
             [rdf4j.models :as m]
             [clojure.tools.logging :as log])
-  (:import [org.eclipse.rdf4j.repository RepositoryConnection Repository]
+  (:import [org.eclipse.rdf4j.repository.sail SailRepository SailRepositoryConnection]
            [org.eclipse.rdf4j.model Model Resource IRI Value]))
 
 
@@ -41,7 +41,7 @@
   ProxySourceFactory
   (as-repository [this]
     (case
-      (instance? Repository root-source) root-source
+      (instance? SailRepository root-source) root-source
       (instance? Model root-source) (if (some? buffered-source)
                                       buffered-source
                                       (let [repository (r/make-repository)]
@@ -51,7 +51,7 @@
                                         repository))))
   (as-model [this]
     (case
-      (instance? Repository root-source) (m/loaded-model (r/get-all-statements root-source))
+      (instance? SailRepository root-source) (m/loaded-model root-source)
       (instance? Model root-source) root-source)))
 
 

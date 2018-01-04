@@ -1,13 +1,19 @@
 (ns rdf4j.models
   (:require [rdf4j.loader :as l]
-            [rdf4j.repository :as r])
+            [rdf4j.repository :as r]
+            [rdf4j.utils :as u])
   (:import [java.io File StringWriter]
            [java.util Collection]
            [org.eclipse.rdf4j.model Model Resource Value IRI]
            [org.eclipse.rdf4j.model.impl LinkedHashModel]
            [org.eclipse.rdf4j.model.util Models]
+           [org.eclipse.rdf4j.repository.sail SailRepository]
            [org.eclipse.rdf4j.rio Rio RDFFormat WriterConfig]
-           [org.eclipse.rdf4j.rio.helpers BasicWriterSettings]))
+           [org.eclipse.rdf4j.rio.helpers BasicWriterSettings]
+           [org.eclipse.rdf4j.sail Sail SailConnection]
+           [org.eclipse.rdf4j.sail.memory MemoryStore]
+           [org.eclipse.rdf4j.sail.model SailModel]
+           [org.eclipse.rdf4j.sail.nativerdf NativeStore]))
 
 (defn ^{:added "0.2.2"} single-subjectp
   "Predicate to check if `model` contains single subject."
@@ -22,17 +28,39 @@
 (defmulti ^{:added "0.2.2"} loaded-model
   "Factory to create instance of `Model` either from `Statement`s collection or from
    a RDF file."
-  (fn [data-source] (type data-source)))
+  (fn [data-source & _] (type data-source)))
 
-(defmethod loaded-model Collection [statements-seq]
-   (-> statements-seq
-       (LinkedHashModel.)))
 
-(defmethod loaded-model File [statements-file]
+(defmethod loaded-model Collection [statements-seq & { :keys [sail-type]}]
+  (if-let [base-store (case sail-type
+                        :memory (doto (MemoryStore.) (.setPersist true))
+                        :disk (NativeStore.)
+                        nil)]
+    (let [initialised-store (doto base-store
+                              (r/make-sail-datadir u/temp-dir ["store"])
+                              .initialize)
+          ^SailConnection sail-conn (.getConnection initialised-store)]
+      (doall (map (fn [s]
+                    (.addStatement sail-conn (.getSubject s) (.getPredicate s) (.getObject s) (into-array [(.getContext s)]))) statements-seq))
+      (loaded-model initialised-store))
+    (-> statements-seq
+        (LinkedHashModel.))))
+
+(defmethod loaded-model File [statements-file & _]
   (let [repo (r/make-repository)]
     (l/load-data repo statements-file)
     (-> (r/get-all-statements repo)
          (LinkedHashModel.))))
+
+(defmethod loaded-model Sail [statements-sail & _]
+  (.initialize statements-sail)
+  (SailModel. (.getConnection statements-sail) false))
+ 
+(defmethod loaded-model SailRepository [statements-src & _]
+  (.initialize statements-src)
+  (SailModel. (-> statements-src
+                  .getConnection
+                  .getSailConnection) false))
 
 (defn ^{:added "0.2.2"}
   rdf-filter
