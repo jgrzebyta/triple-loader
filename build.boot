@@ -47,12 +47,19 @@
             :connection "scm:git:ssh://github.com/jgrzebyta/triple-loader.git"
             :developerConnection "scm:git:ssh://git@github.com/jgrzebyta/triple-loader.git"
             :tag "HEAD"}}
- aot {:all true})
+ aot {:namespace #{'rdf4j.models.located-sail-model} })
 
 (deftask develop
   "Build SNAPSHOT version of jar"
   []
   (version :patch 'inc :develop true :pre-release 'snapshot :generate 'rdf4j.version))
+
+(deftask prepare
+  "Prepare coding: (comp (devel) (aot))"
+  []
+  (comp
+   (develop)
+   (aot)))
 
 (deftask testing "Attach tests/ directory to classpath." []
   (set-env! :source-paths #(conj % "tests")))
@@ -74,6 +81,7 @@
   "Build jar without dependencies and not compiled" []
   (comp
    (pom)
+   (aot)
    (sift :add-resource ["src/"]) ;; add source files as well
    (build-jar)
    (target)))
@@ -83,7 +91,7 @@
   []
   (comp
    (pom)
-   (aot)
+   (aot :all true)
    (uber)
    (jar :file (format "%s-standalone.jar" (str (name (get-env :project))) ))
    (target)))

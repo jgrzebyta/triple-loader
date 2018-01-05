@@ -1,5 +1,4 @@
 (ns rdf4j.context-test
-  (:gen-class)
   (:require [clojure.tools.logging :as log]
             [clojure.java.io :as jio]
             [clojure.test :as t]
