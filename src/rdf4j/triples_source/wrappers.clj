@@ -3,7 +3,8 @@
             [rdf4j.loader :as l]
             [rdf4j.models :as m]
             [clojure.tools.logging :as log])
-  (:import [org.eclipse.rdf4j.repository.sail SailRepository SailRepositoryConnection]
+  (:import [org.eclipse.rdf4j.repository RepositoryConnection]
+           [org.eclipse.rdf4j.repository.sail SailRepository SailRepositoryConnection]
            [org.eclipse.rdf4j.model Model Resource IRI Value]))
 
 
