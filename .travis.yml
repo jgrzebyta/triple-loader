@@ -17,7 +17,7 @@ env:
   - boot_path=${boot_dir}/boot
   - PATH=${boot_dir}:$PATH
   - BOOT_JVM_OPTIONS="-Xmx2g"
-  - BOOT_CLOJURE_VERSION=1.8.0
+  - BOOT_CLOJURE_VERSION=1.9.0
  
 install:
   - mkdir -p ${boot_dir}
@@ -32,7 +32,7 @@ git:
   depth: 3
 
 script:
-  - boot develop run-test 1>&2
+  - boot prepare run-test 1>&2
   
 before_deploy:
   - boot version build-standalone
