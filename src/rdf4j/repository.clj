@@ -1,6 +1,7 @@
 (ns rdf4j.repository
   (:require [clojure.tools.logging :as log]
             [clojure.java.io :as io]
+            [rdf4j.core :as c]
             [rdf4j.utils :as u])
   (:import [java.util Properties]
            [java.io File]
@@ -163,29 +164,13 @@ If sail is null just generates dataDir and returns.
     (catch Exception e (log/error "Some error: " (.getMessage e)))
     (finally (.close result))))
 
-(defmulti get-statements "Return a sequence of all statements either from repository or repository connection meeting given pattern. " (fn [r s p o use-reified context] (type r)))
-
-(defmethod get-statements Repository [rep s p o use-reified context] (with-open-repository [cnx rep]
-                                                                       (get-statements cnx s p o use-reified context)))
-
-(defmethod get-statements RepositoryConnection [kb s p o use-reified context] (doall
-                                                                               (u/iter-seq (.getStatements kb
-                                                                                                           ^Resource s
-                                                                                                           ^IRI p
-                                                                                                           ^Value o
-                                                                                                           (boolean use-reified)
-                                                                                                           context))))
-
-(defn get-all-statements [r]
-  (get-statements r nil nil nil false (context-array)))
-
-
 (defmulti get-all-namespaces "Return a sequence of all instances of `Namespace` in the repository or repository connection" (fn [r] (type r)))
 
 (defmethod get-all-namespaces RepositoryConnection [r] (doall (u/iter-seq (.getNamespaces r))))
 
 (defmethod get-all-namespaces Repository [r] (with-open-repository [cn r]
                                                (get-all-namespaces cn)))
+
 
 (defn- deactive [ctx] (assoc ctx :active false))
 
@@ -203,3 +188,22 @@ If sail is null just generates dataDir and returns.
         (log/debugf "delete files at: %s" dir)
         (FileUtils/deleteDirectory dir)) ;; commons-io supports deleting directory with contents)
       (finally (swap! context deactive)))))
+
+;; Implementation from rdf4j.core
+
+(defmethod c/get-statements Repository [rep s p o use-reified & context] (with-open-repository [cnx rep]
+                                                                           (c/get-statements cnx
+                                                                                             ^Resource s
+                                                                                             ^IRI p
+                                                                                             ^Value o
+                                                                                             use-reified
+                                                                                             ^"[Lorg.eclipse.rdf4j.model.Resource;" context)))
+
+(defmethod c/get-statements RepositoryConnection [kb s p o use-reified & context] (doall
+                                                                                   (u/iter-seq (.getStatements kb
+                                                                                                               ^Resource s
+                                                                                                               ^IRI p
+                                                                                                               ^Value o
+                                                                                                               use-reified
+                                                                                                               ^"[Lorg.eclipse.rdf4j.model.Resource;" context))))
+

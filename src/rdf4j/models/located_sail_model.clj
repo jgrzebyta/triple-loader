@@ -1,8 +1,8 @@
 (ns rdf4j.models.located-sail-model
   (:import [java.io File]
            [java.nio.file Path]
-           [org.eclipse.rdf4j.sail SailConnection]
-           [org.eclipse.rdf4j.repository.sail SailRepository]))
+           [org.eclipse.rdf4j.repository.sail SailRepository]
+           [org.eclipse.rdf4j.sail SailConnection]))
 
 
 (gen-class
@@ -39,6 +39,3 @@
 
 (defn -getDataDir [this]
   (:data-dir @(.state this)))
-
-
-
