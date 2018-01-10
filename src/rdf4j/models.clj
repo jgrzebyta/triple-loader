@@ -95,9 +95,11 @@
     (c/as-model (.toFile normalised) model-type)))
 
 (defmethod c/as-model java.util.Collection [data-src & {:keys [model-type]}]
-  (let [model (if (> (count data-src) 1000)
-                (parse-model-type :solid) (parse-model-type :memory))]
-    (.addAll data-src)
+  (let [model (if (some? model-type)
+                (parse-model-type model-type)
+                (if (> (count data-src) 1000)
+                  (parse-model-type :solid) (parse-model-type :memory)))]
+    (.addAll model data-src)
     model))
 
 (defmethod c/as-model File [data-src & {:keys [model-type] :or {model-type :solid}}]
