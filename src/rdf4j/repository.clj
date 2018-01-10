@@ -1,24 +1,19 @@
 (ns rdf4j.repository
   (:require [clojure.tools.logging :as log]
-            [clojure.java.io :as io]
             [rdf4j.core :as c]
             [rdf4j.utils :as u])
-  (:import [java.util Properties]
-           [java.io File]
-           [java.nio.file Files Path]
-           [org.apache.commons.io FileUtils]
-           [org.eclipse.rdf4j.common.iteration CloseableIteration]
-           [org.eclipse.rdf4j.model.impl SimpleValueFactory]
-           [org.eclipse.rdf4j.model Resource IRI Value Namespace]
-           [org.eclipse.rdf4j.repository RepositoryConnection Repository]
-           [org.eclipse.rdf4j.sail Sail]
-           [org.eclipse.rdf4j.sail.spin SpinSail]
-           [org.eclipse.rdf4j.sail.evaluation TupleFunctionEvaluationMode]
+  (:import java.nio.file.Path
+           java.util.Properties
+           org.apache.commons.io.FileUtils
+           org.eclipse.rdf4j.common.iteration.CloseableIteration
+           org.eclipse.rdf4j.lucene.spin.LuceneSpinSail
+           [org.eclipse.rdf4j.model IRI Resource Value]
+           [org.eclipse.rdf4j.repository Repository RepositoryConnection]
+           [org.eclipse.rdf4j.repository.sail SailRepository SailRepositoryConnection]
            [org.eclipse.rdf4j.sail.inferencer.fc DedupingInferencer ForwardChainingRDFSInferencer]
-           [org.eclipse.rdf4j.repository.sail SailRepository]
-           [org.eclipse.rdf4j.sail.memory MemoryStore]
-           [org.eclipse.rdf4j.sail.lucene LuceneSail]
-           [org.eclipse.rdf4j.lucene.spin LuceneSpinSail]))
+           org.eclipse.rdf4j.sail.memory.MemoryStore
+           org.eclipse.rdf4j.sail.Sail
+           org.eclipse.rdf4j.sail.spin.SpinSail))
 
 ;; Root of application context
 (defrecord RepositoryContext [path active application-context])
@@ -191,19 +186,13 @@ If sail is null just generates dataDir and returns.
 
 ;; Implementation from rdf4j.core
 
-(defmethod c/get-statements Repository [rep s p o use-reified & context] (with-open-repository [cnx rep]
-                                                                           (c/get-statements cnx
-                                                                                             ^Resource s
-                                                                                             ^IRI p
-                                                                                             ^Value o
-                                                                                             use-reified
-                                                                                             ^"[Lorg.eclipse.rdf4j.model.Resource;" context)))
+(defmethod c/get-statements SailRepository
+  [rep ^Resource s ^IRI p ^Value o use-reified ^"[Lorg.eclipse.rdf4j.model.Resource;" context]
+  (with-open-repository [cnx rep]
+    (c/get-statements cnx s p o use-reified context)))
 
-(defmethod c/get-statements RepositoryConnection [kb s p o use-reified & context] (doall
-                                                                                   (u/iter-seq (.getStatements kb
-                                                                                                               ^Resource s
-                                                                                                               ^IRI p
-                                                                                                               ^Value o
-                                                                                                               use-reified
-                                                                                                               ^"[Lorg.eclipse.rdf4j.model.Resource;" context))))
+(defmethod c/get-statements SailRepositoryConnection
+  [kb ^Resource s ^IRI p ^Value o use-reified context]
+  (doall
+   (u/iter-seq (.getStatements kb s p o use-reified context))))
 

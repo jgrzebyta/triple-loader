@@ -64,7 +64,7 @@
      (.toString string-writer))))
 
 
-(defmethod c/get-statements Model [data-src s p o _ & contexts]
+(defmethod c/get-statements Model [data-src s p o _ contexts]
   (.filter data-src s p o contexts))
 
 (defn- parse-model-type
@@ -72,33 +72,35 @@
   [model-type]
   (if (= model-type :memory)
     (LinkedHashModel.)
-    (let [ data-dir (u/temp-dir "sail-model")
+    (let [ data-dir (->
+                     (u/temp-dir "sail-model")
+                     .toFile)
           sail-inst (case model-type
                       :solid (NativeStore.)
                       :persistent (MemoryStore.))
           sail-repo (SailRepository. sail-inst)]
      (when (= model-type :persistent)
-       (.setPersist sail-inst))
+       (.setPersist sail-inst true))
      (.setDataDir sail-repo data-dir)
      (LocatedSailModel. sail-repo false))))
 
 (defmethod c/as-model nil [_ {:keys [model-type] :or {model-type :memory}}]
   (parse-model-type model-type))
 
-(defmethod c/as-model SailRepository [data-src {:keys [model-type]}]
+(defmethod c/as-model SailRepository [data-src & {:keys [model-type]}]
   (LocatedSailModel. data-src false))
 
-(defmethod c/as-model Path [data-src {:keys [model-type]}]
+(defmethod c/as-model Path [data-src & {:keys [model-type] :or {model-type :solid}}]
   (let [normalised (u/normalise-path data-src)]
     (c/as-model (.toFile normalised) model-type)))
 
-(defmethod c/as-model java.util.Collection [data-src {:keys [model-type]}]
+(defmethod c/as-model java.util.Collection [data-src & {:keys [model-type]}]
   (let [model (if (> (count data-src) 1000)
                 (parse-model-type :solid) (parse-model-type :memory))]
     (.addAll data-src)
     model))
 
-(defmethod c/as-model File [data-src {:keys [model-type] :or {model-type :solid}}]
+(defmethod c/as-model File [data-src & {:keys [model-type] :or {model-type :solid}}]
   (let [model (parse-model-type model-type)
         rdf-format (-> (Rio/getParserFormatForFileName (.getPath data-src))
                        .get)
@@ -109,7 +111,7 @@
                  (.setParserConfig rio/default-parser-config)
                  (.setParseErrorListener (ParseErrorLogger.)))]
     (with-open [ins (io/input-stream data-src)]
-      (.parse parser ins (u/make-baseuri (.toPath data-src))))
+      (.parse parser ins (.stringValue (u/make-baseuri (.toPath data-src)))))
     model))
 
 
