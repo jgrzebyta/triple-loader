@@ -42,7 +42,7 @@
 (defn test-repository "Does more detailed tests on storage" [^SailRepository repository expected]
   (log/debug "repository class: " (class repository))
   (with-open-repository [c repository]
-    (let [result (get-all-statements c) ;(.getStatements c nil nil nil false (into-array Resource '[]))
+    (let [result (u/get-all-statements c) ;(.getStatements c nil nil nil false (into-array Resource '[]))
           statement-total (count result)]
       (is (= expected statement-total))
       (log/debug (format "Found %d statements" statement-total))

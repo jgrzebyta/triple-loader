@@ -4,7 +4,9 @@
             [clojure.test :as t]
             [rdf4j.loader :as l]
             [rdf4j.repository :as repo]
-            [rdf4j.reifiers :as ref])
+            [rdf4j.reifiers :as ref]
+            [rdf4j.utils :as u]
+            [rdf4j.core :as c])
   (:import [org.eclipse.rdf4j.model Resource IRI URI Value]
            [org.eclipse.rdf4j.repository RepositoryConnection]
            [org.eclipse.rdf4j.query QueryLanguage]
@@ -21,9 +23,9 @@
           repos (repo/make-mem-repository)]
       (l/load-data repos file-obj :rdf-handler rdf-h :context-uri *context-string*)
       (repo/with-open-repository [con repos]
-        (let [all-triples-total (repo/get-statements con nil nil nil false (repo/context-array))                
-              all-triples-no-cont (repo/get-statements con nil nil nil false (repo/context-array nil))          
-              all-triples (repo/get-statements con nil nil nil false (repo/context-array con *context-string*))]
+        (let [all-triples-total (c/get-statements con nil nil nil false (u/context-array))                
+              all-triples-no-cont (c/get-statements con nil nil nil false (u/context-array nil))          
+              all-triples (c/get-statements con nil nil nil false (u/context-array con *context-string*))]
           (log/debug (format "No. triples is %d." (count all-triples-total)))                           
           (log/debug (format "No. triples witout context is %d" (count all-triples-no-cont)))          
           (log/debug (format "No. triples in context '%s' is %d" *context-string* (count all-triples)))
@@ -41,9 +43,9 @@
           repos (repo/make-mem-repository)]
       (l/load-multidata repos ["tests/resources/beet.rdf"] :rdf-handler rdf-h :context-uri *context-string*)
       (repo/with-open-repository [con repos]
-        (let [all-triples-total (repo/get-statements con nil nil nil false (repo/context-array))                
-              all-triples-no-cont (repo/get-statements con nil nil nil false (repo/context-array nil))          
-              all-triples (repo/get-statements con nil nil nil false (repo/context-array con *context-string*))]
+        (let [all-triples-total (c/get-statements con nil nil nil false (u/context-array))
+              all-triples-no-cont (c/get-statements con nil nil nil false (u/context-array nil))
+              all-triples (c/get-statements con nil nil nil false (u/context-array con *context-string*))]
           (log/debug (format "No. triples is %d." (count all-triples-total)))                           
           (log/debug (format "No. triples witout context is %d" (count all-triples-no-cont)))          
           (log/debug (format "No. triples in context '%s' is %d" *context-string* (count all-triples)))
@@ -66,9 +68,9 @@
           (.parse pars fr (.toString (.toURI file-obj)))
           (.commit con))
         (log/debug "All data should be loaded... validation")
-        (let [all-triples-total (repo/get-statements con nil nil nil false (repo/context-array))
-              all-triples-no-cont (repo/get-statements con nil nil nil false (repo/context-array nil))
-              all-triples (repo/get-statements con nil nil nil false (repo/context-array con *context-string*))]
+        (let [all-triples-total (c/get-statements con nil nil nil false (u/context-array))
+              all-triples-no-cont (c/get-statements con nil nil nil false (u/context-array nil))
+              all-triples (c/get-statements con nil nil nil false (u/context-array con *context-string*))]
           (log/debug (format "No. triples is %d." (count all-triples-total))) 						; display number of triples
           (log/debug (format "No. triples witout context is %d" (count all-triples-no-cont)))
           (log/debug (format "No. triples in context '%s' is %d" *context-string* (count all-triples)))
