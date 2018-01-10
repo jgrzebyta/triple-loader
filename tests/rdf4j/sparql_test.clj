@@ -97,7 +97,7 @@ where {
       (is (string? sparql-processed) "processed sparql not string")
       (is (not (st/blank? sparql-processed)) "processed sparql is blank")))
   (testing "sparql from string"
-    (let [file-path "tests/example1.sparql"
+    (let [file-path "tests/resources/example1.sparql"
           sparql-processed (load-sparql file-path)]
       (log/debug (format "SPAQRL processed:\n==========\n %s \n=========\n" sparql-processed))
       (is (< 10 (count sparql-processed)))
