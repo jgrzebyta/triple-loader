@@ -8,6 +8,14 @@
 	  <target>System.err</target>
 	</appender>
 
+	<appender name="FILE" class="ch.qos.logback.core.FileAppender">
+	  <encoder>
+	    <pattern>%d{mm:ss.SSS} [%.10thread] %-5level [%file--%line] -- %msg%n</pattern>
+	  </encoder>
+	  <file>logback-test.txt</file>
+	</appender>
+
+	<logger name="rdf4j" level="debug"/>
 	<logger name="rdf4j.sparql" level="warn"/>
 
 	<logger name="rdf4j.sparql-processor-test" level="warn" />
@@ -20,7 +28,8 @@
 	<logger name="rdf4j.generic-source-test" level="info"/>
 	
 	<root>
-		<level value="warn" />
-		<appender-ref ref="STDERR" />
+	  <level value="warn" />
+	  <appender-ref ref="FILE" />
+	  <appender-ref ref="STDERR" />
 	</root>
 </configuration>
