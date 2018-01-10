@@ -5,20 +5,18 @@
             [clojure.tools.logging :as log]
             [rdf4j.collections :as c]
             [rdf4j.collections.utils :as cu]
+            [rdf4j.core :as co]
             [rdf4j.loader :as l]
             [rdf4j.models :as m]
-            [rdf4j.protocols :as p]
             [rdf4j.repository :as r]
-            [rdf4j.utils :as u]
-            [rdf4j.core :as co])
-  (:import [rdf4j.models LocatedSailModel]
-           [org.apache.commons.io FileUtils]
-           [org.eclipse.rdf4j.model Model BNode]
-           [org.eclipse.rdf4j.model.util Models]
+            [rdf4j.utils :as u])
+  (:import org.apache.commons.io.FileUtils
+           org.eclipse.rdf4j.model.impl.LinkedHashModel
+           org.eclipse.rdf4j.model.Model
+           org.eclipse.rdf4j.model.util.Models
            [org.eclipse.rdf4j.model.vocabulary RDF RDFS XMLSchema]
-           [org.eclipse.rdf4j.rio RDFFormat]
-           [org.eclipse.rdf4j.sail.model SailModel]
-           [rdf4j.protocols ModelHolder]))
+           rdf4j.models.LocatedSailModel
+           rdf4j.protocols.ModelHolder))
 
 (def ^{:static true} vf (u/value-factory))
 
@@ -34,11 +32,13 @@
     (t/testing "load collections into memory sail ."
       (let [repository (r/make-repository)]
         (l/load-data repository file-obj)
-        (let [^Model model (co/as-model (u/get-all-statements repository) :sail-type :disk)
+        (let [^Model model (co/as-model (u/get-all-statements repository) :model-type :solid)
+              ^Model model2 (co/as-model (u/get-all-statements repository))
               data-dir (.getDataDir model)]
           (t/is (not (.isEmpty model)))
           (log/debugf "Number of statements: %d" (.size model))
           (t/is (instance? LocatedSailModel model))
+          (t/is (instance? LinkedHashModel model2))
           (t/is (not (m/single-subjectp model)))
           (t/is (some? data-dir))
           (log/infof "data-dir: %s" (str data-dir))
@@ -102,7 +102,8 @@
 (t/deftest rdf-coll-test
   (let [data-source (->
                      (io/file "tests/resources/collections/type-list.ttl")
-                     (co/as-model))]
+                     (co/as-model))
+        data-dir (.getDataDir data-source)]
     (t/testing "simple rdf->seq"
       (let [collection-root (-> (m/rdf-filter data-source nil (.createIRI vf "http://www.eexample.org/data#" "data") nil)
                                 (Models/object)
@@ -141,10 +142,12 @@
           (t/is (= (-> pair
                        first
                        .getLabel) "var1"))
-          (t/is (= (-> pair
-                       second
-                       .getLabel) "1.56")))
-        (t/is (not (empty? to-test)))))))
+          (t/is (= (double 1.56) (-> pair
+                                     second
+                                     .doubleValue))))
+        (t/is (not (empty? to-test)))))
+    (.close data-source)
+    (FileUtils/deleteDirectory data-dir)))
 
 (t/deftest rdf-protocols
   (let [md (->
@@ -160,4 +163,7 @@
             submodel (m/rdf-filter md root nil nil)
             gs (ModelHolder. root submodel)]
         (t/is (some? gs))
-        (log/debugf "Instance: %5s\n" (binding [*print-dup* false] (println-str gs)))))))
+        (log/debugf "Instance: %5s\n" (binding [*print-dup* false] (println-str gs)))))
+    (.close md)
+    (FileUtils/deleteDirectory (.getDataDir md))))
+  

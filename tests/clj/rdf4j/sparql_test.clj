@@ -9,7 +9,8 @@
         [rdf4j.repository]
         [rdf4j.loader :exclude [-main]]
         [rdf4j.loader-test])
-  (:require [rdf4j.utils :as u])
+  (:require [rdf4j.utils :as u]
+            [rdf4j.repository :as r])
   (:import [org.eclipse.rdf4j.rio RDFFormat]
            [clojure.lang ArraySeq]
            [java.io StringWriter ByteArrayOutputStream]
@@ -151,6 +152,7 @@ where {
       (is (instance? MemoryStore (-> repo
                                      (.getSail)
                                      (.getBaseSail))))
+      (log/debugf "store: %s" (.getDataDir repo))
       (delete-context)))
   (testing "test SailRepository + MemoryStore repository initialisation"
     (let [args (list "simple")
@@ -159,6 +161,7 @@ where {
       (is (instance? MemoryStore (-> repo
                                      (.getSail)
                                      (.getBaseSail))))
+      ()
       (delete-context)))
   (testing "test SailRepository + NativeStore with path"
     (let [args (list "simple" "native=/tmp/rdf4j-repository")

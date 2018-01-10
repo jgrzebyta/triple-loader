@@ -26,7 +26,9 @@ select ?term ?term_id where {
                                        (.getValue (first its) "term")
                                ))
             (recur (rest its))
-            )))))
+            ))
+        )
+      (r/delete-context)))
   (t/testing "Remote resource using federated query"
     (let [sparql "PREFIX db:	<http://dbpedia.org/ontology/>
 SELECT ?label ?abstract
@@ -46,8 +48,8 @@ WHERE
         (loop [its out]
           (when (some? (first its))
             (log/debug (format "\nlabel: '%s'\n\nabstract: '%s'\n\n" (.getValue (first its) "label") (.getValue (first its) "abstract")))
-            (recur (rest its))))
-        )))
+            (recur (rest its)))))
+      (r/delete-context)))
 
   (t/testing "query with binding"
     (let [vf (SimpleValueFactory/getInstance)
@@ -69,8 +71,8 @@ WHERE
         (loop [its out]
           (when (some? (first its))
             (log/debug (format "\nitem: '%s'\n\nabstract: '%s'\n\n" (.getValue (first its) "item") (.getValue (first its) "abstract")))
-            (recur (rest its))))
-        ))))
+            (recur (rest its)))))
+      (r/delete-context))))
 
 
 (defn export-country [query-result]

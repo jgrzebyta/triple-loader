@@ -62,7 +62,7 @@
    (aot)))
 
 (deftask testing "Attach tests/ directory to classpath." []
-  (set-env! :source-paths #(conj % "tests")))
+  (set-env! :source-paths #(into % ["tests/resources" "tests/clj"])))
 
 (deftask run-test "Run unit tests"
   [t test-name NAME str "Test to execute. Run all tests if not given."]
