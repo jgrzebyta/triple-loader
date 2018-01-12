@@ -1,13 +1,16 @@
 (ns rdf4j.repository
   (:require [clojure.tools.logging :as log]
             [rdf4j.core :as c]
-            [rdf4j.utils :as u])
+            [rdf4j.utils :as u]
+            [rdf4j.repository :as r]
+            [rdf4j.repository.sails :as s]
+            [rdf4j.loader :as l])
   (:import java.nio.file.Path
            java.util.Properties
            org.apache.commons.io.FileUtils
            org.eclipse.rdf4j.common.iteration.CloseableIteration
            org.eclipse.rdf4j.lucene.spin.LuceneSpinSail
-           [org.eclipse.rdf4j.model IRI Resource Value]
+           [org.eclipse.rdf4j.model IRI Model Resource Value]
            [org.eclipse.rdf4j.repository Repository RepositoryConnection]
            [org.eclipse.rdf4j.repository.sail SailRepository SailRepositoryConnection]
            [org.eclipse.rdf4j.sail.inferencer.fc DedupingInferencer ForwardChainingRDFSInferencer]
@@ -16,26 +19,12 @@
            org.eclipse.rdf4j.sail.spin.SpinSail))
 
 ;; Root of application context
-(defrecord RepositoryContext [path active application-context])
+(defrecord ^:deprecated RepositoryContext [path active application-context])
+
+(def ^:deprecated context (atom (RepositoryContext. nil false nil))) ;; create context variable
 
 
-(def context (atom (RepositoryContext. nil false nil))) ;; create context variable
-
-(defn- ^:deprecated get-tmp-dir
-  "Gets or creates temporary directory based on given sail or using alternative fn respectively.
-
-If sail has not null dataDir just returns it. If sail contains null dataDir than creates it, set as dataDir and returns.
-If sail is null just generates dataDir and returns. 
-"
-  [^Sail sail alternative-fn & args]
-    (or (when sail (if-let [data-dir (.getDataDir sail)]
-                     (.toPath data-dir)
-                     (when-let [^Path path (apply alternative-fn args)]
-                       (.setDataDir sail (.toFile path))
-                       path)))
-        (apply alternative-fn args)))
-
-(defn make-sail-datadir
+(defn ^:deprecated make-sail-datadir
   "Gets or creates data directory.
   
   If sail has set dataDir than just returns it. If sail contains no dataDir than creates it by `(apply alternative-fn args)`, set as dataDir and returns."
@@ -48,14 +37,20 @@ If sail is null just generates dataDir and returns.
         (apply alternative-fn args)))
 
 
-(defn make-repository
-"Create repository for given store. By default it is MemoryStore"
+(defn ^:deprecated
+  make-repository
+  "Create repository for given store. By default it is MemoryStore.
+
+  Replaced by `rdf4j.repository.sail/make-sail-repository`."
   [& [^Sail store]]
     (SailRepository. (DedupingInferencer. (if store store (MemoryStore.)))))
 
-(defn make-repository-with-lucene
+(defn ^:deprecated
+  make-repository-with-lucene
   "Similar to make-repository but adds support for Lucene index. 
-  NB: See delete-context."
+  NB: See delete-context.
+
+  Replaced by `rdf4j.repository.sail/make-sail-repository`."
   [& [^Sail store ^Properties parameters]]
   (let [^Path tmpDir (get-tmp-dir store u/temp-dir "lucene")
         local-store (if store store (MemoryStore.))
@@ -72,11 +67,13 @@ If sail is null just generates dataDir and returns.
     (swap! context assoc :path (.toFile tmpDir) :active true)   ;; keep tmpDir in global variable 
     (SailRepository. lucene-spin)))
 
-(defn make-mem-repository
-  "Backward compatibility"
+(defn ^:deprecated
+  make-mem-repository
+  "Backward compatibility.
+
+  Replaced by `rdf4j.repository.sail/make-sail-repository`."
   []
   (make-repository))
-
 
 (defmacro with-open-repository
   "initseq => [seq-var :memory] | [seq-var (HTTPRepository. server-url repository-id)] 
@@ -106,7 +103,7 @@ If sail is null just generates dataDir and returns.
 
   It is requivalent of:
 
-     (with-open-repository [cnx]
+     (with-open-repository [cnx sail-repo]
        (try
           (.begin cnx)
           ~@body
@@ -116,12 +113,13 @@ If sail is null just generates dataDir and returns.
        (finally .commit cnx)))"
   [initseq & body]
   (let [[rep-connection sail-repo] initseq]
-    `(with-open-repository [rep-connection sail-repo]
+    `(with-open-repository [~rep-connection ~sail-repo]
        (try
          (.begin ~rep-connection)
          ~@body
-         (catch Exception e
-           (.rollback ~rep-connection))
+         (catch Exception e#
+           (.rollback ~rep-connection)
+           (throw e#))
          (finally (.commit ~rep-connection))))))
 
 
@@ -171,7 +169,8 @@ If sail is null just generates dataDir and returns.
 
 ;; TODO: in the future both functions: make-repository-with-lucene and delete-context
 ;; should be wrapped within a macro.
-(defn delete-context
+(defn ^:deprecated
+  delete-context
   "Delete temporary directory with content and close Lucene index
 
   That method should be called manually somewhere at the end of code.
@@ -186,6 +185,11 @@ If sail is null just generates dataDir and returns.
 
 ;; Implementation from rdf4j.core
 
+(defmethod c/as-repository Iterable [data-src repository-type data-dir & opts]
+  (let [repository (s/make-sail-repository repository-type data-dir opts)]
+    (.initialize repository)
+    (l/load-data repository data-src)))
+
 (defmethod c/get-statements SailRepository
   [rep ^Resource s ^IRI p ^Value o use-reified ^"[Lorg.eclipse.rdf4j.model.Resource;" context]
   (with-open-repository [cnx rep]
@@ -195,4 +199,3 @@ If sail is null just generates dataDir and returns.
   [kb ^Resource s ^IRI p ^Value o use-reified context]
   (doall
    (u/iter-seq (.getStatements kb s p o use-reified context))))
-

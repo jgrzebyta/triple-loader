@@ -20,6 +20,10 @@
   - :memory (`LinkedHashModel`)
   - :persisted (persisted `MemoryStore`)
   - :solid (`NativeStore`)"
-  (fn [data-src & {:keys [model-type] :or {model-type :memory}}] (type data-src)))
+  (fn [data-src & {:keys [model-type]}] (type data-src)))
 
-(defmulti as-repository "Presents (and converts) a data source as instance of `Repository`." (fn [data-src & args] (type data-src)) )
+(defmulti ^SailRepository as-repository
+  "Presents (and converts) a data source as instance of `SailRepository`.
+
+  Parameters `repository-type`, `data-dir` and `opts` are directly passed to `rdf4j.repository.sails/make-sail-repository`."
+  (fn [data-src repository-type data-dir & opts] (type data-src)))

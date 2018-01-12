@@ -1,37 +1,25 @@
 (ns rdf4j.loader
   (:gen-class)
-  (:use [clojure.tools.cli :refer [cli]]
-        [clojure.tools.logging :as log]
-        [clojure.java.io :as io]
-        [clojure.string :refer [blank?]]
-        [clojure.pprint :as pp]
-        [rdf4j.reifiers :as ref]
-        [rdf4j.version :refer [version]])
-  (:require [rdf4j.repository :as r]
+  (:require [clojure.java.io :as io :refer :all]
+            [clojure.pprint :as pp :refer :all]
+            [clojure.stacktrace :as cst]
+            [clojure.string :refer :all]
+            [clojure.tools.cli :refer :all]
+            [clojure.tools.logging :as log :refer :all]
+            [rdf4j.reifiers :as ref :refer :all]
+            [rdf4j.core.rio :as rio]
+            [rdf4j.repository :as r]
             [rdf4j.utils :as u]
-            [clojure.stacktrace :as cst])
-  (:import [java.nio.file Path]
+            [rdf4j.version :refer :all])
+  (:import clojure.lang.ExceptionInfo
            [java.io File StringWriter]
-           [clojure.lang ExceptionInfo]
-           [org.eclipse.rdf4j IsolationLevel IsolationLevels]
-           [org.eclipse.rdf4j.model Resource Model]
-           [org.eclipse.rdf4j.repository.http HTTPRepository HTTPRepositoryConnection]
+           java.nio.file.Path
+           org.eclipse.rdf4j.model.Resource
            [org.eclipse.rdf4j.repository RepositoryConnection RepositoryException]
-           [org.eclipse.rdf4j.rio Rio RDFFormat ParserConfig RDFParseException]
-           [org.eclipse.rdf4j.rio.helpers BasicParserSettings]
-           [org.eclipse.rdf4j.query QueryLanguage]
-           [org.apache.commons.logging LogFactory]
-           [org.eclipse.rdf4j.repository.sail SailRepositoryConnection]
-           [org.eclipse.rdf4j.repository.sail.helpers RDFSailInserter]
-           [org.eclipse.rdf4j.repository.util RDFInserter]))
+           org.eclipse.rdf4j.repository.http.HTTPRepository
+           org.eclipse.rdf4j.rio.Rio))
 
 (declare load-data load-multidata)
-
-(defn make-parser-config []
-    (doto
-        (ParserConfig.)
-      (.set BasicParserSettings/PRESERVE_BNODE_IDS true)))
-
 
 (defn init-connection "Initialise Connection." [^RepositoryConnection connection]
   (log/trace "connection instance: " connection)
@@ -40,7 +28,7 @@
                                 (.getRepositoryURL repository)
                                 (.toString repository)))
     (try
-      (.setParserConfig connection (make-parser-config))
+      (.setParserConfig connection rio/default-parser-config)
       (catch RepositoryException e (do
                                      (log/error (format "Error message: %s" (.getMessage e)))
                                      (throw e)))
@@ -81,12 +69,8 @@
 (defmethod load-data String [repository file & {:keys [rdf-handler context-uri]}] (load-data repository (u/normalise-path file) :rdf-handler rdf-handler :context-uri context-uri))
 
 (defmethod load-data Iterable [repository model & {:keys [rdf-handler context-uri]}]
-  (r/with-open-repository [cnx repository]
-    (init-connection cnx)
-    (try
-      (.begin cnx)
-      (.add cnx model (r/context-array context-uri))
-      (finally (.commit cnx)))))
+  (r/with-open-repository* [cnx repository]
+    (.add cnx model context-uri)))
 
 (defmethod load-data Path [repository file & {:keys [rdf-handler context-uri]}] (load-data repository (.toFile file) :rdf-handler rdf-handler :context-uri context-uri))
 
