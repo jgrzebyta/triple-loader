@@ -24,14 +24,14 @@
   (let [file-obj (io/file "tests/resources/collections/multisubj.ttl")]
     (t/testing "load collections into standard model."
       (let [repository (r/make-repository)]
-        (l/load-data repository file-obj)
+        (co/load-data repository file-obj)
         (let [^Model model (co/as-model (u/get-all-statements repository))]
           (t/is (not (.isEmpty model)))
           (log/debugf "Number of statements: %d" (.size model))
           (t/is (not (m/single-subjectp model))))))
     (t/testing "load collections into memory sail ."
       (let [repository (r/make-repository)]
-        (l/load-data repository file-obj)
+        (co/load-data repository file-obj)
         (let [^Model model (co/as-model (u/get-all-statements repository) :model-type :solid)
               ^Model model2 (co/as-model (u/get-all-statements repository))
               data-dir (.getDataDir model)]
@@ -49,13 +49,13 @@
   (t/testing "Test single-subjectp predicate"
     (let [file-obj (io/file "tests/resources/collections/multisubj2.ttl" )
           repository (r/make-repository)]
-      (l/load-data repository file-obj)
+      (co/load-data repository file-obj)
       (let [^Model model (co/as-model (u/get-all-statements repository))]
         (t/is (not (m/single-subjectp model)))))
     
     (let [file-obj (io/file "tests/resources/collections/multisubj3.ttl" )
           repository (r/make-repository)]
-      (l/load-data repository file-obj)
+      (co/load-data repository file-obj)
       (let [^Model model (co/as-model (u/get-all-statements repository))]
         (t/is (m/single-subjectp model))))))
 

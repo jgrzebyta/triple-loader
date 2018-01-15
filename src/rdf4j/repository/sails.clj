@@ -10,26 +10,35 @@
   "[type datadir & [opts]]
 
   Create instance of `SailRepository`.
-  Additional map of options depends on sails hierarchy.
+  Additional map of options (`opts`) depends on sails hierarchy.
 
-  :indexes -- pass value to `NativeStore/setTripleIndexes`.
-  
-  "
+
+  OPTIONS
+
+  List of possible options:
+  - :indexes -- pass value to `NativeStore/setTripleIndexes`
+  - :parameters -- pass value to `LuceneSpinSail/setParameters`"
   (fn [type datadir & [opts]] (if (keyword? type)
                                 type
                                 (keyword type))) :default nil)
 
+(defn- make-persisted-memory [datadir]
+  (let [store (MemoryStore.)]
+    (when datadir
+      (.setPersist store true))
+    store))
 
-(defmethod make-sail-repository :memory [_ datadir & [opts]] (doto (-> (MemoryStore.)
-                                                                      SailRepository.)
-                                                              (.setDataDir datadir)))
+
+(defmethod make-sail-repository :memory [_ datadir & [opts]] (doto (-> (make-persisted-memory datadir)
+                                                                       SailRepository.)
+                                                               (.setDataDir datadir)))
 
 (defmethod make-sail-repository :native [_ datadir & [opts]] (doto (-> (doto (NativeStore.)
                                                                         (.setTripleIndexes (or (:indexes opts) "spoc,posc")))
                                                                       SailRepository.)
                                                               (.setDataDir datadir)))
 
-(defmethod make-sail-repository :memory-rdfs [_ datadir & [opts]] (doto (-> (MemoryStore.)
+(defmethod make-sail-repository :memory-rdfs [_ datadir & [opts]] (doto (-> (make-persisted-memory datadir)
                                                                    DedupingInferencer.
                                                                    ForwardChainingRDFSInferencer.
                                                                    SailRepository.)
@@ -43,7 +52,7 @@
                                                                    (.setDataDir datadir)))
 
 (defmethod make-sail-repository :memory-spin-lucene [_ datadir & [opts]] (doto (->
-                                                                               (doto (-> (MemoryStore.)
+                                                                               (doto (-> (make-persisted-memory datadir)
                                                                                          DedupingInferencer.
                                                                                          ForwardChainingRDFSInferencer.
                                                                                          SpinSail.

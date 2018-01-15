@@ -25,4 +25,5 @@
         (is (> (count sts) 0))))
     (.shutDown repo)
     (delete-context)
+    (shutdown-agents)
     ))

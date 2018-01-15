@@ -10,7 +10,8 @@
         [rdf4j.loader :exclude [-main]]
         [rdf4j.loader-test])
   (:require [rdf4j.utils :as u]
-            [rdf4j.repository :as r])
+            [rdf4j.repository :as r]
+            [rdf4j.core :as c])
   (:import [org.eclipse.rdf4j.rio RDFFormat]
            [clojure.lang ArraySeq]
            [java.io StringWriter ByteArrayOutputStream]
@@ -46,7 +47,7 @@
 
 (deftest test-load-data 
   (let [repo (make-repository-with-lucene)]
-    (load-data repo "tests/resources/beet.rdf")
+    (c/load-data repo "tests/resources/beet.rdf")
   (testing "Count number of triples in repository"
     (test-repository repo 68))
   (delete-context)))
@@ -54,7 +55,7 @@
 (deftest test-sparql-query
   (let [repo (make-repository-with-lucene)
         vf (u/value-factory)]
-    (load-data repo "tests/resources/beet.rdf")
+    (c/load-data repo "tests/resources/beet.rdf")
     (testing "execute simple SPARQL query"
       (let [sparql-str "select * where {?s ?p ?o}"]
         (with-open-repository [cx repo]
@@ -119,30 +120,33 @@ where {
 (deftest test-search-sparql "Test search sparql "
   (testing "try simple search"
     (let [sparql1 (load-sparql "tests/resources/spql1.sparql")
-          repo (make-repository-with-lucene)]
-      ;; load dataset
-      (load-multidata repo +local-test+)
+          repo (make-repository-with-lucene)
+          loaded-tris (load-multidata repo +local-test+)] ;;load-dataset
+      (log/debugf "loaded %d statements" loaded-tris)
       (with-open-repository [c repo]
         (let [response (process-sparql-query c sparql1 :writer-factory-name :none)
               cnt (count (u/iter-seq response))]
           (is (some? response))
           (is (> cnt 0))
           (log/debug (format "triples number: %d" cnt))))
-      (delete-context))))
+      (delete-context)
+      (shutdown-agents))))
 
 
 (deftest test-eclipse-rdf4j-220
   (testing "test for eclipse/rdf4j#220"
     (let [repo (make-repository-with-lucene)
-          sparql220 (load-sparql "tests/resources/issue220.sparql")]
-      (log/debug (format "\n======\n%s\n" sparql220))
-      (load-multidata repo +local-test+)
+          sparql220 (load-sparql "tests/resources/issue220.sparql")
+          loaded (load-multidata repo +local-test+)]
+      (log/debugf "\n======\n%s\n" sparql220)
+      (log/debugf "loaded %d statements" loaded)
       (with-open-repository [c repo]
         ;;(process-sparql-query c sparql220 :writer :none)
         (let [response (u/iter-seq (process-sparql-query c sparql220 :writer-factory-name :none))]
           (is (> (count response) 0))
           (log/info (format "Response size: %d" (count response))))))
-    (delete-context)))
+    (delete-context)
+    (shutdown-agents)))
 
 (deftest test-repository-factory
   (testing "empty options"

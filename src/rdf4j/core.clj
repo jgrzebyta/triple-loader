@@ -3,6 +3,13 @@
   (:import [org.eclipse.rdf4j.model Model]
            [org.eclipse.rdf4j.repository.sail SailRepository]))
 
+(defmulti load-data
+  "[repository file] 
+
+   Loads content of `data-source` into `repository`.
+   Currently supported types are: `String` (file path), `Model`, `Path` and `File`."
+  (fn [repository data-source & {:keys [rdf-handler context-uri] }] (type data-source)))
+
 (defmulti get-statements
   "[data-src s p o reified context]
 
@@ -11,7 +18,7 @@
 
 ;; Method taken from rdf4j.triples-source.wrappers
 
-(defmulti get-all-statements "Returns a lazy sequence of all statements from different data-sources" (fn [data-src] (type data-src)))
+(defmulti get-all-namespaces "Return a sequence of all instances of `Namespace` in the repository or repository connection" (fn [r] (type r)))
 
 (defmulti ^Model as-model
   "Presents (and converts) a data source as instance of `Model`.

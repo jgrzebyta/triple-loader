@@ -21,7 +21,7 @@
     (let [rdf-h ref/counter-commiter
           file-obj (jio/file "tests/resources/beet.rdf")
           repos (repo/make-mem-repository)]
-      (l/load-data repos file-obj :rdf-handler rdf-h :context-uri *context-string*)
+      (c/load-data repos file-obj :rdf-handler rdf-h :context-uri *context-string*)
       (repo/with-open-repository [con repos]
         (let [all-triples-total (c/get-statements con nil nil nil false (u/context-array))                
               all-triples-no-cont (c/get-statements con nil nil nil false (u/context-array nil))          
@@ -40,8 +40,9 @@
   (t/testing "load data into named graph using multiloader API"
     (let [rdf-h ref/counter-commiter
           file-obj (jio/file "tests/resources/beet.rdf")
-          repos (repo/make-mem-repository)]
-      (l/load-multidata repos ["tests/resources/beet.rdf"] :rdf-handler rdf-h :context-uri *context-string*)
+          repos (repo/make-mem-repository)
+          loaded (l/load-multidata repos ["tests/resources/beet.rdf"] :rdf-handler rdf-h :context-uri *context-string*)]
+      (log/debugf "loaded %d statements" loaded)
       (repo/with-open-repository [con repos]
         (let [all-triples-total (c/get-statements con nil nil nil false (u/context-array))
               all-triples-no-cont (c/get-statements con nil nil nil false (u/context-array nil))
@@ -56,7 +57,8 @@
           (t/is (< 0 (count all-triples))
               (format "no. triples in context '%s' is %d but should be greater than 0" *context-string* (count all-triples)))
           ))
-      (repo/delete-context))))
+      (repo/delete-context)
+      (shutdown-agents))))
 
 (t/deftest simple-context-loading
   (t/testing "Load data into named graph using low level API"

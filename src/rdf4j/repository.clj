@@ -3,8 +3,7 @@
             [rdf4j.core :as c]
             [rdf4j.utils :as u]
             [rdf4j.repository :as r]
-            [rdf4j.repository.sails :as s]
-            [rdf4j.loader :as l])
+            [rdf4j.repository.sails :as s])
   (:import java.nio.file.Path
            java.util.Properties
            org.apache.commons.io.FileUtils
@@ -52,7 +51,7 @@
 
   Replaced by `rdf4j.repository.sail/make-sail-repository`."
   [& [^Sail store ^Properties parameters]]
-  (let [^Path tmpDir (get-tmp-dir store u/temp-dir "lucene")
+  (let [^Path tmpDir (u/temp-dir "lucene")
         local-store (if store store (MemoryStore.))
         defStore (ForwardChainingRDFSInferencer. (DedupingInferencer. local-store))
         spin (SpinSail. defStore)
@@ -157,12 +156,10 @@
     (catch Exception e (log/error "Some error: " (.getMessage e)))
     (finally (.close result))))
 
-(defmulti get-all-namespaces "Return a sequence of all instances of `Namespace` in the repository or repository connection" (fn [r] (type r)))
+(defmethod c/get-all-namespaces RepositoryConnection [r] (doall (u/iter-seq (.getNamespaces r))))
 
-(defmethod get-all-namespaces RepositoryConnection [r] (doall (u/iter-seq (.getNamespaces r))))
-
-(defmethod get-all-namespaces Repository [r] (with-open-repository [cn r]
-                                               (get-all-namespaces cn)))
+(defmethod c/get-all-namespaces Repository [r] (with-open-repository [cn r]
+                                               (c/get-all-namespaces cn)))
 
 
 (defn- deactive [ctx] (assoc ctx :active false))
@@ -171,24 +168,30 @@
 ;; should be wrapped within a macro.
 (defn ^:deprecated
   delete-context
-  "Delete temporary directory with content and close Lucene index
+  "Delete temporary directory with content and close Lucene index.
+  If `data-dir` is given directry than delete it.
 
-  That method should be called manually somewhere at the end of code.
-  " []
-  (log/debugf "is context active: %s" (:active @context))
-  (when (:active @context) ;; process repository deletion only when context is active
-    (try
-      (when-let [dir (:path @context)]
-        (log/debugf "delete files at: %s" dir)
-        (FileUtils/deleteDirectory dir)) ;; commons-io supports deleting directory with contents)
-      (finally (swap! context deactive)))))
+  That method should be called manually somewhere at the end of code."
+  ([]
+   (log/debugf "is context active: %s" (:active @context))
+   (when (:active @context) ;; process repository deletion only when context is active
+     (try
+       (when-let [dir (:path @context)]
+         (log/debugf "delete files at: %s" dir)
+         (FileUtils/deleteDirectory dir)) ;; commons-io supports deleting directory with contents)
+       (finally (swap! context deactive)))))
+  ([data-dir]
+   (let [file-data-dir (if (instance? Path data-dir)
+                         (.toFile data-dir)
+                         data-dir)]
+     (FileUtils/deleteDirectory file-data-dir))))
 
 ;; Implementation from rdf4j.core
 
 (defmethod c/as-repository Iterable [data-src repository-type data-dir & opts]
   (let [repository (s/make-sail-repository repository-type data-dir opts)]
     (.initialize repository)
-    (l/load-data repository data-src)))
+    (c/load-data repository data-src)))
 
 (defmethod c/get-statements SailRepository
   [rep ^Resource s ^IRI p ^Value o use-reified ^"[Lorg.eclipse.rdf4j.model.Resource;" context]

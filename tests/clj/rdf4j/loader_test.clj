@@ -5,7 +5,8 @@
         [clojure.test]
         [clojure.tools.logging :as log]
         [clojure.java.io :as jio])
-  (:require [rdf4j.utils :as u])
+  (:require [rdf4j.utils :as u]
+            [rdf4j.core :as c])
   (:import [java.io File]
            [clojure.lang ExceptionInfo]
            [org.eclipse.rdf4j.model Resource Statement]
@@ -83,7 +84,7 @@
 (deftest load-data-test
   (let [repo (make-repository-with-lucene nil)]
     (try
-      (load-data repo "tests/resources/beet.rdf")
+      (c/load-data repo "tests/resources/beet.rdf")
       (test-repository repo 68)
       (finally
         (.shutDown repo)
@@ -113,7 +114,7 @@
     (let [file "tests/resources/beet-error.trig"
           repo (make-repository)]
       (try
-        (is (thrown? Exception (load-data repo file)))
+        (is (thrown? Exception (c/load-data repo file)))
         (finally
           (.shutDown repo)
           (delete-context)))))
@@ -121,7 +122,7 @@
     (let [file "tests/resources/beet-error.trig"
           repo (make-repository)]
       (try
-        (load-data repo file)
+        (c/load-data repo file)
         (catch Exception e
           (is (instance? ExceptionInfo e))
           (is (string? (get (ex-data e) :file) )))
