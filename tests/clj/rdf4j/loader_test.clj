@@ -53,14 +53,15 @@
 (deftest load-mock-repo
   (let [repo (make-mem-repository)
         pars (Rio/createParser RDFFormat/RDFXML)
-        file-obj (jio/file "tests/resources/beet.rdf")]
+        file-obj (jio/file "tests/resources/beet.rdf")
+        counter (atom 0)]
     (testing "Loading data to repository"
       (.initialize repo)
       (with-open [conn (.getConnection repo)
                   fr (jio/reader file-obj)]
         ;; parse file
         (log/debug "start file parsing")
-        (.setRDFHandler pars (counter-commiter conn))
+        (.setRDFHandler pars (counter-commiter conn counter))
         (.parse pars fr (.toString (.toURI file-obj)))
         (.commit conn)
         (is (not (.isEmpty conn)))
@@ -68,6 +69,7 @@
       )
     (testing "Does more tests ... "
       (test-repository repo 68))
+    (is (= 68 @counter))
     (.shutDown repo)
     (delete-context)))
 
@@ -84,11 +86,12 @@
 (deftest load-data-test
   (let [repo (make-repository-with-lucene nil)]
     (try
-      (c/load-data repo "tests/resources/beet.rdf")
-      (test-repository repo 68)
-      (finally
-        (.shutDown repo)
-        (delete-context))
+      (let [cont (c/load-data repo "tests/resources/beet.rdf")]
+        (test-repository repo 68)
+        (is (= 68 cont)))
+        (finally
+          (.shutDown repo)
+          (delete-context))
     )))
 
 (deftest repository-deduping-test

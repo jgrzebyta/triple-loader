@@ -81,7 +81,7 @@
   
   Where initseq is (CONNECTION-VARIABLE REPOSITORY). For example (cnx :memory)
   If REPOSITORY has value ':memory' then memory repository is created.  
-"
+  "
   [initseq & body]
   (let [[connection-var repo-init] initseq]
     `(let [^org.eclipse.rdf4j.repository.Repository repository# ~repo-init]
@@ -93,8 +93,8 @@
                                             (.getName (.getClass e#))
                                             (.getMessage e#))
                    (throw e#)))
-            (with-open [~connection-var (.getConnection repository#)]
-              ~@body))))
+       (with-open [~connection-var (.getConnection repository#)]
+         ~@body))))
 
 
 (defmacro with-open-repository*
