@@ -1,11 +1,12 @@
 (ns rdf4j.reifiers
   (:require [clojure.tools.logging :as log])
   (:import org.eclipse.rdf4j.repository.RepositoryConnection
-           org.eclipse.rdf4j.repository.util.RDFInserter))
+           org.eclipse.rdf4j.repository.util.RDFInserter
+           clojure.lang.Atom))
 
 (defn counter-commiter "Implements RDFHandler. It accepts 2 arguments "
   [^RepositoryConnection connection counter]
-  {:pre [(instance? clojure.lang.Atom counter)]}
+  {:pre [(instance? Atom counter)]}
   (proxy [RDFInserter] [connection]
     (handleStatement [statement] (do
                                    (proxy-super handleStatement statement)

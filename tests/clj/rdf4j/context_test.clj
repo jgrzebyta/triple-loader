@@ -62,10 +62,11 @@
 
 (t/deftest simple-context-loading
   (t/testing "Load data into named graph using low level API"
-    (let [pars (Rio/createParser RDFFormat/RDFXML)
+    (let [counter (atom 0)
+          pars (Rio/createParser RDFFormat/RDFXML)
           file-obj (jio/file "tests/resources/beet.rdf")]
       (repo/with-open-repository [^RepositoryConnection con (repo/make-mem-repository)]
-        (.setRDFHandler pars (ref/counter-commiter con *context-string*))
+        (.setRDFHandler pars (ref/counter-commiter con counter))
         (with-open [fr (jio/reader file-obj)]
           (.parse pars fr (.toString (.toURI file-obj)))
           (.commit con))

@@ -14,16 +14,16 @@
 
 
 (deftest test-load-multidata "load multiple data."
-  (let [repo (make-repository-with-lucene)]
-    (load-multidata repo +datasets+)
+  (let [repo (make-repository-with-lucene)
+        data-size (load-multidata repo +datasets+)]
     (testing "count repository content"
       (let [sts (c/get-statements repo nil nil nil false (context-array))
             wrt (StringWriter. 100)]
         (pp/pprint sts wrt)
         (log/trace "Fount statements: " (.toString wrt))
         (log/debug "Count statements: " (count sts))
-        (is (> (count sts) 0))))
+        (is (> (count sts) 0))
+        (is (= data-size (count sts)))))
     (.shutDown repo)
     (delete-context)
-    (shutdown-agents)
-    ))
+    (shutdown-agents)))
