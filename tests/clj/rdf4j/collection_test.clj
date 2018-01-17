@@ -5,49 +5,64 @@
             [clojure.tools.logging :as log]
             [rdf4j.collections :as c]
             [rdf4j.collections.utils :as cu]
+            [rdf4j.core :as co]
             [rdf4j.loader :as l]
             [rdf4j.models :as m]
-            [rdf4j.protocols :as p]
             [rdf4j.repository :as r]
-            [rdf4j.triples-source.wrappers :as w]
             [rdf4j.utils :as u])
-  (:import [org.eclipse.rdf4j.model Model BNode]
-           [org.eclipse.rdf4j.model.util Models]
+  (:import org.apache.commons.io.FileUtils
+           org.eclipse.rdf4j.model.impl.LinkedHashModel
+           org.eclipse.rdf4j.model.Model
+           org.eclipse.rdf4j.model.util.Models
            [org.eclipse.rdf4j.model.vocabulary RDF RDFS XMLSchema]
-           [org.eclipse.rdf4j.rio RDFFormat]
-           [rdf4j.protocols ModelHolder]))
+           rdf4j.models.LocatedSailModel
+           rdf4j.protocols.ModelHolder))
 
 (def ^{:static true} vf (u/value-factory))
 
 (t/deftest loaded-model
-  (t/testing "load data into model."
-    (let [file-obj (io/file "tests/resources/collections/multisubj.ttl")
-          repository (r/make-repository)]
-      (l/load-data repository file-obj)
-      (let [^Model model (m/loaded-model (r/get-all-statements repository))]
-        (t/is (not (.isEmpty model)))
-        (log/debugf "Number of statements: %d" (.size model))
-        (t/is (not (m/single-subjectp model)))))))
+  (let [file-obj (io/file "tests/resources/collections/multisubj.ttl")]
+    (t/testing "load collections into standard model."
+      (let [repository (r/make-repository)]
+        (co/load-data repository file-obj)
+        (let [^Model model (co/as-model (u/get-all-statements repository))]
+          (t/is (not (.isEmpty model)))
+          (log/debugf "Number of statements: %d" (.size model))
+          (t/is (not (m/single-subjectp model))))))
+    (t/testing "load collections into memory sail ."
+      (let [repository (r/make-repository)]
+        (co/load-data repository file-obj)
+        (let [^Model model (co/as-model (u/get-all-statements repository) :model-type :solid)
+              ^Model model2 (co/as-model (u/get-all-statements repository))
+              data-dir (.getDataDir model)]
+          (t/is (not (.isEmpty model)))
+          (log/debugf "Number of statements: %d" (.size model))
+          (t/is (instance? LocatedSailModel model))
+          (t/is (instance? LinkedHashModel model2))
+          (t/is (not (m/single-subjectp model)))
+          (t/is (some? data-dir))
+          (log/infof "data-dir: %s" (str data-dir))
+          (FileUtils/deleteDirectory data-dir))))))
 
 
 (t/deftest single-subject-test
   (t/testing "Test single-subjectp predicate"
     (let [file-obj (io/file "tests/resources/collections/multisubj2.ttl" )
           repository (r/make-repository)]
-      (l/load-data repository file-obj)
-      (let [^Model model (m/loaded-model (r/get-all-statements repository))]
+      (co/load-data repository file-obj)
+      (let [^Model model (co/as-model (u/get-all-statements repository))]
         (t/is (not (m/single-subjectp model)))))
     
     (let [file-obj (io/file "tests/resources/collections/multisubj3.ttl" )
           repository (r/make-repository)]
-      (l/load-data repository file-obj)
-      (let [^Model model (m/loaded-model (r/get-all-statements repository))]
+      (co/load-data repository file-obj)
+      (let [^Model model (co/as-model (u/get-all-statements repository))]
         (t/is (m/single-subjectp model))))))
 
 (t/deftest loaded-model-test
   (t/testing "Test Model loading"
     (let [file-obj (io/file "tests/resources/collections/type-list.ttl" )
-          model (m/loaded-model file-obj)]
+          model (co/as-model file-obj)]
       (t/is (instance? Model model))
       (t/is (not (.isEmpty model)))
       (log/debugf "model instance: %s" (.toString model))
@@ -58,7 +73,7 @@
     (t/testing "Collection type test for rdf:List"
       (let [model (->
                    (io/file "tests/resources/collections/type-list.ttl")
-                   (m/loaded-model))]
+                   (co/as-model))]
         (t/is (not (.isEmpty model)))
         (let [collection-root (-> (.filter model nil (.createIRI vf "http://www.eexample.org/data#" "data") nil (r/context-array))
                                   (Models/object)
@@ -73,7 +88,7 @@
     (t/testing "Collection type test for rdfs:Container"
       (let [model (->
                    (io/file "tests/resources/collections/type-container.ttl")
-                   (m/loaded-model))
+                   (co/as-model))
             collection-root (-> (.filter model nil (.createIRI vf "http://www.eexample.org/data#" "data") nil (r/context-array))
                                 (Models/object)
                                 (.get))]
@@ -87,7 +102,8 @@
 (t/deftest rdf-coll-test
   (let [data-source (->
                      (io/file "tests/resources/collections/type-list.ttl")
-                     (m/loaded-model))]
+                     (co/as-model))
+        data-dir (.getDataDir data-source)]
     (t/testing "simple rdf->seq"
       (let [collection-root (-> (m/rdf-filter data-source nil (.createIRI vf "http://www.eexample.org/data#" "data") nil)
                                 (Models/object)
@@ -126,15 +142,17 @@
           (t/is (= (-> pair
                        first
                        .getLabel) "var1"))
-          (t/is (= (-> pair
-                       second
-                       .getLabel) "1.56")))
-        (t/is (not (empty? to-test)))))))
+          (t/is (= (double 1.56) (-> pair
+                                     second
+                                     .doubleValue))))
+        (t/is (not (empty? to-test)))))
+    (.close data-source)
+    (FileUtils/deleteDirectory data-dir)))
 
 (t/deftest rdf-protocols
   (let [md (->
             (io/file "tests/resources/beet.trig")
-            m/loaded-model)]
+            co/as-model)]
     (t/testing "test protocols"
       (let [root (-> (m/rdf-filter md
                                    nil
@@ -145,4 +163,7 @@
             submodel (m/rdf-filter md root nil nil)
             gs (ModelHolder. root submodel)]
         (t/is (some? gs))
-        (log/debugf "Instance: %5s\n" (binding [*print-dup* false] (println-str gs)))))))
+        (log/debugf "Instance: %5s\n" (binding [*print-dup* false] (println-str gs)))))
+    (.close md)
+    (FileUtils/deleteDirectory (.getDataDir md))))
+  

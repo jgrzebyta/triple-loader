@@ -1,37 +1,25 @@
 (ns rdf4j.loader
   (:gen-class)
-  (:use [clojure.tools.cli :refer [cli]]
-        [clojure.tools.logging :as log]
-        [clojure.java.io :as io]
-        [clojure.string :refer [blank?]]
-        [clojure.pprint :as pp]
-        [rdf4j.reifiers :as ref]
-        [rdf4j.version :refer [version]])
-  (:require [rdf4j.repository :as r]
+  (:require [clojure.java.io :as io]
+            [clojure.pprint :as pp]
+            [clojure.stacktrace :as cst]
+            [clojure.string :refer :all]
+            [clojure.tools.cli :refer :all]
+            [clojure.tools.logging :as log]
+            [rdf4j.core :as cor]
+            [rdf4j.core.rio :as rio]
+            [rdf4j.reifiers :as rei]
+            [rdf4j.repository :as r]
             [rdf4j.utils :as u]
-            [clojure.stacktrace :as cst])
-  (:import [java.nio.file Path]
-           [java.io File StringWriter]
-           [clojure.lang ExceptionInfo]
-           [org.eclipse.rdf4j IsolationLevel IsolationLevels]
-           [org.eclipse.rdf4j.model Resource Model]
-           [org.eclipse.rdf4j.repository.http HTTPRepository HTTPRepositoryConnection]
+            rdf4j.version)
+  (:import clojure.lang.ExceptionInfo
+           java.io.File
+           java.nio.file.Path
            [org.eclipse.rdf4j.repository RepositoryConnection RepositoryException]
-           [org.eclipse.rdf4j.rio Rio RDFFormat ParserConfig RDFParseException]
-           [org.eclipse.rdf4j.rio.helpers BasicParserSettings]
-           [org.eclipse.rdf4j.query QueryLanguage]
-           [org.apache.commons.logging LogFactory]
-           [org.eclipse.rdf4j.repository.sail SailRepositoryConnection]
-           [org.eclipse.rdf4j.repository.sail.helpers RDFSailInserter]
-           [org.eclipse.rdf4j.repository.util RDFInserter]))
+           org.eclipse.rdf4j.repository.http.HTTPRepository
+           org.eclipse.rdf4j.rio.Rio))
 
-(declare load-data load-multidata)
-
-(defn make-parser-config []
-    (doto
-        (ParserConfig.)
-      (.set BasicParserSettings/PRESERVE_BNODE_IDS true)))
-
+(declare load-multidata)
 
 (defn init-connection "Initialise Connection." [^RepositoryConnection connection]
   (log/trace "connection instance: " connection)
@@ -40,7 +28,7 @@
                                 (.getRepositoryURL repository)
                                 (.toString repository)))
     (try
-      (.setParserConfig connection (make-parser-config))
+      (.setParserConfig connection rio/default-parser-config)
       (catch RepositoryException e (do
                                      (log/error (format "Error message: %s" (.getMessage e)))
                                      (throw e)))
@@ -61,92 +49,77 @@
     (log/debug (format "Context string: '%s' is nil '%s'"
                        context-string (nil? context-string)))
     (try
-      (load-multidata repository (:f opts) :rdf-handler ref/counter-commiter :context-uri context-string)
+      (let [counted
+            (load-multidata repository (:f opts) :context-uri context-string)]
+        (log/infof "Loaded %d statements" counted))
       (catch ExceptionInfo e (let [f (get (ex-data e) :file)]
                                (log/errorf "Error during loading file '%s'" f)
                                (System/exit -1)))
-      (finally (.shutDown repository)))
-    (log/info (format "Loaded %d statements" (ref/countStatements)))))
+      (finally (.shutDown repository)))))
 
+(defmethod cor/load-data Iterable [repository model & {:keys [rdf-handler context-uri]}]
+  (r/with-open-repository* [cnx repository]
+    (.add cnx model context-uri))
+  (count model))
 
+(defmethod cor/load-data String [repository file & {:keys [rdf-handler context-uri]}]
+  (cor/load-data repository (u/normalise-path file) :rdf-handler rdf-handler :context-uri context-uri))
 
-(defmulti load-data
-  "[repository file] 
+(defmethod cor/load-data Path [repository file & {:keys [rdf-handler context-uri]}]
+  (cor/load-data repository (.toFile file) :rdf-handler rdf-handler :context-uri context-uri))
 
-   Loads formated `file` (or model) into `repository`. Selects method based on type of `file`.
-   Currently supported types are: String (file path), Model, Path and File.
-"
-  (fn [repository file & {:keys [rdf-handler context-uri] }] (type file)))
-
-(defmethod load-data String [repository file & {:keys [rdf-handler context-uri]}] (load-data repository (u/normalise-path file) :rdf-handler rdf-handler :context-uri context-uri))
-
-(defmethod load-data Iterable [repository model & {:keys [rdf-handler context-uri]}]
-  (r/with-open-repository [cnx repository]
-    (init-connection cnx)
-    (try
-      (.begin cnx)
-      (.add cnx model (r/context-array context-uri))
-      (finally (.commit cnx)))))
-
-(defmethod load-data Path [repository file & {:keys [rdf-handler context-uri]}] (load-data repository (.toFile file) :rdf-handler rdf-handler :context-uri context-uri))
-
-(defmethod load-data File [repository file & {:keys [rdf-handler context-uri]}]
+(defmethod cor/load-data File [repository file & {:keys [rdf-handler context-uri]}]
   (let [file-reader (io/reader file)
         parser-format (.get (Rio/getParserFormatForFileName (.getName file)))
-        parser (Rio/createParser parser-format)]
-    (log/trace (format "File data: %s [exists: %s, readable: %s]"
-                       (.getPath file)
-                       (.exists file)
-                       (.canRead file)))
-    (log/trace (format "data type: %s" parser-format))
-    (try
-      (r/with-open-repository [cnx repository]
-        (init-connection cnx)
-        (let [rdf-handler-object (if (some? rdf-handler)
-                                   (if (fn? rdf-handler)
-                                     (apply rdf-handler [cnx context-uri])
-                                     (apply (resolve rdf-handler) [cnx context-uri])) nil)]
-                                        ; Set up handler only if the handler was given
-          (when (some? rdf-handler-object)
-            (log/debug "Set up rdf handler: " rdf-handler-object)
-            (.setRDFHandler parser rdf-handler-object))
-          
-          (log/debug (format "RDF handler: %s" rdf-handler-object))
+        parser (Rio/createParser parser-format)
+        rdf-handler (or rdf-handler rei/counter-commiter)]
+    (log/tracef "File data: %s [exists: %s, readable: %s]"
+                (.getPath file)
+                (.exists file)
+                (.canRead file))
+    (log/tracef "data type: %s" parser-format)
+    (r/with-open-repository [cnx repository]
+      (.setParserConfig cnx rio/default-parser-config)
+      (let [counter (atom 0)
+            rdf-handler-object (if (fn? rdf-handler)
+                                 (apply rdf-handler (if context-uri
+                                                      [cnx (u/context-array nil context-uri) counter]
+                                                      [cnx counter]))
+                                 (apply (resolve rdf-handler) [cnx counter]))]
+        (log/debugf "Set up rdf handler: %s" rdf-handler-object)
+        (.setRDFHandler parser rdf-handler-object)
+
+        (try
           ;; run parsing
           (.begin cnx) ;; begin transaction
           (log/trace "Isolation level: " (.getIsolationLevel cnx)) ;; this features returns null for SailRepositoryConnection
-          (log/debug "is repository active: " (.isActive cnx))
           
-          (if (some? rdf-handler-object)
-            (do
-              (log/debug "Using own parser...")
-              (.parse parser file-reader (.toString (.toURI file))))
-            (do
-              (log/debug "Using .add method")
-              (.add cnx file (.toString (.toURI file)) parser-format (into-array Resource (if (some? context-uri)
-                                                                                            [(.createIRI (u/value-factory cnx) context-uri)]
-                                                                                            nil) ))))
-          (.commit cnx)
-          (log/debug "finish ...")))
-      (catch Exception e
-        (log/debugf "Stack trace: \n%s" (with-out-str (cst/print-stack-trace e)))
-        (throw (ex-info (format "Erorr '%s' occured when loaded file '%s'" (.getMessage e) (.getCanonicalPath file))
-                        {:error e
-                         :file (.getAbsolutePath file)
-                         :message (format "Erorr '%s' occured when loaded file '%s'" (.getMessage e) (.getCanonicalPath file))}
-                        e))))))
+          (.parse parser file-reader (.toString (.toURI file)))
 
-(defn load-multidata "Load multiple data files into repository"
+          (catch Exception e
+            (.rollback cnx)
+            (log/debugf "Stack trace: \n%s" (with-out-str (cst/print-stack-trace e)))
+            (throw (ex-info (format "Erorr '%s' occured when loaded file '%s'" (.getMessage e) (.getCanonicalPath file))
+                            {:error e
+                             :file (.getAbsolutePath file)
+                             :message (format "Erorr '%s' occured when loaded file '%s'" (.getMessage e) (.getCanonicalPath file))}
+                            e)))
+          (finally (.commit cnx)))
+        (log/debug "finish ...")
+        @counter))))
+
+(defn load-multidata
+  "Load multiple data files into repository.
+
+  Returns sum of all statements sent to the repository."
   [repository data-col & { :keys [rdf-handler context-uri]}]
   (assert (some? repository) "Repository is null")
   (assert (not (empty? data-col)) "Data collection is empty")
-  (let [wrt (StringWriter.)]
-    (pp/pprint data-col wrt)
-    (log/debug (format "Data collection [%s]: %s" (type data-col) (.toString wrt))))
-  (doall (pmap (fn [itm]
-                 (log/infof "Load dataset: %s into context: %s" itm context-uri)
-                 (load-data repository (if (u/normalise-path-supportsp itm)
-                                         (u/normalise-path itm) itm) :rdf-handler rdf-handler :context-uri context-uri)) data-col)))
+  (log/debug (format "Data collection [%s]: %s" (type data-col) (with-out-str (pp/pprint data-col))))
+  (reduce + (pmap (fn [itm]
+                    (log/infof "Load dataset: %s into context: %s" itm context-uri)
+                    (cor/load-data repository (if (u/normalise-path-supportsp itm)
+                                                (u/normalise-path itm) itm) :rdf-handler rdf-handler :context-uri context-uri)) data-col)))
 
 
 (defn -main [& args]
@@ -160,5 +133,5 @@
 
     (cond
       (:h opts) (println banner)
-      (:V opts) (println "Version: " version)
+      (:V opts) (println "Version: " rdf4j.version/version)
       :else (do-loading opts))))

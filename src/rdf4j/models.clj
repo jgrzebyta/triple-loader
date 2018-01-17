@@ -1,21 +1,24 @@
 (ns rdf4j.models
-  (:require [rdf4j.loader :as l]
+  (:require [clojure.java.io :as io]
+            [rdf4j.core.rio :as rio]
+            [rdf4j.loader :as l]
             [rdf4j.repository :as r]
             [rdf4j.utils :as u]
-            [rdf4j.models.located-sail-model])
+            [rdf4j.core :as c])
   (:import [java.io File StringWriter]
+           [java.nio.file Path]
            [java.util Collection]
-           [rdf4j.models LocatedSailModel]
            [org.eclipse.rdf4j.model Model Resource Value IRI]
            [org.eclipse.rdf4j.model.impl LinkedHashModel]
            [org.eclipse.rdf4j.model.util Models]
            [org.eclipse.rdf4j.repository.sail SailRepository]
-           [org.eclipse.rdf4j.rio Rio RDFFormat WriterConfig]
-           [org.eclipse.rdf4j.rio.helpers BasicWriterSettings]
+           [org.eclipse.rdf4j.rio Rio RDFFormat WriterConfig ParserConfig]
+           [org.eclipse.rdf4j.rio.helpers BasicWriterSettings ContextStatementCollector ParseErrorLogger]
            [org.eclipse.rdf4j.sail Sail SailConnection]
            [org.eclipse.rdf4j.sail.memory MemoryStore]
            [org.eclipse.rdf4j.sail.model SailModel]
-           [org.eclipse.rdf4j.sail.nativerdf NativeStore]))
+           [org.eclipse.rdf4j.sail.nativerdf NativeStore]
+           [rdf4j.models LocatedSailModel]))
 
 (defn ^{:added "0.2.2"} single-subjectp
   "Predicate to check if `model` contains single subject."
@@ -26,41 +29,6 @@
             (count))
         (-> (Models/subjectBNodes model)
             (count)))))
-
-(defmulti ^{:added "0.2.2"} loaded-model
-  "Factory to create instance of `Model` either from `Statement`s collection or from
-   a RDF file."
-  (fn [data-source & _] (type data-source)))
-
-
-(defmethod ^{:added "0.2.2"} loaded-model Collection [statements-seq & { :keys [sail-type]}]
-  (if-let [base-store (case sail-type
-                        :memory (doto (MemoryStore.) (.setPersist true))
-                        :disk (NativeStore.)
-                        nil)]
-    (let [^SailRepository repo (-> (doto base-store
-                                     (r/make-sail-datadir u/temp-dir "store"))
-                                   r/make-repository)]
-      (l/load-data repo statements-seq :data-dir (.getDataDir repo))
-      (loaded-model repo ))
-    (-> statements-seq
-        (LinkedHashModel.))))
-
-(defmethod ^{:added "0.2.2"} loaded-model File [statements-file & _]
-  (let [repo (r/make-repository)]
-    (l/load-data repo statements-file)
-    (-> (r/get-all-statements repo)
-         (LinkedHashModel.))))
-
-(defmethod ^{:added "0.2.2"} loaded-model Sail [statements-sail & { :keys [data-dir]}]
-  (when (not (.isInitialized statements-sail))
-    (.initialize statements-sail))
-  (LocatedSailModel. data-dir (.getConnection statements-sail) false))
- 
-(defmethod ^{:added "0.2.2"} loaded-model SailRepository [statements-repo & _]
-  (when (not (.isInitialized statements-repo))
-    (.initialize statements-repo))
-  (LocatedSailModel. statements-repo  false))
 
 (defn ^{:added "0.2.2"}
   rdf-filter
@@ -94,3 +62,58 @@
    (let [string-writer (StringWriter.)]
      (Rio/write m string-writer format wrt-conf)
      (.toString string-writer))))
+
+
+(defmethod c/get-statements Model [data-src s p o _ contexts]
+  (.filter data-src s p o contexts))
+
+(defn- parse-model-type
+  "Util method produces model-type based on the key word."
+  [model-type]
+  (if (= model-type :memory)
+    (LinkedHashModel.)
+    (let [ data-dir (->
+                     (u/temp-dir "sail-model")
+                     .toFile)
+          sail-inst (case model-type
+                      :solid (NativeStore.)
+                      :persistent (MemoryStore.))
+          sail-repo (SailRepository. sail-inst)]
+     (when (= model-type :persistent)
+       (.setPersist sail-inst true))
+     (.setDataDir sail-repo data-dir)
+     (LocatedSailModel. sail-repo false))))
+
+(defmethod c/as-model nil [_ {:keys [model-type] :or {model-type :memory}}]
+  (parse-model-type model-type))
+
+(defmethod c/as-model SailRepository [data-src & {:keys [model-type]}]
+  (LocatedSailModel. data-src false))
+
+(defmethod c/as-model Path [data-src & {:keys [model-type] :or {model-type :solid}}]
+  (let [normalised (u/normalise-path data-src)]
+    (c/as-model (.toFile normalised) model-type)))
+
+(defmethod c/as-model java.util.Collection [data-src & {:keys [model-type]}]
+  (let [model (if (some? model-type)
+                (parse-model-type model-type)
+                (if (> (count data-src) 1000)
+                  (parse-model-type :solid) (parse-model-type :memory)))]
+    (.addAll model data-src)
+    model))
+
+(defmethod c/as-model File [data-src & {:keys [model-type] :or {model-type :solid}}]
+  (let [model (parse-model-type model-type)
+        rdf-format (-> (Rio/getParserFormatForFileName (.getPath data-src))
+                       .get)
+        collector (ContextStatementCollector. model (u/value-factory) (u/context-array))
+        parser (doto
+                   (Rio/createParser rdf-format (u/value-factory))
+                 (.setRDFHandler collector)
+                 (.setParserConfig rio/default-parser-config)
+                 (.setParseErrorListener (ParseErrorLogger.)))]
+    (with-open [ins (io/input-stream data-src)]
+      (.parse parser ins (.stringValue (u/make-baseuri (.toPath data-src)))))
+    model))
+
+

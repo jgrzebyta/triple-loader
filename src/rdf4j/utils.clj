@@ -1,16 +1,17 @@
 (ns rdf4j.utils
-  (:require [clojure.tools.logging :as log]
-            [clj-pid.core :as pid]
-            [clojure.string :as str :exclude [reverse]])
-  (:import [java.util Map]
-           [java.io ByteArrayInputStream BufferedInputStream]
+  (:require [clj-pid.core :as pid]
+            [clojure.string :as str :exclude [reverse]]
+            [clojure.tools.logging :as log]
+            [rdf4j.core :as core])
+  (:import [java.io ByteArrayInputStream BufferedInputStream]
            [java.nio.file Files Path Paths]
            [java.nio.file.attribute FileAttribute]
-           [org.eclipse.rdf4j.repository Repository RepositoryConnection]
+           [java.util Map]
+           [org.eclipse.rdf4j.common.xml XMLUtil]
+           [org.eclipse.rdf4j.model Value Resource ValueFactory]
            [org.eclipse.rdf4j.model.impl SimpleValueFactory LinkedHashModel]
            [org.eclipse.rdf4j.model.util URIUtil]
-           [org.eclipse.rdf4j.model Value Resource ValueFactory]
-           [org.eclipse.rdf4j.common.xml XMLUtil]))
+           [org.eclipse.rdf4j.repository Repository RepositoryConnection]))
 
 ;;; Utils methods
 
@@ -28,10 +29,11 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
 (defmethod value-factory RepositoryConnection [x] (.getValueFactory x))
 (defmethod value-factory :default [& _] (SimpleValueFactory/getInstance))
 
-(defn ^{ :added "0.2.2" :static true }
-  context-array
-"Create array of Resource. 
 
+(defn ^{ :added "0.2.2" :static true}
+  context-array
+  "Create array of Resource. 
+  
   Code was adapted from kr-sesame: sesame-context-array.
   "
   ([] (make-array Resource 0))
@@ -50,13 +52,20 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
                         (cons a rest))
                    out)))
 
+(defn get-all-statements
+  "Generic method returns all statements from a data-source.
 
-(defn rand-string [^Integer length]
+  By defailt "
+  [r]
+  (core/get-statements r nil nil nil false (context-array)))
+
+
+(defn ^{:tag String :static true} rand-string [^Integer length]
   (let [space "QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890"]
     (apply str (repeatedly length #(rand-nth space)))))
 
 
-(defn ^Path temp-dir [^String & namespace]
+(defn ^{:tag Path :static true} temp-dir [^String & namespace]
   "Create temporary directory."
   (let [pid (pid/current)
         ns (if (str/blank? (first namespace)) "loader" (first namespace))
@@ -86,7 +95,7 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
 
 
 (defn ^Path create-dir
-  "Create directory"
+  "Create directory after given path normalisation."
   [^String path]
   (let [^Path normalised (normalise-path path)]
     (Files/createDirectory normalised (make-array FileAttribute 0))))
