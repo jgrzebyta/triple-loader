@@ -82,8 +82,10 @@
       (.setParserConfig cnx rio/default-parser-config)
       (let [counter (atom 0)
             rdf-handler-object (if (fn? rdf-handler)
-                                   (apply rdf-handler [cnx counter])
-                                   (apply (resolve rdf-handler) [cnx counter]))]
+                                 (apply rdf-handler (if context-uri
+                                                      [cnx (u/context-array nil context-uri) counter]
+                                                      [cnx counter]))
+                                 (apply (resolve rdf-handler) [cnx counter]))]
         (log/debugf "Set up rdf handler: %s" rdf-handler-object)
         (.setRDFHandler parser rdf-handler-object)
 

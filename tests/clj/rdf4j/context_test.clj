@@ -13,7 +13,7 @@
            [org.eclipse.rdf4j.rio Rio RDFFormat ParserConfig]))
 
 
-(def ^:dynamic *context-string* "urn:graph/beet")
+(def *context-string* "urn:graph/beet")
 
 
 (t/deftest context-loading
@@ -57,8 +57,7 @@
           (t/is (< 0 (count all-triples))
               (format "no. triples in context '%s' is %d but should be greater than 0" *context-string* (count all-triples)))
           ))
-      (repo/delete-context)
-      (shutdown-agents))))
+      (repo/delete-context))))
 
 (t/deftest simple-context-loading
   (t/testing "Load data into named graph using low level API"
@@ -66,7 +65,7 @@
           pars (Rio/createParser RDFFormat/RDFXML)
           file-obj (jio/file "tests/resources/beet.rdf")]
       (repo/with-open-repository [^RepositoryConnection con (repo/make-mem-repository)]
-        (.setRDFHandler pars (ref/counter-commiter con counter))
+        (.setRDFHandler pars (ref/counter-commiter con (u/context-array nil *context-string*) counter))
         (with-open [fr (jio/reader file-obj)]
           (.parse pars fr (.toString (.toURI file-obj)))
           (.commit con))

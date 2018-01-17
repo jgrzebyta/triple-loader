@@ -25,5 +25,4 @@
         (is (> (count sts) 0))
         (is (= data-size (count sts)))))
     (.shutDown repo)
-    (delete-context)
-    (shutdown-agents)))
+    (delete-context)))

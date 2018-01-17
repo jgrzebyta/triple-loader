@@ -129,8 +129,7 @@ where {
           (is (some? response))
           (is (> cnt 0))
           (log/debug (format "triples number: %d" cnt))))
-      (delete-context)
-      (shutdown-agents))))
+      (delete-context))))
 
 
 (deftest test-eclipse-rdf4j-220
@@ -145,8 +144,7 @@ where {
         (let [response (u/iter-seq (process-sparql-query c sparql220 :writer-factory-name :none))]
           (is (> (count response) 0))
           (log/info (format "Response size: %d" (count response))))))
-    (delete-context)
-    (shutdown-agents)))
+    (delete-context)))
 
 (deftest test-repository-factory
   (testing "empty options"
