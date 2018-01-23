@@ -11,7 +11,9 @@
         [rdf4j.loader-test])
   (:require [rdf4j.utils :as u]
             [rdf4j.repository :as r]
-            [rdf4j.core :as c])
+            [rdf4j.repository.sails :as sail]
+            [rdf4j.core :as c]
+            [rdf4j.repository :as repo])
   (:import [org.eclipse.rdf4j.rio RDFFormat]
            [clojure.lang ArraySeq]
            [java.io StringWriter ByteArrayOutputStream]
@@ -134,6 +136,7 @@ where {
 
 (deftest test-eclipse-rdf4j-220
   (testing "test for eclipse/rdf4j#220"
+    (log/info "Memory store")
     (let [repo (make-repository-with-lucene)
           sparql220 (load-sparql "tests/resources/issue220.sparql")
           loaded (load-multidata repo +local-test+)]
@@ -144,7 +147,22 @@ where {
         (let [response (u/iter-seq (process-sparql-query c sparql220 :writer-factory-name :none))]
           (is (> (count response) 0))
           (log/info (format "Response size: %d" (count response))))))
-    (delete-context)))
+    (delete-context))
+  (testing "test for eclipse/rdf4j#220 with NativeRepository"
+    (log/info "Native store")
+    (let [data-dir (.toFile (u/temp-dir))
+          repo (sail/make-sail-repository :memory-spin-lucene  data-dir)
+          sparql220 (load-sparql "tests/resources/issue220.sparql")
+          loaded (load-multidata repo +local-test+)]
+      (log/debugf "Data dir: %s" data-dir)
+      (log/debugf "\n======\n%s\n" sparql220)
+      (log/debugf "loaded %d statements" loaded)
+      (with-open-repository [c repo]
+        ;;(process-sparql-query c sparql220 :writer :none)
+        (let [response (u/iter-seq (process-sparql-query c sparql220 :writer-factory-name :none))]
+          (is (> (count response) 0))
+          (log/info (format "Response size: %d" (count response)))))
+      (delete-context data-dir))))
 
 (deftest test-repository-factory
   (testing "empty options"
@@ -163,7 +181,6 @@ where {
       (is (instance? MemoryStore (-> repo
                                      (.getSail)
                                      (.getBaseSail))))
-      ()
       (delete-context)))
   (testing "test SailRepository + NativeStore with path"
     (let [args (list "simple" "native=/tmp/rdf4j-repository")
