@@ -51,26 +51,33 @@
                                                                            SailRepository.)
                                                                    (.setDataDir datadir)))
 
-(defmethod make-sail-repository :memory-spin-lucene [_ datadir & [opts]] (doto (->
-                                                                               (doto (-> (make-persisted-memory datadir)
-                                                                                         DedupingInferencer.
-                                                                                         ForwardChainingRDFSInferencer.
-                                                                                         SpinSail.
-                                                                                         LuceneSpinSail.)
-                                                                                 (.setParameters (:parameters opts)))
-                                                                               SailRepository.)
-                                                                          (.setDataDir datadir)))
+(defmethod make-sail-repository :memory-spin-lucene [_ datadir & [opts]]
+  (let [lucene-spin-sail (-> (make-persisted-memory datadir)
+                             DedupingInferencer.
+                             ForwardChainingRDFSInferencer.
+                             SpinSail.
+                             LuceneSpinSail.)
+        parameters (:parameters opts)]
+    (when parameters
+      (.setParameters lucene-spin-sail parameters))
+    (doto (-> lucene-spin-sail
+              SailRepository.)
+      (.setDataDir datadir))))
 
-(defmethod make-sail-repository :native-spin-lucene [_ datadir & [opts]] (doto (->
-                                                                               (doto (-> (doto (NativeStore.)
-                                                                                           (.setTripleIndexes (or (:indexes opts) "spoc,posc")))
-                                                                                         DedupingInferencer.
-                                                                                         ForwardChainingRDFSInferencer.
-                                                                                         SpinSail.
-                                                                                         LuceneSpinSail.)
-                                                                                 (.setParameters (:parameters opts)))
-                                                                               SailRepository.)
-                                                                          (.setDataDir datadir)))
+(defmethod make-sail-repository :native-spin-lucene [_ datadir & [opts]]
+  (let [lucene-spin-sail (-> (doto (NativeStore.)
+                               (.setTripleIndexes (or (:indexes opts) "spoc,posc")))
+                             DedupingInferencer.
+                             ForwardChainingRDFSInferencer.
+                             SpinSail.
+                             LuceneSpinSail.)
+        parameters (:parameters opts)]
+    (when parameters
+      (.setParameters lucene-spin-sail parameters))
+
+    (doto (-> lucene-spin-sail
+              SailRepository.)
+      (.setDataDir datadir))))
 
 (defn sail-repository-types
   "Display a sequence of all repository types."
