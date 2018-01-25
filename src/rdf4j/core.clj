@@ -25,7 +25,7 @@
 
   The final class of `Model` depends on `model-type` option:
   - :memory (`LinkedHashModel`)
-  - :persisted (persisted `MemoryStore`)
+  - :persistent (persistent `MemoryStore`)
   - :solid (`NativeStore`)"
   (fn [data-src & {:keys [model-type]}] (type data-src)))
 

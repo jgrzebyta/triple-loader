@@ -1,24 +1,21 @@
 (ns rdf4j.models
   (:require [clojure.java.io :as io]
+            [rdf4j.core :as c]
             [rdf4j.core.rio :as rio]
-            [rdf4j.loader :as l]
             [rdf4j.repository :as r]
-            [rdf4j.utils :as u]
-            [rdf4j.core :as c])
+            [rdf4j.utils :as u])
   (:import [java.io File StringWriter]
-           [java.nio.file Path]
-           [java.util Collection]
-           [org.eclipse.rdf4j.model Model Resource Value IRI]
-           [org.eclipse.rdf4j.model.impl LinkedHashModel]
-           [org.eclipse.rdf4j.model.util Models]
-           [org.eclipse.rdf4j.repository.sail SailRepository]
-           [org.eclipse.rdf4j.rio Rio RDFFormat WriterConfig ParserConfig]
+           java.nio.file.Path
+           java.util.Collection
+           [org.eclipse.rdf4j.model IRI Model Resource Value]
+           org.eclipse.rdf4j.model.impl.LinkedHashModel
+           org.eclipse.rdf4j.model.util.Models
+           org.eclipse.rdf4j.repository.sail.SailRepository
+           [org.eclipse.rdf4j.rio RDFFormat Rio WriterConfig]
            [org.eclipse.rdf4j.rio.helpers BasicWriterSettings ContextStatementCollector ParseErrorLogger]
-           [org.eclipse.rdf4j.sail Sail SailConnection]
-           [org.eclipse.rdf4j.sail.memory MemoryStore]
-           [org.eclipse.rdf4j.sail.model SailModel]
-           [org.eclipse.rdf4j.sail.nativerdf NativeStore]
-           [rdf4j.models LocatedSailModel]))
+           org.eclipse.rdf4j.sail.memory.MemoryStore
+           org.eclipse.rdf4j.sail.nativerdf.NativeStore
+           rdf4j.models.LocatedSailModel))
 
 (defn ^{:added "0.2.2"} single-subjectp
   "Predicate to check if `model` contains single subject."

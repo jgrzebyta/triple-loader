@@ -24,9 +24,9 @@
   ([^SailRepository repo inferred]
    (when (not (.isInitialized repo))
      (.initialize repo))
-   (let [conn (-> repo
-                  .getConnection
-                  .getSailConnection)]
+   (let [^SailConnection conn (-> repo
+                                  .getConnection
+                                  .getSailConnection)]
      (when (not (.isActive conn)) ;; start transaction
        (.begin conn))
      [[conn inferred] (atom {:data-dir (.getDataDir repo) :connection conn})]))
