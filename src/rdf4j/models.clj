@@ -89,7 +89,7 @@
 
 (defmethod c/as-model Path [data-src & {:keys [model-type] :or {model-type :solid}}]
   (let [normalised (u/normalise-path data-src)]
-    (c/as-model (.toFile normalised) model-type)))
+    (c/as-model (.toFile normalised) :model-type model-type)))
 
 (defmethod c/as-model java.util.Collection [data-src & {:keys [model-type]}]
   (let [model (if (some? model-type)

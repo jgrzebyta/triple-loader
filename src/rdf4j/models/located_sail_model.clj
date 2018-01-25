@@ -15,6 +15,7 @@
    :methods [[setDataDir [java.io.File] void]
              [setDataDir [java.nio.file.Path] void]
              [getDataDir [] java.io.File]
+             [commit [] void]
              [close [] void]]
    :init init)
 
@@ -46,6 +47,9 @@
 
 (defn -getDataDir [this]
   (:data-dir @(.state this)))
+
+(defn -commit [this]
+  (.commit (:connection @(.state this))))
 
 (defn -close [this]
   (let [cn (:connection @(.state this))
