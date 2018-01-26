@@ -57,7 +57,7 @@
                                (System/exit -1)))
       (finally (.shutDown repository)))))
 
-(defmethod cor/load-data Iterable [repository model & {:keys [rdf-handler context-uri]}]
+(defmethod cor/load-data Iterable [repository model & {:keys [rdf-handler context-uri] :or {context-uri (u/context-array)}}]
   (r/with-open-repository* [cnx repository]
     (.add cnx model context-uri))
   (count model))
