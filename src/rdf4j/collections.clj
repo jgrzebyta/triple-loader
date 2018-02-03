@@ -87,15 +87,9 @@
 
 (defn- get-first
   [^Model m ^IRI root]
-  (->
-   (m/rdf-filter m root RDF/FIRST nil)
-   (Models/object)
-   (.get)))
+  (.get (Models/object (m/rdf-filter m root RDF/FIRST nil))))
 
 (defn- get-rest
   "Returns object from triple: `root` `RDF/REST` object."
   [^Model m ^IRI root]
-  (->
-   (m/rdf-filter m root RDF/REST nil)
-   (Models/object)
-   (.get)))
+  (.get (Models/object (m/rdf-filter m root RDF/REST nil))))
