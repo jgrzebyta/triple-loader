@@ -1,7 +1,7 @@
 (ns rdf4j.models.located-sail-model
   (:import [java.io File]
            [java.nio.file Path]
-           [org.eclipse.rdf4j.repository.sail SailRepository]
+           [org.eclipse.rdf4j.repository.sail SailRepository SailRepositoryConnection]
            [org.eclipse.rdf4j.sail SailConnection]))
 
 
@@ -25,12 +25,13 @@
   ([^SailRepository repo inferred]
    (when (not (.isInitialized repo))
      (.initialize repo))
-   (let [^SailConnection conn (-> repo
-                                  .getConnection
-                                  .getSailConnection)]
+   (let [^SailRepositoryConnection conn (-> repo
+                                            .getConnection)
+         ^SailConnection sail-conn (.getSailConnection conn)]
      (when (not (.isActive conn)) ;; start transaction
        (.begin conn))
-     [[conn inferred] (atom {:data-dir (.getDataDir repo) :connection conn})]))
+     [[sail-conn inferred] (atom {:data-dir (.getDataDir repo) :connection conn})]))
+
   ([data-dir ^SailConnection conn inferred]
    (when (not (.isActive conn)) ;; start transaction
      (.begin conn))

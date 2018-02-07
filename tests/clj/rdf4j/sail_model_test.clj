@@ -6,7 +6,8 @@
             [rdf4j.core :as co]
             [rdf4j.repository :as r]
             [rdf4j.repository.sails :as s]
-            [rdf4j.utils :as u])
+            [rdf4j.utils :as u]
+            [rdf4j.models :as m])
   (:import org.eclipse.rdf4j.model.Model
            org.eclipse.rdf4j.model.util.Models))
 
@@ -40,3 +41,47 @@
         (t/is (< 0 (count seq-data)))
         (log/debugf "List: %s" (prn-str seq-data))
         (.close model)))))
+
+(defn- first-connection [repository]
+  (let [m (co/as-model repository)
+        root1 (-> (.filter m nil (.createIRI vf "http://www.eexample.org/data#" "data1") nil (r/context-array))
+                  (Models/object)
+                  (.get))
+        seq-1 (c/rdf->seq m root1 #{})]
+    (t/is (= 2 (count seq-1)))
+    (.close m)))
+
+
+(t/deftest sail-model-closing-test
+  (let [data-file (io/file "tests/resources/collections/type-list.ttl")
+        repository (doto (s/make-sail-repository :memory nil)
+                     (co/load-data data-file))]
+    (t/testing "Simple test"
+      (let [model (co/as-model repository)]
+        ;; first using and closing first instance of model
+        (first-connection repository)
+        (let [root (-> (.filter model nil (.createIRI vf "http://www.eexample.org/data#" "data") nil (r/context-array))
+                       (Models/object)
+                       (.get))
+              seq-data (c/rdf->seq model root [])]
+          (t/is (< 0 (count model)))
+          (t/is (< 0 (count seq-data)))
+          (log/debugf "List: %s" (prn-str seq-data))
+          (.close model))))))
+
+
+(t/deftest sail-model-rdf-filter-object-test
+  (let [data-file (io/file "tests/resources/collections/type-list.ttl")
+        repository (doto (s/make-sail-repository :memory nil)
+                     (co/load-data data-file))]
+    (t/testing "Simple test"
+      (let [model (co/as-model repository)]
+        ;; first using and closing first instance of model
+        (first-connection repository)
+        (let [root (m/rdf-filter-object model (.createIRI vf "http://www.eexample.org/data#" "resources_1") (.createIRI vf "http://www.eexample.org/data#" "data"))
+              seq-data (c/rdf->seq model root [])]
+          (t/is (< 0 (count model)))
+          (t/is (< 0 (count seq-data)))
+          (log/debugf "* List: %s" (prn-str seq-data))
+          (.close model))))))
+
