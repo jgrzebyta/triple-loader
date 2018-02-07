@@ -4,10 +4,11 @@
             [clojure.tools.logging :as log]
             [rdf4j.collections :as c]
             [rdf4j.core :as co]
+            [rdf4j.models :as m]
             [rdf4j.repository :as r]
             [rdf4j.repository.sails :as s]
-            [rdf4j.utils :as u]
-            [rdf4j.models :as m])
+            [rdf4j.sparql.processor :as spql]
+            [rdf4j.utils :as u])
   (:import org.eclipse.rdf4j.model.Model
            org.eclipse.rdf4j.model.util.Models))
 
@@ -84,4 +85,20 @@
           (t/is (< 0 (count seq-data)))
           (log/debugf "* List: %s" (prn-str seq-data))
           (.close model))))))
+
+(t/deftest sail-model-in-sparql-test
+  (let [root-sparql "prefix : <http://www.eexample.org/data#> select ?root where {[] :data1 ?root .} limit 1"
+        data-file (io/file "tests/resources/collections/type-list.ttl")
+        repository (doto (s/make-sail-repository :memory nil)
+                     (co/load-data data-file))]
+    (t/testing "Model in sparql"
+      (let [model (co/as-model repository)]
+        (spql/with-sparql [:query root-sparql :result res :repository repository]
+          (when-let [record (first res)]
+            (let [root (-> record
+                           (.getValue "root"))
+                  seq-data (c/rdf->seq model root [])]
+              (t/is (< 0 (count seq-data)))
+              (log/debugf "Returned data: %s" seq-data))))
+        (.close model)))))
 
