@@ -20,8 +20,9 @@ Leiningen/Boot:
 
 ** 1.1 Acknowledgements
 
-This software developing was founded by CHIST-ERA grant (AdaLab, ANR 14-CHR2-0001-01).
-AdaLab project web page http://www.adalab-project.org/
+The software development was supported by CHIST-ERA (Call 2013 -- AMCE), with funding from EPSRC (Grant no. [[http://gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/M015661/1][EP/M015661/1]]; AdaLab).
+
+The AdaLab project web page can be found at: http://www.adalab-project.org/.
 
 * 2. Usage
 
