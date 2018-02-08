@@ -1,6 +1,6 @@
 (ns rdf4j.core
   "Collection of different generic multimethods"
-  (:import [org.eclipse.rdf4j.model Model]
+  (:import [org.eclipse.rdf4j.model Model IRI]
            [org.eclipse.rdf4j.repository.sail SailRepository]))
 
 (defmulti load-data
@@ -34,3 +34,8 @@
 
   Parameters `repository-type`, `data-dir` and `opts` are directly passed to `rdf4j.repository.sails/make-sail-repository`."
   (fn [data-src repository-type data-dir & opts] (type data-src)))
+
+(defmulti ^{:added "0.2.2" :tag IRI} rdf-filter-object
+  "[data-src s p]
+
+  Extract object from triple [s p o c]" (fn [data-src s p] (type data-src)))

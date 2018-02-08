@@ -1,6 +1,7 @@
 (ns rdf4j.collections
   (:require [clojure.tools.logging :as log]
-            [rdf4j.models :as m]
+            [rdf4j.core :as c]
+            [rdf4j.models :as ms]
             [rdf4j.protocols :as p]
             [rdf4j.utils :as u])
   (:import [java.util NoSuchElementException]
@@ -9,11 +10,12 @@
            [org.eclipse.rdf4j.model.util Models]
            [org.eclipse.rdf4j.model.vocabulary RDF RDFS]
            [org.eclipse.rdf4j.repository RepositoryConnection]
+           org.eclipse.rdf4j.repository.sail.SailRepository
            [rdf4j.protocols ModelHolder]))
 
 (declare sumo-contains get-rest get-first)
 
-(def ^:static vf (u/value-factory))
+(def vf (u/value-factory))
 
 (defn- seq-list [root-node model in-seq]
   (loop [p-node root-node items in-seq]
@@ -60,17 +62,16 @@
 (defn rdf->seq
   "Converts RDF collection with root `root-resource` within `source-model` to Clojure collection. 
 
-  `coll` variable is used as a starting collection which is populated."
+  `coll` variable is used as a starting collection which is populated. Source model is either `Model` or `SailRepository`."
   [source-model root-resource coll]
+  {:pre [(or (instance? Model source-model) (instance? SailRepository source-model))]}
   (loop [current-root root-resource
          out-coll coll]
-    (let [tmp-out-coll (if-let [first (try
-                                        (get-first source-model current-root)
-                                        (catch NoSuchElementException e nil))]
-                         (conj out-coll first))
-          rest (try
-                 (get-rest source-model current-root)
-                 (catch NoSuchElementException e RDF/NIL))]
+    (let [tmp-out-coll (if-let [first-ob (try
+                                           (get-first source-model current-root)
+                                           (catch NoSuchElementException e nil))]
+                         (conj out-coll first-ob))
+          rest (get-rest source-model current-root)]
       (if (= rest RDF/NIL)
         tmp-out-coll
         (recur rest tmp-out-coll)))))
@@ -86,16 +87,15 @@
 (def sumo-contains (.createIRI (u/value-factory) sumo-namespace "contains"))
 
 (defn- get-first
-  [^Model m ^IRI root]
-  (->
-   (m/rdf-filter m root RDF/FIRST nil)
-   (Models/object)
-   (.get)))
+  "Returns object from triple: `root` `RDF/FIRST` object."
+  [m ^IRI root]
+  (c/rdf-filter-object m root RDF/FIRST))
 
 (defn- get-rest
   "Returns object from triple: `root` `RDF/REST` object."
-  [^Model m ^IRI root]
-  (->
-   (m/rdf-filter m root RDF/REST nil)
-   (Models/object)
-   (.get)))
+  [m ^IRI root]
+  (let [statements (c/get-statements m root RDF/REST nil false (u/context-array))
+        statements-as-model (if (instance? Model statements) statements (c/as-model statements))]
+    (-> statements-as-model
+        Models/object
+        (.orElse RDF/NIL))))

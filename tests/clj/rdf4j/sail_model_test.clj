@@ -4,7 +4,6 @@
             [clojure.tools.logging :as log]
             [rdf4j.collections :as c]
             [rdf4j.core :as co]
-            [rdf4j.models :as m]
             [rdf4j.repository :as r]
             [rdf4j.repository.sails :as s]
             [rdf4j.sparql.processor :as spql]
@@ -12,7 +11,7 @@
   (:import org.eclipse.rdf4j.model.Model
            org.eclipse.rdf4j.model.util.Models))
 
-(def ^{:static true} vf (u/value-factory))
+(def vf (u/value-factory))
 
 
 (t/deftest sail-model-test
@@ -79,7 +78,7 @@
       (let [model (co/as-model repository)]
         ;; first using and closing first instance of model
         (first-connection repository)
-        (let [root (m/rdf-filter-object model (.createIRI vf "http://www.eexample.org/data#" "resources_1") (.createIRI vf "http://www.eexample.org/data#" "data"))
+        (let [root (co/rdf-filter-object model (.createIRI vf "http://www.eexample.org/data#" "resources_1") (.createIRI vf "http://www.eexample.org/data#" "data"))
               seq-data (c/rdf->seq model root [])]
           (t/is (< 0 (count model)))
           (t/is (< 0 (count seq-data)))

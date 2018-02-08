@@ -202,3 +202,8 @@
   [kb ^Resource s ^IRI p ^Value o use-reified context]
   (doall
    (u/iter-seq (.getStatements kb s p o use-reified context))))
+
+(defmethod c/rdf-filter-object SailRepository
+  [data-src s p]
+  (if-let [statement (first (c/get-statements data-src s p nil false (u/context-array)))]
+    (.getObject statement) nil))
