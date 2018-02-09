@@ -44,7 +44,7 @@
   For mode details about collections is RDF see:
   `https://www.w3.org/TR/rdf-schema/#ch_othervocab`."
   [rdf-type in-seq]
-  { :pre [ (seq? in-seq)] }
+  { :pre [ (coll? in-seq)] }
   (let [model (-> (LinkedHashModelFactory.)
                   (.createEmptyModel))
         b-root (.createBNode vf)]

@@ -184,4 +184,3 @@
         (log/debugf "Instance: %5s\n" (binding [*print-dup* false] (println-str gs)))))
     (.close md)
     (FileUtils/deleteDirectory (.getDataDir md))))
-  

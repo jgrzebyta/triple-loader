@@ -100,6 +100,9 @@
 (defmacro with-open-repository*
   "Transaction aware version of with-open-repository.
 
+  NB: The transactinon is finished by `(.commit)` so all changes will
+  affect the repository.
+
   It is requivalent of:
 
      (with-open-repository [cnx sail-repo]
