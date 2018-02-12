@@ -16,10 +16,13 @@
 
 (defmacro with-sparql
   " args => [key value ...]
-  Evaluates body in context of processed SPARQL request on given data.
+  Evaluates body in context of processed SPARQL request on given data within a transaction.
   
   The query (`:query`) result is exposed to the body with variable defined by key `:result` and
-  is a sequence of BindingSets or Statements for tuple or graph queries respectively. 
+  is a sequence of BindingSets or Statements for tuple or graph queries respectively.
+
+  NB: The transaction is finished by `commit` so SPARQL query might affect the repository content.
+  It depends on this macro user ;-)
   
   All possible keys are: 
      - :query or :sparql (required) :: SPARQL query as string
@@ -41,7 +44,7 @@
            ~data-seq ~in-data
            sparql-processed# (sp/load-sparql ~query)]
        (when ~data-seq (l/load-multidata repo# ~data-seq))
-       (r/with-open-repository [cn# repo#]
+       (r/with-open-repository* [cn# repo#]
          (let [~result-seq (u/iter-seq
                             (sp/process-sparql-query cn# sparql-processed#
                                                      :writer-factory-name :none ~@binding-seq))]

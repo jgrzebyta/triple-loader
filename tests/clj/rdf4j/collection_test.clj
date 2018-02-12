@@ -6,13 +6,13 @@
             [rdf4j.collections :as c]
             [rdf4j.collections.utils :as cu]
             [rdf4j.core :as co]
-            [rdf4j.loader :as l]
             [rdf4j.models :as m]
             [rdf4j.repository :as r]
+            [rdf4j.repository.sails :as sail]
             [rdf4j.utils :as u])
   (:import org.apache.commons.io.FileUtils
+           [org.eclipse.rdf4j.model BNode Model]
            org.eclipse.rdf4j.model.impl.LinkedHashModel
-           org.eclipse.rdf4j.model.Model
            org.eclipse.rdf4j.model.util.Models
            [org.eclipse.rdf4j.model.vocabulary RDF RDFS XMLSchema]
            rdf4j.models.LocatedSailModel
@@ -98,7 +98,6 @@
           (log/debugf "Collection type: %s" collection-type)
           (t/is (= collection-type RDFS/CONTAINER))))))
 
-
 (t/deftest rdf-coll-test
   (let [data-source (->
                      (io/file "tests/resources/collections/type-list.ttl")
@@ -149,6 +148,25 @@
     (.close data-source)
     (FileUtils/deleteDirectory data-dir)))
 
+(t/deftest rdf-coll-repository
+  (let [data-file (io/file "tests/resources/collections/type-list.ttl")
+        repository (doto (sail/make-sail-repository :memory nil)
+                     (co/load-data data-file))]
+    (t/testing "Collectons from repository"
+      (let [root (co/rdf-filter-object repository
+                                       (.createIRI vf "http://www.eexample.org/data#" "resources_1")
+                                       (.createIRI vf "http://www.eexample.org/data#" "data"))
+            coll (c/rdf->seq repository root [])]
+        (t/is (instance? BNode root))
+        (t/is (= 3 (count coll)))
+        (log/debugf "Collection: %s" coll)))
+    (t/testing "Collectons from repository"
+      (let [root (co/rdf-filter-object repository
+                                       (.createIRI vf "http://www.eexample.org/data#" "resources_no")
+                                       (.createIRI vf "http://www.eexample.org/data#" "no_data"))]
+        (log/debugf "Root: %s" root)))
+    (.shutDown repository)))
+
 (t/deftest rdf-protocols
   (let [md (->
             (io/file "tests/resources/beet.trig")
@@ -166,4 +184,3 @@
         (log/debugf "Instance: %5s\n" (binding [*print-dup* false] (println-str gs)))))
     (.close md)
     (FileUtils/deleteDirectory (.getDataDir md))))
-  
