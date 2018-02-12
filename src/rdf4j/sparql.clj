@@ -119,8 +119,7 @@
                             (.createLiteral vf value))]           ;; otherwise convert using ValueFactory.
             (log/debug "value type: " (type value))
             (.setBinding query (name k) value-obj)
-            (recur (rest ks)))))
-      )
+            (recur (rest ks))))))
     (log/debug "Writer: " writer)
     (log/debug "Bindling: " (.getBindings query))
     ;; validate writer type

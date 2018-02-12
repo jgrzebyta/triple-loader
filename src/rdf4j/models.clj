@@ -38,11 +38,8 @@
   ([^Model m ^IRI p ^Value o] (get-subject-IRIs m p o (r/context-array)))
   ([^Model m ^IRI p ^Value o ^"[Lorg.eclipse.rdf4j.model.Resource;" ns] (rdf-filter m nil p o ns)))
 
-(defn ^{:added "0.2.2"}
-  rdf-filter-object
-  "Process Java's equivalent of: `m.filter(s p null null)` -> `Models/object` -> `.orElse null`."
-  [^Model m ^Resource s ^IRI p]
-  (-> (rdf-filter m s p nil)
+(defmethod c/rdf-filter-object Model [data-src s p]
+  (-> (rdf-filter data-src s p nil)
       Models/object
       (.orElse nil)))
 
@@ -112,5 +109,3 @@
     (with-open [ins (io/input-stream data-src)]
       (.parse parser ins (.stringValue (u/make-baseuri (.toPath data-src)))))
     model))
-
-
