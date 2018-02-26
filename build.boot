@@ -48,7 +48,8 @@
       :scm {:url "https://github.com/jgrzebyta/triple-loader"
             :connection "scm:git:ssh://github.com/jgrzebyta/triple-loader.git"
             :developerConnection "scm:git:ssh://git@github.com/jgrzebyta/triple-loader.git"}}
- aot {:namespace #{'rdf4j.models.located-sail-model} })
+ aot {:namespace #{'rdf4j.models.located-sail-model} }
+ codox {:name "triple-loader" :version (get-env :version) :output-path "gh-pages"})
 
 (deftask develop
   "Build SNAPSHOT version of jar"
@@ -96,6 +97,3 @@
    (uber)
    (jar :file (format "%s-standalone.jar" (str (name (get-env :project))) ))
    (target)))
-
-(deftask build-doc []
-  (codox :name "triple-loader" :version (get-env :version) :output-path "gh-pages"))
