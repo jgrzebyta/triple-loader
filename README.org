@@ -11,20 +11,24 @@
 
 * 1. What is that?
 
-=triple-loader= provides command line tools and Clojure API for managing Eclipse RDF4J/Sesame repository. Moreover since version 0.1.15 this project provides external Clojure API. From version *0.1.15* onward both snapshots and releases - standard jars - will be published only on [[https://clojars.org/adalab/triple-loader][Clojars]]. Stand-alone (uber) jars will be still published in GitHub.
+=triple-loader= provides command line tools and Clojure API for managing Eclipse RDF4J/Sesame repository. Moreover since version 0.1.15 this project provides external Clojure API. Both snapshots and releases - standard jars - are published only on [[https://clojars.org/adalab/triple-loader][Clojars]]. Stand-alone (uber) jars will be still published in GitHub.
 
 Leiningen/Boot:
 #+begin_src
 [adalab/triple-loader "0.2.2"]
 #+end_src
 
-** 1.1 Acknowledgements
+** 1.1. Acknowledgements
 
 The software development was supported by CHIST-ERA (Call 2013 -- AMCE), with funding from EPSRC (Grant no. [[http://gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/M015661/1][EP/M015661/1]]; AdaLab).
 
 The AdaLab project web page can be found at: http://www.adalab-project.org/.
 
-* 2. Usage
+* 2. API Documentation
+
+All API documentation is available at [[https://jgrzebyta.github.io/triple-loader/]].
+
+* 3. Command line tools
 
 #+begin_src
 java -cp triple-loader-standalone.jar <command> <options>
@@ -133,9 +137,9 @@ Convert /turtle/ file to /trig/
 java -cp triple-loader-standalone rdf4j.convert -i turtle -o trig tests/resources/yeastract_raw.ttl
 #+end_src
 
-* 3. Build server
+* 4. Build server
 
 - [[https://travis-ci.org/jgrzebyta/triple-loader][Travis CL]]
 
-* 4. Contacts
+* 5. Contacts
 To contact with me please use *Issues* interface.
