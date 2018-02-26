@@ -10,7 +10,7 @@
 export AUTODOC_CMD="boot version aot codox target"
 
 # SNAPHOT version
-# export AUTODOC_CMD="boot develop aot build-doc target"
+# export AUTODOC_CMD="boot develop aot codox target"
 
 # The directory where the result of $AUTODOC_CMD, the generated HTML, ends up. This
 # is what gets committed to $AUTODOC_BRANCH.
