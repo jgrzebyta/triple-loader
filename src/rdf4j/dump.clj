@@ -95,7 +95,7 @@
           (finally (.shutDown repository)))))))
 
 
-(defn -main [& args]
+(defn ^{:no-doc true} -main [& args]
   (let [[opts args banner] (cli args
                                 ["--help" "-h" "Print this screen" :default false :flag true]
                                 ["--server URL" "-s" "RDF4J SPARQL endpoint URL" :default "http://localhost:8080/rdf4j-server"]
