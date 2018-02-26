@@ -43,7 +43,7 @@
 (alter-var-root #'boot.pod/standard-jar-exclusions (constantly (conj boot.pod/standard-jar-exclusions #"/pom\.xml$")))
 
 (task-options!
- version {:minor 'two :patch 'one :include false}
+ version {:minor 'two :patch 'one :include false :generate 'rdf4j.version}
  pom {:project (get-env :project)
       :scm {:url "https://github.com/jgrzebyta/triple-loader"
             :connection "scm:git:ssh://github.com/jgrzebyta/triple-loader.git"
