@@ -7,17 +7,22 @@
            org.eclipse.rdf4j.sail.spin.SpinSail))
 
 (defmulti make-sail-repository
-  "[type datadir & [opts]]
-
-  Create instance of `SailRepository`.
+  "Create instance of `SailRepository`.
   Additional map of options (`opts`) depends on sails hierarchy.
 
+  TYPES
+  - :memory
+  - :native
+  - :memory-rdfs
+  - :native-rdfs
+  - :memory-spin-lucene
+  - :native-spin-lucene
 
   OPTIONS
-
   List of possible options:
   - :indexes -- pass value to `NativeStore/setTripleIndexes`
   - :parameters -- pass value to `LuceneSpinSail/setParameters`"
+  {:arglists '([type datadir & [opts]])}
   (fn [type datadir & [opts]] (if (keyword? type)
                                 type
                                 (keyword type))) :default nil)

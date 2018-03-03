@@ -23,7 +23,9 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
         (cons (.next i) (iter-seq i)))))
 
 
-(defmulti ^ValueFactory value-factory "Returns instance of value-factory for given optional object. The object might be either RepositoryConnection or Repository" (fn [& [x]] (type x)))
+(defmulti value-factory "Returns instance of value factory for given optional object. The object might be either RepositoryConnection or Repository"
+  {:arglists '([& [x]])}
+  (fn [& [x]] (type x)))
 
 (defmethod value-factory Repository [x] (.getValueFactory x))
 (defmethod value-factory RepositoryConnection [x] (.getValueFactory x))
@@ -76,7 +78,7 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
 (defmulti normalise-path
   "Proceeds path string normalisation. Additionally replace '~' character by Java's 'user.home' system property content.
   If string is blank (ref. clojure.string/blank?) than returns nil."
-  (fn [path] (type path)))
+  {:arglists '([path])} (fn [path] (type path)))
 
 (defmethod normalise-path String [path]
   (if-not (str/blank? path)
@@ -136,6 +138,7 @@ Reused implementation describe in http://stackoverflow.com/questions/9225948/ ta
    The argument value is checked in the following order:
       - if `v` is valid IRI than create result using `(.createIRI value-factory v)`
       - otherwise create `Literal`."
+  {:arglists '([x])}
   (fn [x] (type x)))
 
 (defmethod any-to-value Value [v] (identity v))
