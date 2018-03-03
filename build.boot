@@ -34,13 +34,16 @@
                          "clojars" { :url "https://clojars.org/repo/" }
                          })
 
-(require '[degree9.boot-semver :refer :all]
+(require '[boot.core :as boot]
+         '[degree9.boot-semver :refer :all]
          '[adzerk.boot-test :refer :all :as at]
          '[boot.util :as util]
          '[codox.boot :refer [codox]])
 
 ;; this line prevents confusing the deployer with dependencies` pom.xml files
 (alter-var-root #'boot.pod/standard-jar-exclusions (constantly (conj boot.pod/standard-jar-exclusions #"/pom\.xml$")))
+
+(def +version+ "0.2.2-SNAPSHOT")
 
 (task-options!
  version {:minor 'two :patch 'one :include false :generate 'rdf4j.version}
@@ -49,7 +52,7 @@
             :connection "scm:git:ssh://github.com/jgrzebyta/triple-loader.git"
             :developerConnection "scm:git:ssh://git@github.com/jgrzebyta/triple-loader.git"}}
  aot {:namespace #{'rdf4j.models.located-sail-model} }
- codox {:name (str "triple-loader " (get-env :version) " API documentation.") :version (get-env :version) :output-path "gh-pages"})
+ codox {:name "triple-loader" :version +version+ :output-path "gh-pages" :description "Some description."})
 
 (deftask develop
   "Build SNAPSHOT version of jar"
@@ -95,5 +98,5 @@
    (pom)
    (aot :all true)
    (uber)
-   (jar :file (format "%s-standalone.jar" (str (name (get-env :project))) ))
+   (jar :file (format "%s-standalone.jar" (str (name (get-env :project)) "-" +version+)))
    (target)))
