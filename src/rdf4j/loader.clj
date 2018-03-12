@@ -122,7 +122,7 @@
                                                 (u/normalise-path itm) itm) :rdf-handler rdf-handler :context-uri context-uri)) data-col)))
 
 
-(defn -main [& args]
+(defn ^{:no-doc true} -main [& args]
   (let [[opts args banner] (cli args
                                ["--help" "-h" "Print this screen" :default false :flag true]
                                ["--server URL" "-s" "Sesame SPARQL endpoint URL" :default "http://localhost:8080/rdf4j-server"]

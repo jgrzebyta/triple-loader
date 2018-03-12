@@ -27,27 +27,32 @@
                           [ch.qos.logback/logback-classic "1.2.3"]
                           [org.slf4j/jcl-over-slf4j "1.7.9"]
                           [degree9/boot-semver "1.7.0" :scope "test"]
-                          [adzerk/boot-test "1.2.0" :scope "test"]]
+                          [adzerk/boot-test "1.2.0" :scope "test"]
+                          [boot-codox "0.10.3" :scope "test"]]
           :repositories { "sonatype-public" { :url "https://oss.sonatype.org/content/groups/public/" }
                          "central" { :url "http://repo1.maven.org/maven2/"}
                          "clojars" { :url "https://clojars.org/repo/" }
                          })
 
-(require '[degree9.boot-semver :refer :all]
+(require '[boot.core :as boot]
+         '[degree9.boot-semver :refer :all]
          '[adzerk.boot-test :refer :all :as at]
-         '[boot.util :as util])
+         '[boot.util :as util]
+         '[codox.boot :refer [codox]])
 
 ;; this line prevents confusing the deployer with dependencies` pom.xml files
 (alter-var-root #'boot.pod/standard-jar-exclusions (constantly (conj boot.pod/standard-jar-exclusions #"/pom\.xml$")))
 
+(def +version+ "0.2.2-SNAPSHOT")
+
 (task-options!
- version {:minor 'two :patch 'one :include false}
+ version {:minor 'two :patch 'one :include false :generate 'rdf4j.version}
  pom {:project (get-env :project)
-      :scm { :url "https://github.com/jgrzebyta/triple-loader"
+      :scm {:url "https://github.com/jgrzebyta/triple-loader"
             :connection "scm:git:ssh://github.com/jgrzebyta/triple-loader.git"
-            :developerConnection "scm:git:ssh://git@github.com/jgrzebyta/triple-loader.git"
-            :tag "HEAD"}}
- aot {:namespace #{'rdf4j.models.located-sail-model} })
+            :developerConnection "scm:git:ssh://git@github.com/jgrzebyta/triple-loader.git"}}
+ aot {:namespace #{'rdf4j.models.located-sail-model} }
+ codox {:name "triple-loader" :version +version+ :output-path "gh-pages" :description "Some description."})
 
 (deftask develop
   "Build SNAPSHOT version of jar"
@@ -93,5 +98,5 @@
    (pom)
    (aot :all true)
    (uber)
-   (jar :file (format "%s-standalone.jar" (str (name (get-env :project))) ))
+   (jar :file (format "%s-standalone.jar" (str (name (get-env :project)) "-" +version+)))
    (target)))

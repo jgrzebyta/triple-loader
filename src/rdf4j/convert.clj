@@ -55,7 +55,7 @@
                      .stringValue)]
     (Rio/parse (io/reader (.toFile file)) basename rdf-format default-parser-config (u/value-factory) (ParseErrorLogger.) (u/context-array))))
 
-(defn -main [& args]
+(defn ^{:no-doc true} -main [& args]
   (let [val (validate-args args)]
     (log/debugf "Validated: %s" (with-out-str (clojure.pprint/pprint val)))
     (when (val :msg)

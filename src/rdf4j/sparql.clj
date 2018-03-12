@@ -160,7 +160,7 @@
       (.shutDown repo)
       (r/delete-context)))
 
-(defn -main
+(defn ^{:no-doc true} -main
   "Does SPARQL request
 
 FORMATS

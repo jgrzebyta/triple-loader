@@ -1,36 +1,50 @@
 #+startup: indent showall
-#+title: README file for triple loader
+#+title: triple loader
 #+author: Jacek Grzebyta
-#+date: <2017-02-21 Tue>
+#+date: <2018-02-05 Mon>
 #+startup: showall
 
 # Travis is switched off
-# [[https://travis-ci.org/jgrzebyta/sesame-loader?branch=master][https://travis-ci.org/jgrzebyta/sesame-loader.svg?branch=master]]
+[[https://travis-ci.org/jgrzebyta/triple-loader?branch=master][https://travis-ci.org/jgrzebyta/triple-loader.svg?branch=master]]
 
 [[https://img.shields.io/clojars/v/adalab/triple-loader.svg]]
 
 * 1. What is that?
 
-=triple-loader= provides command line tools for managing Eclipse RDF4J/Sesame repository. Moreover since version 0.1.15 this project provides external Clojure API. From version *0.1.15* onward both snapshots and releases - standard jars - will be published only on [[https://clojars.org/adalab/triple-loader][Clojars]]. Stand-alone (uber) jars will be still published in GitHub.
+=triple-loader= provides command line tools and Clojure API for managing Eclipse RDF4J/Sesame repository. Moreover since version 0.1.15 this project provides external Clojure API. Both snapshots and releases - standard jars - are published only on [[https://clojars.org/adalab/triple-loader][Clojars]]. Stand-alone (uber) jars will be still published in GitHub.
 
-Jars deployed to Clojars require dedicated *RDF4J* binaries which might be received by compiling my =develop= branch of https://github.com/jgrzebyta/rdf4j. This problem will be solved after merging [[https://github.com/eclipse/rdf4j/pull/758][my PR]] to the main code.
-
-* 2. List of commands
-** rdf4j.loader
-Loads data into triple store.
-
-#+begin_src shell
-java -cp triple-loader-standalone.jar rdf4j.loader [options]
+Leiningen/Boot:
+#+begin_src
+[adalab/triple-loader "0.2.2"]
 #+end_src
 
-*** Options
+** 1.1. Acknowledgements
+
+The software development was supported by CHIST-ERA (Call 2013 -- AMCE), with funding from EPSRC (Grant no. [[http://gow.epsrc.ac.uk/NGBOViewGrant.aspx?GrantRef=EP/M015661/1][EP/M015661/1]]; AdaLab).
+
+The AdaLab project web page can be found at: http://www.adalab-project.org/.
+
+* 2. API Documentation
+
+All API documentation is available at [[https://jgrzebyta.github.io/triple-loader/]].
+
+* 3. Command line tools
+
+#+begin_src
+java -cp triple-loader-standalone.jar <command> <options>
+#+end_src
+** Commands
+*** rdf4j.loader
+Loads data into triple store.
+
+**** Options
     - --server URL, -s :: Sesame SPARQL endpoint URL. Default: http://localhost:8080/rdf4j-server                  
     - --repositiry NAME, -r :: Repository id. Default: test
     - --file FILE, -f :: Data file path                                       
     - --context IRI, -c :: Context (graph name) of the dataset. *If FILE's format is context-aware (e.g. TriG) than this option is ignored.* 
     - --version, -V :: Print version number
     - --help, -h :: Help
-*** Example
+**** Examples
 
 Populate triple store at =http://localhost:8090/rdf4j-server/test= with data from two files.
 
@@ -38,23 +52,19 @@ Populate triple store at =http://localhost:8090/rdf4j-server/test= with data fro
 java -cp triple-loader-standalone.jar rdf4j.loader -s http://localhost:8090/rdf4j-server/ -r test -f ~/database/data1.ttl -f ~/database/data2.ttl
 #+end_src
 
-** rdf4.sparql
-Executes SPARQL /query/ on data provided by /file/.  
+*** rdf4j.sparql
+Executes SPARQL /query/ on data provided by /file/. The query is executed among different types of repository: `simple`, `lucene` and `native` 
 
-#+begin_src shell
-java -cp triple-loader-standalone.jar rdf4j.sparql [options]
-#+end_src
-
-*** Options
+**** Options
     - --file FILE, -f :: Data file path.
-    - --query STRING -q :: Path to file with query or the query itself.
-    - --formaT -t :: Format of SPARQL query resut. Option '-t help' gives full list of supported formats. 
+    - --query STRING, -q :: Path to file with query or the query itself.
+    - --formaT, -t :: Format of SPARQL query resut. Option '-t help' gives full list of supported formats. 
                      By default writers formats are =sparql/tsv= and =trig= for =tuple query= and =graph query= respectively.
     - --repository -r :: Local repository settings. Possible options: =simple=, =lucene=, =native=.
     - --version, -v :: Print version number.
     - --bind, -b :: Accepts set of properties as SPARQL bindings. Given values are parsed to literal.
     - --help, -h :: Help.
-*** Example
+**** Examples
 
 Process SPARQL request =select * where {?s ?p ?o} limit 10= on data located in two files.
 
@@ -81,25 +91,17 @@ Process SPARQL request with binding
 java -cp triple-loader-standalone.jar rdf4j.sparql -f tests/resources/beet.rdf -t sparql/csv -q "select ?s ?country where {?s <file:/tmp2/beet-1.csvCountries> ?country}" -b "country=Poland"
 #+end_src
 
-
-
-
-
-** rdf4j.dump
+*** rdf4j.dump
 Creates remote repository dump file in *TriG* format. [[#rdf4jloader][rdf4j.loader]] function is suitable for restoring triple. 
 
-#+begin_src shell
-java -cp triple-loader-standalone.jar rdf4j.dump [options]
-#+end_src
-
-*** Options
+**** Options
 - --help, -h :: Help
 - --server URL, -s :: RDF4J SPARQL endpoint URL, default =http://localhost:8080/rdf4j-server=
 - --repositiry NAME, -r :: Repository id, default: =test=
 - --file FILE, -f :: Data file path or standard output if not given 
 - --version, -V :: Display program version 
 
-*** Example
+**** Examples
 Dump =http://localhpost:8090/rdf4j-server/test= repository to standard output.
 
 #+begin_src shell
@@ -113,22 +115,31 @@ Dump =http://localhpost:8090/rdf4j-server/test= repository to =/tmp/test-repo.tr
 java -cp triple-loader-standalone.jar rdf4j.dump -s http://localhpost:8090/rdf4j-server -r test -f /tmp/test-repo.trig
 #+end_src
 
-* 3. Usage as API provider
+*** rdf4j.convert
+Converts RDF files among different formats. It supports following formats: /ntriples/, /n3/, /turtle/, /rdfjson/, /rdfxml/, /trig/, /trix/, /nquads/, /jsonld/ and /binary/.
 
-** macro =with-sparql=
+**** Options
+- --help, -h :: Print this screen
+- --version, -V :: Display version
+- --input FORMAT, -i :: Input format. Available formats: ntriples, n3, turtle, rdfjson, rdfxml, trig, trix, nquads, jsonld, binary
+- --output FORMAT, -o :: Output format. Available formats: ntriples, n3, turtle, rdfjson, rdfxml, trig, trix, nquads, jsonld, binary
 
-rdf4j.sparql.processor/with-sparql
- [args & body]
-Macro
-   args => [key value ...]
+**** Examples
+Convert /turtle/ file to /rdfxml/
 
-  Evaluates body in context of processed SPARQL request on given data.
-  The query result is exposed to the body with variable defined by key :result and
-  is a sequence of BindingSets or Statements for tuple or graph queries respectively. 
-  Possible keys are: :query or :sparql (required), :result (required), :data (optional), :binding (optional) and :repository (optional).
+#+begin_src shell
+java -cp triple-loader-standalone rdf4j.convert -i turtle -o rdfxml tests/resources/yeastract_raw.ttl
+#+end_src
 
-rdf4j.sparql.processor/with-sparql is defined in src/rdf4j/sparql/processor.clj.
+Convert /turtle/ file to /trig/
 
+#+begin_src shell
+java -cp triple-loader-standalone rdf4j.convert -i turtle -o trig tests/resources/yeastract_raw.ttl
+#+end_src
 
-* 4. Contacts
+* 4. Build server
+
+- [[https://travis-ci.org/jgrzebyta/triple-loader][Travis CL]]
+
+* 5. Contacts
 To contact with me please use *Issues* interface.

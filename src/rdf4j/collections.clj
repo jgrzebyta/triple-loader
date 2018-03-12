@@ -15,7 +15,7 @@
 
 (declare sumo-contains get-rest get-first)
 
-(def vf (u/value-factory))
+(def ^{:no-doc true} vf (u/value-factory))
 
 (defn- seq-list [root-node model in-seq]
   (loop [p-node root-node items in-seq]
