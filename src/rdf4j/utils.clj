@@ -1,16 +1,15 @@
 (ns rdf4j.utils
   (:require [clj-pid.core :as pid]
-            [clojure.string :as str :exclude [reverse]]
-            [clojure.tools.logging :as log]
+            [clojure.string :as str]
             [rdf4j.core :as core])
-  (:import [java.io ByteArrayInputStream BufferedInputStream]
+  (:import [java.io BufferedInputStream ByteArrayInputStream]
            [java.nio.file Files Path Paths]
-           [java.nio.file.attribute FileAttribute]
-           [java.util Map]
-           [org.eclipse.rdf4j.common.xml XMLUtil]
-           [org.eclipse.rdf4j.model Value Resource ValueFactory]
-           [org.eclipse.rdf4j.model.impl SimpleValueFactory LinkedHashModel]
-           [org.eclipse.rdf4j.model.util URIUtil]
+           java.nio.file.attribute.FileAttribute
+           java.util.Map
+           org.eclipse.rdf4j.common.xml.XMLUtil
+           [org.eclipse.rdf4j.model Resource Value]
+           org.eclipse.rdf4j.model.impl.SimpleValueFactory
+           org.eclipse.rdf4j.model.util.URIUtil
            [org.eclipse.rdf4j.repository Repository RepositoryConnection]))
 
 ;;; Utils methods

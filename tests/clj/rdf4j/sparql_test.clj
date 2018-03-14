@@ -109,10 +109,10 @@ where {
       (is (not (st/blank? sparql-processed)) "processed sparql is blank")))
   (testing "wrong sparql string"
     (let [sparql-string "seect * where {?s ?p ?o}"]
-      (is (thrown? RuntimeException (load-sparql sparql-string)))))
+      (is :unknown (load-sparql sparql-string))))
   (testing "sparql from non existing file"
     (let [sparql-file "nonexists.sparql"]
-      (is (thrown? RuntimeException (load-sparql sparql-file))))))
+      (is :unknown (load-sparql sparql-file)))))
 
 
 (def +local-test+ ["./tests/resources/yeastract_raw.ttl",

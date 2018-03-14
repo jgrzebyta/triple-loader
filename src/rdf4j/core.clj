@@ -29,7 +29,7 @@
   - :memory (`LinkedHashModel`)
   - :persistent (persistent `MemoryStore`)
   - :solid (`NativeStore`)"
-  {:argslists '([data-src & {:keys [model-type]}])}
+  {:arglists '([data-src & {:keys [model-type]}])}
   (fn [data-src & {:keys [model-type]}] (type data-src)))
 
 (defmulti as-repository

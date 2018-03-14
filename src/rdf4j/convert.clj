@@ -1,21 +1,21 @@
 (ns rdf4j.convert
   "Delivers convertion service between different formats.
-  Output is always to <STDOUT>."
+  Output is always to the standard output."
   (:gen-class)
   (:require [clojure.java.io :as io]
             [clojure.string :as st]
             [clojure.tools.cli :refer [parse-opts]]
             [clojure.tools.logging :as log]
+            [rdf4j.core.rio
+             :refer
+             [default-parser-config default-pp-writer-config map-formats]]
             [rdf4j.dump :as d]
-            [rdf4j.loader :as l]
-            [rdf4j.repository :as r]
             [rdf4j.utils :as u]
-            [rdf4j.version :refer [version]]
-            [rdf4j.core.rio :refer [map-formats default-parser-config default-pp-writer-config]])
+            [rdf4j.version :refer [version]])
   (:import [java.nio.file Path Paths]
-           [org.eclipse.rdf4j.model Model]
-           [org.eclipse.rdf4j.rio Rio RDFFormat]
-           [org.eclipse.rdf4j.rio.helpers ParseErrorLogger]))
+           org.eclipse.rdf4j.model.Model
+           [org.eclipse.rdf4j.rio RDFFormat Rio]
+           org.eclipse.rdf4j.rio.helpers.ParseErrorLogger))
 
 (def ^:private cli-options
   [["-h" "--help" "Print this screen"]
