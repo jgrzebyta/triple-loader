@@ -79,14 +79,18 @@
 
 (defn sparql-type "Returns a type of given SPARQL query. There are three type of queries: :tuple, :graph and :boolean"
   [^String sparql]
-  (let [parserFactory (SPARQLParserFactory.)
+  (try
+    (let [parserFactory (SPARQLParserFactory.)
         parser (.getParser parserFactory)
         parsedQuery (.parseQuery parser sparql nil)]
     (cond
       (instance? ParsedTupleQuery parsedQuery) :tuple
       (instance? ParsedBooleanQuery parsedQuery) :boolean
       (instance? ParsedGraphQuery parsedQuery) :graph
-      :else :unknown)))
+      :else :unknown))
+    (catch MalformedQueryException e
+      (log/warnf "Wrong query: %s" e)
+      :unknown)))
 
 
 (defn process-sparql-query
@@ -140,9 +144,9 @@
 
 (defn load-sparql [^String sparql-res] "Load SPARQL query from file."
   ;;detect if argument is a file
+  (log/debugf "Is sparql string: ['%s'] a file %s" sparql-res (.exists (io/file sparql-res)))
   (cond
-    (.exists (io/file sparql-res)) (with-open [r (io/reader (FileReader. (io/file sparql-res)))] ;; retrieve SPARQL from file
-                                     (st/join "\n" (doall (line-seq r)))) 
+    (.exists (io/file sparql-res)) (slurp (io/file sparql-res))
     (not= :unknown (sparql-type sparql-res)) sparql-res ;; it is SPARQL string
     :else (ex-info "unknown SPARQL resources" {:val sparql-res})))
 
