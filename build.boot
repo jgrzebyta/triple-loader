@@ -52,7 +52,7 @@
             :connection "scm:git:ssh://github.com/jgrzebyta/triple-loader.git"
             :developerConnection "scm:git:ssh://git@github.com/jgrzebyta/triple-loader.git"}}
  aot {:namespace #{'rdf4j.models.located-sail-model} }
- codox {:name "triple-loader" :version +version+ :output-path "gh-pages" :description "Some description."})
+ codox {:name "triple-loader" :version +version+ :output-path "gh-pages" :description "Some description." :metadata {:doc/format :markdown}})
 
 (deftask develop
   "Build SNAPSHOT version of jar"
