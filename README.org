@@ -15,7 +15,7 @@
 
 Leiningen/Boot:
 #+begin_src
-[adalab/triple-loader "0.2.2"]
+[adalab/triple-loader "0.2.3"]
 #+end_src
 
 ** 1.1. Acknowledgements

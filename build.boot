@@ -43,10 +43,10 @@
 ;; this line prevents confusing the deployer with dependencies` pom.xml files
 (alter-var-root #'boot.pod/standard-jar-exclusions (constantly (conj boot.pod/standard-jar-exclusions #"/pom\.xml$")))
 
-(def +version+ "0.2.2")
+  (def +version+ "0.2.3")
 
 (task-options!
- version {:minor 'two :patch 'two :include false :generate 'rdf4j.version}
+ version {:minor 'two :patch 'three :include false :generate 'rdf4j.version}
  pom {:project (get-env :project)
       :scm {:url "https://github.com/jgrzebyta/triple-loader"
             :connection "scm:git:ssh://github.com/jgrzebyta/triple-loader.git"
