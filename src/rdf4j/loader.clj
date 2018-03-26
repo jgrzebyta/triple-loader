@@ -134,4 +134,5 @@
     (cond
       (:h opts) (println banner)
       (:V opts) (println "Version: " rdf4j.version/version)
-      :else (do-loading opts))))
+      :else (do-loading opts))
+    (shutdown-agents)))

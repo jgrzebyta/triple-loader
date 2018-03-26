@@ -65,4 +65,5 @@
           model (read-file-rdf-model source input)
           writer (make-stdout-rdf-writer output)]
       (log/debug "Model count: %d" (count model))
-      (Rio/write model writer))))
+      (Rio/write model writer))
+    (shutdown-agents)))
