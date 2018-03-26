@@ -105,4 +105,5 @@
     (cond
       (:h opts) (println banner)
       (:V opts) (println "Version: " version)
-      :else (do-dump opts))))
+      :else (do-dump opts))
+    (shutdown-agents)))
