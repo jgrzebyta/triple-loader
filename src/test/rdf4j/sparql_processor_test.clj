@@ -3,13 +3,14 @@
             [rdf4j.utils :as u]
             [rdf4j.repository :as r]
             [clojure.test :as t]
-            [clojure.tools.logging :as log])
+            [clojure.tools.logging :as log]
+            [clojure.java.io :as io])
   (:import [org.eclipse.rdf4j.model.impl SimpleValueFactory]))
 
 
 (t/deftest test-simple-sparql-processing
   (t/testing "Simple sparql"
-    (let [data (list "tests/resources/yeastract_raw.ttl")
+    (let [data (list (.getPath (io/resource "./resources/yeastract_raw.ttl")))
           sparql "prefix r: <urn:raw:yeastract#>
 select ?term ?term_id where {
 ?term r:Yeast_id ?term_id
@@ -85,7 +86,7 @@ WHERE
 select distinct ?country 
 where
 {[] d:csvCountries ?country}"
-          data '("tests/resources/beet.rdf")]
+          data [(.getPath (io/resource "./resources/beet.rdf"))]]
       (sp/with-sparql [:repository repo :query sparql :result out :data data]
         (t/is (< 0 (count out)))
                                  ))

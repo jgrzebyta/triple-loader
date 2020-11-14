@@ -29,7 +29,9 @@
           (is (.isOpen c))))))
 
 (deftest open-file
-  (with-open [fr (jio/reader "tests/resources/beet.rdf")]
+  (with-open [fr (jio/reader (-> "./resources/beet.rdf"
+                                 (jio/resource)
+                                 (.getPath)))]
     (println "reader?" (class fr))
     (testing "Is Reader instantiated"
       (is (instance? java.io.BufferedReader fr)))
@@ -53,7 +55,7 @@
 (deftest load-mock-repo
   (let [repo (make-mem-repository)
         pars (Rio/createParser RDFFormat/RDFXML)
-        file-obj (jio/file "tests/resources/beet.rdf")
+        file-obj (jio/file (jio/resource "./resources/beet.rdf"))
         counter (atom 0)]
     (testing "Loading data to repository"
       (.initialize repo)
@@ -86,7 +88,9 @@
 (deftest load-data-test
   (let [repo (make-repository-with-lucene nil)]
     (try
-      (let [cont (c/load-data repo "tests/resources/beet.rdf")]
+      (let [cont (c/load-data repo (-> "./resources/beet.rdf"
+                                       (jio/resource)
+                                       (.getPath)))]
         (test-repository repo 68)
         (is (= 68 cont)))
         (finally
@@ -114,7 +118,9 @@
 
 (deftest test-errored-file
   (testing "simple test for issue #33"
-    (let [file "tests/resources/beet-error.trig"
+    (let [file (-> "./resources/beet-error.trig"
+                   (jio/resource)
+                   (jio/file))
           repo (make-repository)]
       (try
         (is (thrown? Exception (c/load-data repo file)))
@@ -122,7 +128,9 @@
           (.shutDown repo)
           (delete-context)))))
   (testing "deep test for issue #33"
-    (let [file "tests/resources/beet-error.trig"
+    (let [file (-> "./resources/beet-error.trig"
+                   (jio/resource)
+                   (jio/file))
           repo (make-repository)]
       (try
         (c/load-data repo file)

@@ -4,14 +4,18 @@
             [rdf4j.core :as c]
             [rdf4j.repository :as r]
             [rdf4j.repository.sails :as sail]
-            [rdf4j.utils :as u])
+            [rdf4j.utils :as u]
+            [clojure.java.io :as io])
   (:import java.io.File
            java.nio.file.Paths
            org.apache.commons.io.FileUtils
            rdf4j.models.LocatedSailModel))
 
 
-(def ^:static rdf-data (u/normalise-path "tests/resources/beet.rdf"))
+(def ^:static rdf-data (-> "./resources/beet.rdf"
+                           (io/resource)
+                           (.getPath)
+                           (u/normalise-path)))
 
 (t/deftest located-model-simple-test
   (t/testing "MemoryStore with located mirror"

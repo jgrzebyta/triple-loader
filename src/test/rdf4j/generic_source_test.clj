@@ -10,7 +10,8 @@
 (t/deftest as-model-test
   (t/testing "Test list"
     (let [model (->
-                 (io/file "tests/resources/collections/type-list.ttl")
+                 (io/resource "resources/collections/type-list.ttl")
+                 (io/file)
                  (c/as-model :model-type :memory))
           triples (u/get-all-statements model)]
       (t/is (not (empty? triples)))

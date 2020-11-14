@@ -7,10 +7,13 @@
         [clojure.tools.logging :as log]
         [clojure.java.io :as jio]
         [clojure.pprint :as pp])
+  (:require [clojure.java.io :as io])
   (:import [java.io StringWriter]))
 
 
-(def +datasets+ '("./tests/resources/22-rdf-syntax-ns.ttl" "./tests/resources/rdf-schema.rdf" "./tests/resources/beet.rdf"))
+(def +datasets+ [(.getPath (io/resource "./resources/22-rdf-syntax-ns.ttl"))
+                 (.getPath (io/resource "./resources/rdf-schema.rdf"))
+                 (.getPath (io/resource "./resources/beet.rdf"))])
 
 
 (deftest test-load-multidata "load multiple data."

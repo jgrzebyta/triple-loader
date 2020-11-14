@@ -16,7 +16,7 @@
 
 (t/deftest sail-model-test
   (t/testing "Test Model loading"
-    (let [file-obj (io/file "tests/resources/collections/type-list.ttl")
+    (let [file-obj (io/file (io/resource "resources/collections/type-list.ttl"))
           repository (doto (s/make-sail-repository :memory nil)
                        (co/load-data file-obj))
           model (co/as-model repository)]
@@ -28,7 +28,7 @@
 
 
 (t/deftest sail-model-collection-test
-  (let [data-file (io/file "tests/resources/collections/type-list.ttl")
+  (let [data-file (io/file (io/resource "resources/collections/type-list.ttl"))
         repository (doto (s/make-sail-repository :memory nil)
                      (co/load-data data-file))]
     (t/testing "Simple test"
@@ -53,7 +53,7 @@
 
 
 (t/deftest sail-model-closing-test
-  (let [data-file (io/file "tests/resources/collections/type-list.ttl")
+  (let [data-file (io/file (io/resource "resources/collections/type-list.ttl"))
         repository (doto (s/make-sail-repository :memory nil)
                      (co/load-data data-file))]
     (t/testing "Simple test"
@@ -71,14 +71,14 @@
 
 
 (t/deftest sail-model-rdf-filter-object-test
-  (let [data-file (io/file "tests/resources/collections/type-list.ttl")
+  (let [data-file (io/file (io/resource "resources/collections/type-list.ttl"))
         repository (doto (s/make-sail-repository :memory nil)
                      (co/load-data data-file))]
     (t/testing "Simple test"
       (let [model (co/as-model repository)]
         ;; first using and closing first instance of model
         (first-connection repository)
-        (let [root (co/rdf-filter-object model (.createIRI vf "http://www.eexample.org/data#" "resources_1") (.createIRI vf "http://www.eexample.org/data#" "data"))
+        (let [root (co/rdf-filter-object model (.createIRI vf "http://www.eexample.org/data#" "./resources_1") (.createIRI vf "http://www.eexample.org/data#" "data"))
               seq-data (c/rdf->seq model root [])]
           (t/is (< 0 (count model)))
           (t/is (< 0 (count seq-data)))
@@ -87,7 +87,7 @@
 
 (t/deftest sail-model-in-sparql-test
   (let [root-sparql "prefix : <http://www.eexample.org/data#> select ?root where {[] :data1 ?root .} limit 1"
-        data-file (io/file "tests/resources/collections/type-list.ttl")
+        data-file (io/file (io/resource "resources/collections/type-list.ttl"))
         repository (doto (s/make-sail-repository :memory nil)
                      (co/load-data data-file))]
     (t/testing "Model in sparql"

@@ -1,3 +1,5 @@
 target/
 .nrepl-*
 **/logback-test.txt*
+.lein-*
+.idea/

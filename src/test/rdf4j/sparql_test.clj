@@ -13,7 +13,8 @@
             [rdf4j.repository :as r]
             [rdf4j.repository.sails :as sail]
             [rdf4j.core :as c]
-            [rdf4j.repository :as repo])
+            [rdf4j.repository :as repo]
+            [clojure.java.io :as io])
   (:import [org.eclipse.rdf4j.rio RDFFormat]
            [clojure.lang ArraySeq]
            [java.io StringWriter ByteArrayOutputStream]
@@ -48,16 +49,19 @@
     ))
 
 (deftest test-load-data 
-  (let [repo (make-repository-with-lucene)]
-    (c/load-data repo "tests/resources/beet.rdf")
+  (let [repo (make-repository-with-lucene)
+        input-file-url "resources/beet.rdf"
+        input-file (io/file (io/resource input-file-url))]
+    (c/load-data repo input-file)
   (testing "Count number of triples in repository"
     (test-repository repo 68))
   (delete-context)))
 
 (deftest test-sparql-query
   (let [repo (make-repository-with-lucene)
-        vf (u/value-factory)]
-    (c/load-data repo "tests/resources/beet.rdf")
+        vf (u/value-factory)
+        data-file "resources/beet.rdf"]
+    (c/load-data repo (io/file (io/resource data-file)))
     (testing "execute simple SPARQL query"
       (let [sparql-str "select * where {?s ?p ?o}"]
         (with-open-repository [cx repo]
@@ -101,7 +105,7 @@ where {
       (is (string? sparql-processed) "processed sparql not string")
       (is (not (st/blank? sparql-processed)) "processed sparql is blank")))
   (testing "sparql from string"
-    (let [file-path "tests/resources/example1.sparql"
+    (let [file-path (.getPath (io/resource "./resources/example1.sparql"))
           sparql-processed (load-sparql file-path)]
       (log/debug (format "SPAQRL processed:\n==========\n %s \n=========\n" sparql-processed))
       (is (< 10 (count sparql-processed)))
@@ -115,13 +119,15 @@ where {
       (is :unknown (load-sparql sparql-file)))))
 
 
-(def +local-test+ ["./tests/resources/yeastract_raw.ttl",
-                   "./tests/resources/Uniprot_scer.rdf"])
+(def +local-test+ [
+                   (.getPath (io/resource "./resources/yeastract_raw.ttl")),
+                   (.getPath (io/resource "./resources/Uniprot_scer.rdf"))
+                   ])
 
 
 (deftest test-search-sparql "Test search sparql "
   (testing "try simple search"
-    (let [sparql1 (load-sparql "tests/resources/spql1.sparql")
+    (let [sparql1 (load-sparql (.getPath (io/resource "resources/spql1.sparql")))
           repo (make-repository-with-lucene)
           loaded-tris (load-multidata repo +local-test+)] ;;load-dataset
       (log/debugf "loaded %d statements" loaded-tris)
@@ -138,7 +144,7 @@ where {
   (testing "test for eclipse/rdf4j#220"
     (log/info "Memory store")
     (let [repo (make-repository-with-lucene)
-          sparql220 (load-sparql "tests/resources/issue220.sparql")
+          sparql220 (load-sparql (.getPath (io/resource "./resources/issue220.sparql")))
           loaded (load-multidata repo +local-test+)]
       (log/debugf "\n======\n%s\n" sparql220)
       (log/debugf "loaded %d statements" loaded)
@@ -152,7 +158,7 @@ where {
     (log/info "Native store")
     (let [data-dir (.toFile (u/temp-dir))
           repo (sail/make-sail-repository :memory-spin-lucene  data-dir)
-          sparql220 (load-sparql "tests/resources/issue220.sparql")
+          sparql220 (load-sparql (.getPath (io/resource "./resources/issue220.sparql")))
           loaded (load-multidata repo +local-test+)]
       (log/debugf "Data dir: %s" data-dir)
       (log/debugf "\n======\n%s\n" sparql220)
@@ -203,10 +209,7 @@ where {
                          (.getSail)
                          (.getBaseSail))]
         (is (instance? NativeStore store))
-        (log/debug (format "storage: %s" store))
-        (is (.contains (-> store
-                           (.getDataDir)
-                           (.getAbsolutePath)) "/tmp")))
+        (log/debug (format "storage: %s" store)))
       (delete-context)))
   (testing "lucene index + memory"
     (let [args (list "lucene")

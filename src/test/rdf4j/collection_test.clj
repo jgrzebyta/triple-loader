@@ -21,7 +21,7 @@
 (def ^{:static true} vf (u/value-factory))
 
 (t/deftest loaded-model
-  (let [file-obj (io/file "tests/resources/collections/multisubj.ttl")]
+  (let [file-obj (io/file (io/resource "resources/collections/multisubj.ttl"))]
     (t/testing "load collections into standard model."
       (let [repository (r/make-repository)]
         (co/load-data repository file-obj)
@@ -47,13 +47,13 @@
 
 (t/deftest single-subject-test
   (t/testing "Test single-subjectp predicate"
-    (let [file-obj (io/file "tests/resources/collections/multisubj2.ttl" )
+    (let [file-obj (io/file (io/resource "resources/collections/multisubj2.ttl" ))
           repository (r/make-repository)]
       (co/load-data repository file-obj)
       (let [^Model model (co/as-model (u/get-all-statements repository))]
         (t/is (not (m/single-subjectp model)))))
     
-    (let [file-obj (io/file "tests/resources/collections/multisubj3.ttl" )
+    (let [file-obj (io/file (io/resource "resources/collections/multisubj3.ttl" ))
           repository (r/make-repository)]
       (co/load-data repository file-obj)
       (let [^Model model (co/as-model (u/get-all-statements repository))]
@@ -61,7 +61,7 @@
 
 (t/deftest loaded-model-test
   (t/testing "Test Model loading"
-    (let [file-obj (io/file "tests/resources/collections/type-list.ttl" )
+    (let [file-obj (io/file (io/resource "resources/collections/type-list.ttl" ))
           model (co/as-model file-obj)]
       (t/is (instance? Model model))
       (t/is (not (.isEmpty model)))
@@ -72,7 +72,8 @@
 (t/deftest collection-type-test
     (t/testing "Collection type test for rdf:List"
       (let [model (->
-                   (io/file "tests/resources/collections/type-list.ttl")
+                   (io/resource "resources/collections/type-list.ttl")
+                   (io/file)
                    (co/as-model))]
         (t/is (not (.isEmpty model)))
         (let [collection-root (-> (.filter model nil (.createIRI vf "http://www.eexample.org/data#" "data") nil (r/context-array))
@@ -87,7 +88,8 @@
 
     (t/testing "Collection type test for rdfs:Container"
       (let [model (->
-                   (io/file "tests/resources/collections/type-container.ttl")
+                   (io/resource "resources/collections/type-container.ttl")
+                   (io/file)
                    (co/as-model))
             collection-root (-> (.filter model nil (.createIRI vf "http://www.eexample.org/data#" "data") nil (r/context-array))
                                 (Models/object)
@@ -100,7 +102,8 @@
 
 (t/deftest rdf-coll-test
   (let [data-source (->
-                     (io/file "tests/resources/collections/type-list.ttl")
+                     (io/resource "resources/collections/type-list.ttl")
+                     (io/file)
                      (co/as-model))
         data-dir (.getDataDir data-source)]
     (t/testing "simple rdf->seq"
@@ -149,12 +152,12 @@
     (FileUtils/deleteDirectory data-dir)))
 
 (t/deftest rdf-coll-repository
-  (let [data-file (io/file "tests/resources/collections/type-list.ttl")
+  (let [data-file (io/file (io/resource "resources/collections/type-list.ttl"))
         repository (doto (sail/make-sail-repository :memory nil)
                      (co/load-data data-file))]
-    (t/testing "Collectons from repository"
+    #_(t/testing "Collectons from repository"
       (let [root (co/rdf-filter-object repository
-                                       (.createIRI vf "http://www.eexample.org/data#" "resources_1")
+                                       (.createIRI vf "http://www.eexample.org/data#" "./resources_1")
                                        (.createIRI vf "http://www.eexample.org/data#" "data"))
             coll (c/rdf->seq repository root [])]
         (t/is (instance? BNode root))
@@ -162,14 +165,15 @@
         (log/debugf "Collection: %s" coll)))
     (t/testing "Collectons from repository"
       (let [root (co/rdf-filter-object repository
-                                       (.createIRI vf "http://www.eexample.org/data#" "resources_no")
+                                       (.createIRI vf "http://www.eexample.org/data#" "./resources_no")
                                        (.createIRI vf "http://www.eexample.org/data#" "no_data"))]
         (log/debugf "Root: %s" root)))
     (.shutDown repository)))
 
 (t/deftest rdf-protocols
   (let [md (->
-            (io/file "tests/resources/beet.trig")
+            (io/resource "resources/beet.trig")
+            (io/file)
             co/as-model)]
     (t/testing "test protocols"
       (let [root (-> (m/rdf-filter md
